@@ -1,0 +1,2584 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OuiSpeak - სავარჯიშოები</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        th:first-child, td:first-child {
+            width: 40px;
+            white-space: nowrap;
+        }
+        
+        :root {
+            --primary: #0055a5;
+            --secondary: #ef4135;
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 10px 30px -10px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 20px 40px -15px rgba(0, 0, 0, 0.15);
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Premium Brand Wrapper Box */
+        .premium-container-box {
+            max-width: 1200px;
+            margin: 0.5rem auto;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 24px;
+            box-shadow: var(--shadow-lg), 0 4px 30px rgba(0, 0, 0, 0.03);
+            box-sizing: border-box;
+        }
+
+        /* Modernized Header */
+        header {
+            background-color: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: var(--shadow-sm);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            border-radius: var(--radius-md) var(--radius-md) 0 0;
+        }
+
+        .header-container {
+            max-width: 1140px;
+            margin: 0 auto;
+            padding: 0.85rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand-wrapper {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .brand-wrapper:hover {
+            opacity: 0.9;
+        }
+
+        .brand-logo {
+            height: 42px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .nav-links {
+            display: flex;
+            flex-wrap: wrap; /* 👈 This forces items to the next line when there's no room */
+            gap: 2rem;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: var(--transition);
+            position: relative;
+            padding: 0.25rem 0;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .logout-btn {
+            background-color: #fee2e2;
+            color: #ef4135;
+            border: none;
+            padding: 0.5rem 1.25rem;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: none;
+        }
+
+        .logout-btn:hover {
+            background-color: #fca5a5;
+        }
+
+        /* Clean Glassmorphism Auth Section */
+        #authSection {
+            max-width: 420px;
+            margin: 5rem auto;
+            padding: 3rem 2.5rem;
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            display: block !important; /* Forces form groups to stay visible */
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.88rem;
+            color: #475569;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            box-sizing: border-box;
+            font-size: 0.95rem;
+            background-color: #f8fafc;
+            color: var(--text-main);
+            transition: var(--transition);
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            background-color: #fff;
+            box-shadow: 0 0 0 4px rgba(0, 85, 165, 0.1);
+        }
+
+        .auth-btn {
+            width: 100%;
+            background-color: var(--text-main);
+            color: white;
+            padding: 0.9rem;
+            border: none;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 0.5rem;
+        }
+
+        .auth-btn:hover {
+            background-color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .auth-error {
+            background-color: #fff1f2;
+            color: #e11d48;
+            border: 1px solid #ffe4e6;
+            padding: 0.85rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 1.5rem;
+            display: none;
+            font-size: 0.9rem;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        #protectedContent {
+            display: none;
+        }
+
+        /* Modern Hero Typography */
+        .intro-section {
+            max-width: 800px;
+            margin: 4rem auto 2.5rem auto;
+            text-align: center;
+            padding: 0 1.5rem;
+            position: relative;
+        }
+
+        .intro-section h1 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--text-main) 30%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+            letter-spacing: -0.03em;
+        }
+
+        /* Decorative Background Elements */
+        .intro-section::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+
+        main {
+            max-width: 1140px;
+            margin: 0 auto 5rem auto;
+            padding: 0 1.5rem;
+        }
+
+        /* Exercise Interface Window Settings */
+        .subject-selector-wrapper {
+            max-width: 500px;
+            margin: 0 auto 2rem auto;
+            text-align: center;
+        }
+
+        .subject-select {
+            width: 100%;
+            padding: 0.85rem 1.25rem;
+            border-radius: 30px;
+            border: 1px solid var(--border-color);
+            font-size: 1rem;
+            color: var(--text-main);
+            background-color: var(--bg-card);
+            box-shadow: var(--shadow-sm);
+            outline: none;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1.25rem center;
+            background-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .subject-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(0, 85, 165, 0.1);
+        }
+
+        .exercise-window {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            margin-bottom: 4rem;
+        }
+
+        .exercise-layout-body {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            min-height: 500px;
+        }
+
+        .exercise-sidebar {
+            background: #fafafa;
+            border-right: 1px solid var(--border-color);
+            padding: 1.5rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .sidebar-item {
+            background: transparent;
+            border: none;
+            padding: 0.85rem 1.25rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            text-align: left;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .sidebar-item:hover {
+            background: #f1f5f9;
+            color: var(--primary);
+            padding-left: 1.5rem;
+        }
+
+        .sidebar-item.active {
+            background: #e6f0fa;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .exercise-viewarea {
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background: var(--bg-card);
+            min-width: 0; /* Prevents text overflow cutting out */
+        }
+
+        .instruction-box {
+            background: #ffffff;
+            padding: 1.4rem 2rem;
+            margin-bottom: 2.5rem;
+            font-weight: 800;
+            font-size: 1.2rem;
+            letter-spacing: -0.01em;
+            color: #0f172a;
+            border-radius: 20px;
+            position: relative;
+            
+            /* Flexbox to perfectly center content both vertically and horizontally */
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            text-align: left;
+            
+            /* Multi-layered shadow for clean, strong visibility */
+            box-shadow: 
+                0 15px 35px -5px rgba(0, 85, 165, 0.12), 
+                0 5px 15px rgba(0, 0, 0, 0.06), 
+                inset 0 1px 1px rgba(255, 255, 255, 1);
+            border: 1px solid transparent;
+            background-clip: padding-box;
+            box-sizing: border-box; /* Ensures padding does not break layout */
+        }
+
+        /* Sophisticated glowing gradient line border */
+        .instruction-box::after {
+            content: '';
+            position: absolute;
+            top: -1px; bottom: -1px; left: -1px; right: -1px;
+            background: linear-gradient(135deg, var(--primary) 0%, #00d2ff 50%, var(--secondary) 100%);
+            z-index: -1;
+            border-radius: 20px;
+            opacity: 0.85;
+        }
+
+        .exercise-sentence-item {
+            font-size: 1.15rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-main);
+            line-height: 2.2rem;
+            background: #f8fafc;
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+            word-wrap: break-word; /* Crucial for responsive text wrapping */
+            overflow-wrap: break-word;
+        }
+
+        .blank-input {
+            border: none;
+            border-bottom: 2px dashed #b4bfcd;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary);
+            outline: none;
+            background: transparent;
+            padding: 0 4px;
+            margin: 0 6px;
+            transition: var(--transition);
+            max-width: 100%; /* Ensures inputs don't stretch past content boxes */
+            box-sizing: border-box;
+        }
+
+        .blank-input:focus {
+            border-bottom-color: var(--primary);
+            background: rgba(0, 85, 165, 0.02);
+        }
+
+        .blank-input.correct {
+            border-bottom-color: #10b981 !important;
+            color: #10b981 !important;
+            background: rgba(16, 185, 129, 0.05) !important;
+        }
+
+        .blank-input.incorrect {
+            border-bottom-color: var(--secondary) !important;
+            color: var(--secondary) !important;
+            background: rgba(239, 65, 53, 0.05) !important;
+        }
+
+        /* Audio, Video & Text Box Container Styles */
+        .audio-player-container, .text-file-container, .video-player-container {
+            margin: 1.5rem 0;
+            text-align: center;
+            background: #f1f5f9;
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            border: 1px dashed var(--primary);
+            box-sizing: border-box;
+            max-width: 100%;
+        }
+        
+        .audio-player-container audio {
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .video-player-container {
+            margin: 1.5rem 0;
+            text-align: center;
+            background: #f1f5f9;
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            border: 1px dashed var(--primary);
+            box-sizing: border-box;
+            max-width: 100%;
+        }
+
+        .video-player-container video {
+            width: 100%;
+            max-width: 600px;
+            border-radius: var(--radius-sm);
+            outline: none;
+        }
+
+        .text-file-container {
+            text-align: left;
+            background: #fff;
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            font-size: 1.05rem;
+            line-height: 1.8;
+            white-space: pre-line;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        /* Multiple Choice & Radio Option Styles */
+        .options-group {
+            margin-top: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1rem;
+            cursor: pointer;
+            background: #ffffff;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+            transition: var(--transition);
+            word-break: break-word;
+        }
+
+        .option-label:hover {
+            background: #f8fafc;
+            border-color: var(--primary);
+        }
+
+        .option-label.correct-choice {
+            border-color: #10b981 !important;
+            background: rgba(16, 185, 129, 0.05) !important;
+            color: #10b981 !important;
+            font-weight: 600;
+        }
+
+        .option-label.incorrect-choice {
+            border-color: var(--secondary) !important;
+            background: rgba(239, 65, 53, 0.05) !important;
+            color: var(--secondary) !important;
+        }
+
+        /* Essay Textarea Styles */
+        .essay-textarea-input {
+            width: 100%;
+            height: 250px;
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: 1.05rem;
+            font-family: inherit;
+            line-height: 1.6;
+            box-sizing: border-box;
+            resize: vertical;
+            outline: none;
+            transition: var(--transition);
+            background-color: #f8fafc;
+        }
+
+        .essay-textarea-input:focus {
+            border-color: var(--primary);
+            background-color: #ffffff;
+            box-shadow: 0 0 0 4px rgba(0, 85, 165, 0.1);
+        }
+
+        .word-counter-view {
+            text-align: right;
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            margin-top: 0.35rem;
+            font-weight: 500;
+        }
+
+        .action-buttons-wrapper {
+            margin-top: 2rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap; /* Ensures buttons don't clip on small screens */
+        }
+
+        .send-answers-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.95rem;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+        }
+
+        .send-answers-btn:hover {
+            background-color: #004487;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 85, 165, 0.15);
+        }
+
+        .download-btn {
+            background-color: #10b981;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.95rem;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+        }
+
+        .download-btn:hover {
+            background-color: #059669;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+        }
+
+        .result-feedback {
+            margin-top: 1rem;
+            font-weight: 600;
+            font-size: 1rem;
+            width: 100%; /* Spans full row if needed on mobile */
+        }
+
+        /* Modern Stylish Footer Styling */
+        footer {
+            margin-top: 5rem;
+            padding: 2rem 1.5rem 0.5rem 1.5rem;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2.5rem;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+
+        .footer-links a:hover {
+            color: var(--primary);
+        }
+
+        .footer-copyright {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 768px) {
+            .premium-container-box { padding: 0.75rem; border-radius: var(--radius-lg); }
+            .header-container { flex-direction: column; gap: 1.25rem; text-align: center; padding: 1.25rem 1rem; }
+            nav { width: 100%; justify-content: center; flex-direction: column; gap: 1rem; }
+            
+            .nav-links { 
+                gap: 1.25rem; 
+                justify-content: center; 
+            }
+            
+            #authSection { margin: 2rem auto; padding: 2rem 1.5rem; }
+            .modal-content { padding: 1.5rem; }
+            .modal-header-container { flex-direction: column; gap: 1rem; align-items: flex-start; }
+            .download-btn { width: 100%; justify-content: center; }
+            footer { flex-direction: column; text-align: center; gap: 1.25rem; padding-top: 1.5rem; }
+            .footer-links { justify-content: center; gap: 1.5rem; }
+
+            /* 🌟 CRITICAL MOBILE RESPONSIVE FIXES FOR EXERCISE LAYOUT */
+            .exercise-layout-body {
+                grid-template-columns: 1fr; /* Stack layout vertically instead of forcing two columns */
+                min-height: auto;
+            }
+
+            .exercise-sidebar {
+                border-right: none;
+                border-bottom: 1px solid var(--border-color); /* Separator on bottom instead of right */
+                flex-direction: row; /* Horizontal alignment for exercise selector tabs */
+                flex-wrap: wrap; /* Allows wrap if row runs out of viewport width */
+                justify-content: center;
+                padding: 1rem;
+            }
+
+            .sidebar-item {
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            .sidebar-item:hover {
+                padding-left: 1rem; /* Reset padding-left push effect for mobile aesthetics */
+            }
+
+            .exercise-viewarea {
+                padding: 1.25rem; /* Reduces compressed excessive spacing inside answers box */
+            }
+
+            .instruction-box {
+                padding: 1rem 1.25rem;
+                font-size: 1.05rem;
+                margin-bottom: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="premium-container-box">
+
+        <header>
+            <div class="header-container">
+                <a href="index.html" class="brand-wrapper">
+                    <img src="images/logo.png" alt="Lingone Logo" class="brand-logo">
+                </a>
+                <nav>
+                    <ul class="nav-links">
+                        <li><a href="index.html">კურსები</a></li>
+                        <li><a href="exercice.html" style="color: var(--primary); font-weight: 600;">სავარჯიშოები</a></li>
+                        <li><a id="vocabNavLink" href="vocab.html" style="cursor: pointer;">ლექსიკა</a></li>
+                        <li><a href="recordings.html">ჩანაწერები</a></li>
+                        <li><a href="scores.html">შეფასებები</a></li>
+                    </ul>
+                    <button class="logout-btn" id="logoutBtn" onclick="handleLogout()">გამოსვლა</button>
+                </nav>
+            </div>
+        </header>
+
+        <section id="authSection">
+            <h2 id="authTitle" style="text-align: center; margin-bottom: 2rem; font-weight: 800; letter-spacing: -0.02em;">სავარჯიშოებზე წვდომა</h2>
+            <div class="auth-error" id="authError"></div>
+            
+            <form id="authForm" onsubmit="submitForm(event)">
+                <div class="form-group" id="studentIdGroup">
+                    <label>სტუდენტის ID (Student ID)</label>
+                    <input type="text" id="studentIdInput" required>
+                </div>
+                <div class="form-group" id="emailGroup">
+                    <label>ელ-ფოსტა (Email)</label>
+                    <input type="email" id="emailInput" required>
+                </div>
+                <div class="form-group" id="passwordGroup">
+                    <label>პაროლი (Password)</label>
+                    <input type="password" id="passwordInput" required minlength="6">
+                </div>
+                <button type="submit" class="auth-btn">შესვლა</button>
+            </form>
+        </section>
+
+        <div id="protectedContent">
+            <div class="intro-section">
+                <h1 id="exerciseTitle">ონლაინ სავარჯიშოები</h1>
+            </div>
+
+            <main>
+                <div class="subject-selector-wrapper">
+                    <select id="subjectSelect" class="subject-select" onchange="handleSubjectChange()">
+                        <option value="" disabled selected>აირჩიეთ კვირა</option>
+                        <option value="kvira_1">კვირა 1</option>
+                        <option value="kvira_2">კვირა 2</option>
+                        <option value="kvira_3">კვირა 3</option>
+                        <option value="kvira_4">კვირა 4</option>
+                        <option value="kvira_5">კვირა 5</option>
+                        <option value="kvira_6">კვირა 6</option>
+                        <option value="kvira_7">კვირა 7</option>
+                        <option value="kvira_8">კვირა 8</option>
+                        <option value="kvira_9">კვირა 9</option>
+                        <option value="kvira_10">კვირა 10</option>
+                        <option value="kvira_11">კვირა 11</option>
+                        <option value="kvira_12">კვირა 12</option>
+                        <option value="kvira_13">კვირა 13</option>
+                        <option value="kvira_14">კვირა 14</option>
+                        <option value="kvira_15">კვირა 15</option>
+                        <option value="kvira_16">კვირა 16</option>
+                        <option value="kvira_17">კვირა 17</option>
+                        <option value="kvira_18">კვირა 18</option>
+                        <option value="kvira_19">კვირა 19</option>
+                        <option value="kvira_20">კვირა 20</option>
+                        <option value="kvira_21">კვირა 21</option>
+                        <option value="kvira_22">კვირა 22</option>
+                        <option value="kvira_23">კვირა 23</option>
+                        <option value="kvira_24">კვირა 24</option>
+                        <option value="kvira_25">კვირა 25</option>
+                        <option value="kvira_26">კვირა 26</option>
+                    </select>
+                </div>
+
+                <div class="exercise-window">
+                    <div class="exercise-layout-body">
+                        <aside class="exercise-sidebar" id="exerciseSidebar" style="display: none;">
+                            <button class="sidebar-item active" onclick="loadExerciseBlock(1)">Exercice 1</button>
+                            <button class="sidebar-item" onclick="loadExerciseBlock(2)">Exercice 2</button>
+                            <button class="sidebar-item" onclick="loadExerciseBlock(3)">Exercice 3</button>
+                            <button class="sidebar-item" onclick="loadExerciseBlock(4)">Exercice 4</button>
+                            <button class="sidebar-item" onclick="loadExerciseBlock(5)">Exercice 5</button>
+                            <button class="sidebar-item" onclick="loadExerciseBlock(6)">Exercice 6</button>
+                        </aside>
+
+                        <div class="exercise-viewarea">
+                            <div>
+                                <div id="exerciseQuestionsContainer">
+                                    </div>
+                            </div>
+
+                            <div class="action-buttons-wrapper">
+                                <button class="send-answers-btn" onclick="sendAnswersToEmail()" style="display: none;">
+                                    <i class="fa-solid fa-paper-plane"></i> პასუხების გაგზავნა
+                                </button>
+                                <div class="result-feedback" id="resultFeedback"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <footer>
+            <div class="footer-copyright">© 2026 OuiSpeak. ყველა უფლება დაცულია.</div>
+            <ul class="footer-links">
+                <li><a href="contact.html">კონტაქტი</a></li>
+                <li><a href="policy.html">კონფიდენციალურობის პოლიტიკა</a></li>
+                <li><a href="code.html">აკადემიური კეთილსინდისიერების კოდექსი</a></li>
+            </ul>
+        </footer>
+
+    </div>
+
+    <script>
+        const SUPABASE_URL = "https://yuydaturorsdshtdajcf.supabase.co"; 
+        const SUPABASE_ANON_KEY = "sb_publishable_xlmbZTsExgJWyjN9IdC8xA_NaILka38";
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let studentCourse = null;
+        let authenticatedUserEmail = "";
+        let currentActiveBlock = 1;
+
+        // Object to cache user input states globally across multiple exercise blocks
+        const userAnswersCache = {};
+        const validationResultsCache = {};
+
+        function normalizeShortAnswer(str) {
+            return (str || "")
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .toLowerCase()
+                .trim();
+        }
+
+        function stripAccents(str) {
+            return (str || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        }
+
+        function getFormattingFeedback(studentAns, targetAns, isSentenceStart = false) {
+            const s = (studentAns || "").trim();
+            const t = (targetAns || "").trim();
+            if (s === t) return "";
+
+            let notes = [];
+            const sStrip = stripAccents(s);
+            const tStrip = stripAccents(t);
+
+            if (s !== t && sStrip.toLowerCase() === tStrip.toLowerCase()) {
+                const sCase = sStrip;
+                const tCase = tStrip;
+                
+                if (sCase !== tCase) {
+                    if (isSentenceStart && s.charAt(0) !== s.charAt(0).toUpperCase() && t.charAt(0) === t.charAt(0).toUpperCase()) {
+                        notes.push("სიტყვა უნდა დაიწყო დიდი ასოთი (წინადადების დასაწყისში)");
+                    } else if (!isSentenceStart && s.charAt(0) === s.charAt(0).toUpperCase() && t.charAt(0) !== t.charAt(0).toUpperCase()) {
+                        notes.push("სიტყვა უნდა დაიწყო პატარა ასოთი თუ ის წინადადების შუაშია");
+                    } else {
+                        notes.push("დაიცავი დიდი და პატარა ასოების მართლწერა");
+                    }
+                }
+
+                if (sStrip !== s || tStrip !== t) {
+                    if (s.toLowerCase() !== t.toLowerCase()) {
+                        notes.push(`სიტყვა უნდა დაიწეროს სწორი მახვილებით: "${t}"`);
+                    }
+                }
+            }
+
+            if (notes.length > 0) {
+                return " თუმცა გაითვალისწინე, რომ " + notes.join(" და ") + ".";
+            }
+            return "";
+        }
+
+        const dataset = {
+            "A1 - სასაუბრო კურსი": {
+                kvira_1: {
+                    1: { 
+                        instruction: "წაიკითხეთ კითხვა და სავარაუდო პასუხებიდან აარჩიეთ სწორი პასუხი", 
+                        questions: [
+                            { text: "ჩამოთვლილთაგან რომელ ასო-ბგერას შეესაბამება ყველაზე მეტად au ასოთა კომბინაციის ჟღერადობა ქართულ ენაში ?", options: ["ო", "ი", "ა", "უ"], answer: "ო", type: "mc" },
+                            { text: "ჩამოთვლილთაგან რომელ ასო-ბგერას შეესაბამება ყველაზე მეტად eau ასოთა კომბინაციის ჟღერადობა ქართულ ენაში ?", options: ["ო", "ეო", "უა", "ა"], answer: "ო", type: "mc" },
+                            { text: "ჩამოთვლილთაგან რომელ ასო-ბგერას შეესაბამება ყველაზე მეტად eaux ასოთა კომბინაციის ჟღერადობა ქართულ ენაში ?", options: ["აი", "ო", "უ", "ე"], answer: "ო", type: "mc" },
+                            { text: "ჩამოთვლილთაგან რომელ ასო-ბგერას შეესაბამება ყველაზე მეტად ou ასოთა კომბინაციის ჟღერადობა ქართულ ენაში ?", options: ["უ", "ა", "ეი", "ო"], answer: "უ", type: "mc" },
+                            { text: "ჩამოთვლილთაგან რომელ ასო-ბგერას შეესაბამება ყველაზე მეტად gn ასოთა კომბინაციის ჟღერადობა ქართულ ენაში ?", options: ["რბილი გ", "ნ", "გნ", "რბილი ნ"], answer: "რბილი ნ", type: "mc" },
+                            { text: "ჩამოთვლილთაგან რომელ ასო-ბგერას შეესაბამება ყველაზე მეტად eu ასოთა კომბინაციის ჟღერადობა ?", options: ["უ", "ფრანგული e", "ე", "ეუ"], answer: "ფრანგული e", type: "mc" },
+                            { text: "ჩამოთვლილთაგან რომელ ასო-ბგერას შეესაბამება ყველაზე მეტად ai ასოთა კომბინაციის ჟღერადობა ქართულ ენაში ?", options: ["აი", "ეი", "ე", "ა"], answer: "ე", type: "mc" },
+                            { text: "ჩამოთვლილთაგან რომელ ასო-ბგერას შეესაბამება ყველაზე მეტად ei ასოთა კომბინაციის ჟღერადობა ქართულ ენაში ?", options: ["ეი", "ე", "აი", "ი"], answer: "ე", type: "mc" },
+                            { text: "ჩამოთვლილთაგან რომელ ასო-ბგერას შეესაბამება ყველაზე მეტად oi ასოთა კომბინაციის ჟღერადობა ქართულ ენაში ?", options: ["ოი", "უა", "ოა", "იო"], answer: "უა", type: "mc" },
+                            { text: "ჩამოთვლილთაგან რომელ ასო-ბგერას შეესაბამება ყველაზე მეტად ch ასოთა კომბინაციის ჟღერადობა ქართულ ენაში ?", options: ["შ", "ჩ", "ც", "ჯ"], answer: "შ", type: "mc" }
+                        ] 
+                    },
+                    2: {
+                        instruction: "შეავსეთ გამოტოვებული ადგილები Être ან Avoir ზმნების სწორი ფორმით",
+                        questions: [
+                            { text: "Je _________________ à la bibliothèque.", answer: "suis" },
+                            { text: "Tu _________________ peur du noir ?", answer: "as" },
+                            { text: "Il _________________ une moto rouge.", answer: "a" },
+                            { text: "Elle _________________ toujours souriante.", answer: "est" },
+                            { text: "Nous _________________ besoin d'aide.", answer: "avons" },
+                            { text: "Vous _________________ prêts pour l'examen ?", answer: "êtes" },
+                            { text: "Ils _________________ envie de voyager.", answer: "ont" },
+                            { text: "Elles _________________ très intelligentes.", answer: "sont" },
+                            { text: "J'_________________ un rendez-vous ce soir.", answer: "ai" },
+                            { text: "Tu _________________ en avance ce matin.", answer: "es" },
+                            { text: "On _________________ de la chance aujourd'hui.", answer: "a" },
+                            { text: "Nous _________________ dans le jardin.", answer: "sommes" },
+                            { text: "Vous _________________ combien de frères ?", answer: "avez" },
+                            { text: "Ils _________________ en vacances cette semaine.", answer: "sont" },
+                            { text: "Elle _________________ sommeil après les cours.", answer: "a" }
+                        ]
+                    },
+                    3: {
+                        instruction: "დაწერეთ 5 მარტივი წინადადება თქვენ შესახებ (მაგალითად Je suis Ana...)",
+                        type: "essay"
+                    },
+                    4: {
+                        instruction: "დაწერეთ Être ან Avoir ზმნების უღლება ფრანგულად: მე ვარ, შენ ხარ, ის არის... ",
+                        type: "essay"
+                    },
+                    5: {
+                        instruction: "გადათარგმნეთ შემდეგი წინადადებები ქართულად",
+                        questions: [
+                            { text: "J'ai un chat:<br>_________________", answer: "", type: "open" },
+                            { text: "Tu es très poli:<br>_________________", answer: "", type: "open" },
+                            { text: "Il a un nouveau téléphone:<br>_________________", answer: "", type: "open" },
+                            { text: "Elle est médecin:<br>_________________", answer: "", type: "open" },
+                            { text: "Nous avons envie:<br>_________________", answer: "", type: "open" },
+                            { text: "Vous êtes au travail:<br>_________________", answer: "", type: "open" },
+                            { text: "Elles sont dans la chambre:<br>_________________", answer: "", type: "open" },
+                            { text: "J'ai 18 ans:<br>_________________", answer: "", type: "open" },
+                            { text: "Tu as froid:<br>_________________", answer: "", type: "open" },
+                            { text: "Elle a deux enfants:<br>_________________", answer: "", type: "open" }
+                        ]
+                    },
+                    6: {
+                        instruction: "უყურეთ ვიდეორგოლს და უპასუხეთ კითხვებს",
+                        video: "videos/a1_video1.mp4",
+                        questions: [
+                            { text: "რა არის პირველი სიტყვა რასაც ამბობს პერსონაჟი? _________________", answer: "bonjour" },
+                            { text: "რა სიტყვას ამბობს შინდისფერი პერსონაჟი მას შემდეგ რაც იტყვის oui, ça va bien, _________________.", answer: "merci" },
+                            { text: "რას ეუბნება მთავარი პერსონაჟი იასამნისფერ ყვითელკოპლებიან პერსონაჟს? _________________.", answer: "enchanté" },
+                            { text: "დააკვირდით მზის მდებარეობას როცა პერსონაჟი ამბობს bonne après-midi. რა იქნება მისი თარგმანი ქართულად?", options: ["კარგ საღამოს გისურვებთ", "კარგ შუადღეს გისურვებთ"], answer: "კარგ საღამოს გისურვებთ", type: "mc" },
+                            { text: "რომელ პერსონაჟს ეუბნება მთავარი გმირი 'სასიამოვნოა თქვენი გაცნობა'?", options: ["წითელს", "მწვანეს", "იასამნისფერს", "სტაფილოსფერს"], answer: "იასამნისფერს", type: "mc" },
+                            { text: "დააკვირდით მზის მდებარეობას როცა პერსონაჟი ამბობს bonsoir. რა იქნება მისი თარგმანი ქართულად?", options: ["საღამომშვიდობისა", "ღამემშვიდობისა"], answer: "საღამომშვიდობისა", type: "mc" },
+                            { text: "ვიდეოს მიხედვით რა იქნება ქართულად bonne nuit ?", options: ["საღამომშვიდობისა", "ღამემშვიდობისა"], answer: "საღამომშვიდობისა", type: "mc" },
+                            { text: "მთავარი გმირი ლურჯ პერსონაჟს ეუბნება: à demain.", options: ["მართალია", "ტყუილია"], answer: "მართალია", type: "mc" },
+                            { text: "Repetez-ს ქართული მნიშვნელობაა 'გაიმაეორეთ'", options: ["მართალია", "ტყუილია"], answer: "მართალია", type: "mc" },
+                            { text: "Salut მისალმების უფრო ოფიციალური ფორმაა ვიდრე Bonjour.", options: ["მართალია", "ტყუილია"], answer: "ტყუილია", type: "mc" }
+                        ]
+                    }
+                    
+                },
+                /*
+                kvira_2: {
+                    1: { 
+                        instruction: "Choisissez la bonne réponse", 
+                        questions: [
+                            { text: "Elles _____ géorgien.", options: ["parlent", "parle", "parlons", "parles"], answer: "parlent", type: "mc" },
+                            { text: "Nous _____ du pain.", options: ["mangeons", "mangent", "mangez", "mangons"], answer: "mangeons", type: "mc" },
+                            { text: "Vous _____ le professeur.", options: ["écoutent", "écoutez", "écoute", "écoutons"], answer: "écoutez", type: "mc" },
+                            { text: "Il _____ à Lyon.", options: ["habites", "habitez", "habite", "habitent"], answer: "habite", type: "mc" },
+                            { text: "Je _____ mes lunettes.", options: ["cherche", "cherches", "cherchent", "cherchez"], answer: "cherche", type: "mc" },
+                            { text: "Tu _____ ton travail ?", options: ["aiment", "aime", "aimez", "aimes"], answer: "aimes", type: "mc" },
+                            { text: "Ils _____ beaucoup.", options: ["travaillent", "travaille", "travailles", "travaillons"], answer: "travaillent", type: "mc" },
+                            { text: "Nous _____ un film.", options: ["regardent", "regardez", "regardons", "regarde"], answer: "regardons", type: "mc" },
+                            { text: "Elle _____ son adresse.", options: ["donnes", "donne", "donnent", "donnez"], answer: "donne", type: "mc" },
+                            { text: "Vous _____ une solution.", options: ["trouvez", "trouvons", "trouves", "trouvent"], answer: "trouvez", type: "mc" }
+                        ] 
+                    },
+                    2: { 
+                        instruction: "Complétez les phrases en conjuguant le verbe au présent de l'indicatif", 
+                        questions: [
+                            { text: "Vous _________________ (parler) géorgien ?", answer: "parlez" }, 
+                            { text: "Ils _________________ (habiter) ensemble.", answer: "habitent" }, 
+                            { text: "Elle _________________ (manger) une salade.", answer: "mange" }, 
+                            { text: "Je _________________ (regarder) le match.", answer: "regarde" }, 
+                            { text: "Nous _________________ (chercher) un hôtel.", answer: "cherchons" }, 
+                            { text: "Tu _________________ (écouter) le cours.", answer: "écoutes" }, 
+                            { text: "Vous _________________ (donner) un exemple.", answer: "donnez" }, 
+                            { text: "Ils _________________ (trouver) le mot.", answer: "trouvent" }, 
+                            { text: "Elle _________________ (travailler) à la banque.", answer: "travaille" }, 
+                            { text: "J'_________________ (aimer) le café.", answer: "aime" }
+                        ] 
+                    },
+                    3: {
+                        instruction: "Traduisez les phrases suivantes du français vers le géorgien",
+                        questions: [
+                            { text: "Tu parles géorgien ?<br>_________________", answer: "შენ ლაპარაკობ ქართულად?", type: "open" },
+                            { text: "Il habite à Paris.<br>_________________", answer: "ის ცხოვრობს პარიზში.", type: "open" },
+                            { text: "Nous mangeons du pain.<br>_________________", answer: "ჩვენ ვჭამთ პურს.", type: "open" },
+                            { text: "Vous travaillez ensemble.<br>_________________", answer: "თქვენ ერთად მუშაობთ.", type: "open" },
+                            { text: "Ils regardent un film.<br>_________________", answer: "ისინი უყურებენ ფილმს.", type: "open" },
+                            { text: "Elle écoute de la musique.<br>_________________", answer: "ის უსმენს მუსიკას.", type: "open" },
+                            { text: "Je cherche mon sac.<br>_________________", answer: "მე ვეძებ ჩემს ჩანთას.", type: "open" },
+                            { text: "Tu trouves une maison.<br>_________________", answer: "შენ პოულობ სახლს.", type: "open" },
+                            { text: "Nous donnons un cadeau.<br>_________________", answer: "ჩვენ ვაძლევთ საჩუქარს.", type: "open" },
+                            { text: "Ils aiment voyager.<br>_________________", answer: "მათ უყვართ მოგზაურობა.", type: "open" }
+                        ]
+                    },
+                    4: {
+                        instruction: "Traduisez les phrases suivantes du géorgien vers le français",
+                        questions: [
+                            { text: "ის (მამრ.) ლაპარაკობს ქართულად.<br>_________________", answer: "Il parle géorgien.", type: "open" },
+                            { text: "ჩვენ ვცხოვრობთ თბილისში.<br>_________________", answer: "Nous habitons à Tbilissi.", type: "open" },
+                            { text: "თქვენ ჭამთ ვაშლს.<br>_________________", answer: "Vous mangez une pomme.", type: "open" },
+                            { text: "ისინი მუშაობენ ოფისში.<br>_________________", answer: "Ils travaillent dans un bureau.", type: "open" },
+                            { text: "ის (მდედრ.) ეძებს ჩანთას.<br>_________________", answer: "Elle cherche un sac.", type: "open" },
+                            { text: "მე ვუსმენ რადიოს.<br>_________________", answer: "J'écoute la radio.", type: "open" },
+                            { text: "შენ უყურებ ტელევიზორს.<br>_________________", answer: "Tu regardes la télévision.", type: "open" },
+                            { text: "ჩვენ ვპოულობთ გამოსავალს (la solution).<br>_________________", answer: "Nous trouvons la solution.", type: "open" },
+                            { text: "თქვენ აძლევთ საჩუქარს.<br>_________________", answer: "Vous donnez un cadeau.", type: "open" },
+                            { text: "მათ მოსწონთ / უყვართ პარიზი.<br>_________________", answer: "Ils aiment Paris.", type: "open" }
+                        ]
+                    },
+                    5: {
+                        instruction: "დაწერეთ 5 მარტივი წინადადება ახლანდელ დროში პირველ პირში. მაგალითად: Je parle français.",
+                        type: "essay"
+                    },
+                    6: {
+                        instruction: "უყურეთ ვიდეორგოლს და უპასუხეთ კითხვებს",
+                        video: "videos/a1_video2.mp4",
+                        questions: [
+                            { text: "Comment s'appelle la jeune femme ? (1 mot) _________________.", answer: "Laura" },
+                            { text: "Quel âge a-t-elle ? (ჩაწერეთ რიცხვი) _________________.", answer: "30" },
+                            { text: "Quelle est sa nationalité ? (1 mot) _________________.", answer: "Française" },
+                            { text: "Dans quelle ville habite-t-elle ? (1 mot) _________________.", answer: "Paris" },
+                            { text: "Combien de frères a-t-elle ? (1 mot) _________________.", answer: "2" },
+                            { text: "Quelle est sa profession ? (1 mot) _________________.", answer: "Vétérinaire" },
+                            { text: "Quel animal a-t-elle ? (1 mot) _________________.", answer: "Chien" },
+                            { text: "Comment s'appelle son chien ? (1 mot) _________________.", answer: "Pilou" },
+                            { text: "Qu'aime-t-elle faire : du basket ou du sport ? (1 mot) _________________.", answer: "Sport" },
+                            { text: "Avec qui fait-elle de la randonnée : sa famille ou ses amis ? (1 mot) _________________.", answer: "Amis" }
+                        ]
+                    }
+                },
+                kvira_3: {
+                },
+                kvira_4: {
+                },
+                kvira_5: {
+                },
+                kvira_6: {
+                },
+                kvira_7: {
+                },
+                kvira_8: {
+                },
+                kvira_9: {
+                },
+                kvira_10: {
+                },
+                kvira_11: {
+                },
+                kvira_12: {
+                },
+                kvira_13: {
+                },
+                kvira_14: {
+                },
+                kvira_15: {
+                },
+                kvira_16: {
+                },
+                kvira_17: {
+                },
+                kvira_18: {
+                },
+                kvira_19: {
+                },
+                kvira_20: {
+                },
+                kvira_21: {
+                },
+                kvira_22: {
+                },
+                kvira_23: {
+                },
+                kvira_24: {
+                },
+                kvira_25: {
+                },
+                kvira_26: {
+                    1: { instruction: "A1 - კვირა 26 სავარჯიშო", questions: [{ text: "Je suis en train d'_________________.", answer: "ღtudier" }] }
+                },*/
+                kvira_1111111111: {
+                    1: { 
+                        instruction: "წაიკითხეთ კითხვა და სავარაუდო პასუხებიდან აარჩიეთ სწორი პასუხი", 
+                        questions: [
+                            { text: "", options: ["", "", "", ""], answer: "", type: "mc" },
+                            { text: "", options: ["", "", "", ""], answer: "", type: "mc" },
+                            { text: "", options: ["", "", "", ""], answer: "", type: "mc" },
+                            { text: "", options: ["", "", "", ""], answer: "", type: "mc" },
+                            { text: "", options: ["", "", "", ""], answer: "", type: "mc" },
+                            { text: "", options: ["", "", "", ""], answer: "", type: "mc" },
+                            { text: "", options: ["", "", "", ""], answer: "", type: "mc" },
+                            { text: "", options: ["", "", "", ""], answer: "", type: "mc" },
+                            { text: "", options: ["", "", "", ""], answer: "", type: "mc" },
+                            { text: "", options: ["", "", "", ""], answer: "", type: "mc" }
+                        ] 
+                    },
+                    2: { 
+                        instruction: "მოუსმინეთ აუდიოჩანაწერს და აარჩიეთ სწორი პასუხი", 
+                        questions: [
+                            { text: "Je _________________ étudiant.", answer: "" }, 
+                            { text: "Je _________________ étudiant.", answer: "" }, 
+                            { text: "Je _________________ étudiant.", answer: "" }, 
+                            { text: "Je _________________ étudiant.", answer: "" }, 
+                            { text: "Je _________________ étudiant.", answer: "" }, 
+                            { text: "Je _________________ étudiant.", answer: "" }, 
+                            { text: "Je _________________ étudiant.", answer: "" }, 
+                            { text: "Je _________________ étudiant.", answer: "" }, 
+                            { text: "Je _________________ étudiant.", answer: "" }, 
+                            { text: "Je _________________ étudiant.", answer: "" }
+                        ] 
+                    },
+                    3: {
+                        instruction: "წაიკითხეთ მოცემული ტექსტი და უპასქვთ კითხვებს",
+                        textFile: "texts/b1_sasaubro_text_1.txt",
+                        questions: [
+                            { text: "", options: ["", "", "", ""], answer: "", type: "mc" },
+                            { text: "", options: ["", "", "", ""], answer: "", type: "mc" },
+                            { text: "", options: ["", "", "", ""], answer: "", type: "mc" },
+                            { text: "", options: ["", "", "", ""], answer: "", type: "mc" },
+                            { text: "", options: ["", "", "", ""], answer: "", type: "mc" },
+                            { text: "Je _________________ étudiant.", answer: "" }, 
+                            { text: "Je _________________ étudiant.", answer: "" }, 
+                            { text: "Je _________________ étudiant.", answer: "" }, 
+                            { text: "Je _________________ étudiant.", answer: "" }, 
+                            { text: "Je _________________ étudiant.", answer: "" }
+                        ]
+                    },
+                    4: {
+                        instruction: "გადათარგმნეთ შემდეგი წინადადებები ფრანგულად",
+                        questions: [
+                            { text: "წინადადება 1:<br>_________________", answer: "", type: "open" },
+                            { text: "წინადადება 2:<br>_________________", answer: "", type: "open" },
+                            { text: "წინადადება 3:<br>_________________", answer: "", type: "open" },
+                            { text: "წინადადება 4:<br>_________________", answer: "", type: "open" },
+                            { text: "წინადადება 5:<br>_________________", answer: "", type: "open" },
+                            { text: "წინადადება 5:<br>_________________", answer: "", type: "open" },
+                            { text: "წინადადება 5:<br>_________________", answer: "", type: "open" },
+                            { text: "წინადადება 5:<br>_________________", answer: "", type: "open" },
+                            { text: "წინადადება 5:<br>_________________", answer: "", type: "open" },
+                            { text: "წინადადება 5:<br>_________________", answer: "", type: "open" }
+                        ]
+                    },
+                    5: {
+                        instruction: "Écrivez un court texte sur vous : qui vous êtes, d'où vous venez, où vous vivez et pourquoi, ce que vous aimez faire et ce que vous n'aimez pas",
+                        type: "essay"
+                    },
+                    6: {
+                        instruction: "უყურეთ ვიდეორგოლს და უპასუხეთ კითხვებს",
+                        video: "videos/a2_video1.mp4",
+                        questions: [
+                            { text: "? (1 mot) _________________.", answer: "" },
+                            { text: "? (1 mot) _________________.", answer: "" },
+                            { text: "? (1 mot) _________________.", answer: "" },
+                            { text: "? (1 mot) _________________.", answer: "" },
+                            { text: "? (1 mot) _________________.", answer: "" },
+                            { text: "? (1 mot) _________________.", answer: "" },
+                            { text: "? (1 mot) _________________.", answer: "" },
+                            { text: "? (1 mot) _________________.", answer: "" },
+                            { text: "? (1 mot) _________________.", answer: "" }
+                        ]
+                    },
+                    7: { 
+                        instruction: "მოუსმინეთ აუდიოჩანაწერს და უპასუხეთ კითხვებს", 
+                        audio: "audios/b1_sasaubro.mp3",
+                        questions: [
+                            { text: "? (1 mot) _________________.", answer: "" },
+                            { text: "? (1 mot) _________________.", answer: "" },
+                            { text: "? (1 mot) _________________.", answer: "" },
+                            { text: "? (1 mot) _________________.", answer: "" },
+                            { text: "? (1 mot) _________________.", answer: "" },
+                            { text: "? (1 mot) _________________.", answer: "" },
+                            { text: "? (1 mot) _________________.", answer: "" },
+                            { text: "? (1 mot) _________________.", answer: "" },
+                            { text: "? (1 mot) _________________.", answer: "" }
+                        ]
+                    }
+                },
+            },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            "A2 - სასაუბრო კურსი": {
+                kvira_1: {
+                    1: { 
+                        instruction: "Choisissez la bonne forme verbale au présent", 
+                        questions: [
+                            { text: "Le directeur ______ le document important.", options: ["signe", "signes", "signons", "signent"], answer: "signe", type: "mc" },
+                            { text: "J'______ quand je parle devant beaucoup de monde.", options: ["hésites", "hésite", "hésitons", "hésitent"], answer: "hésite", type: "mc" },
+                            { text: "Vous ______ toujours des conseils utiles.", options: ["donne", "donnes", "donnons", "donnez"], answer: "donnez", type: "mc" },
+                            { text: "Ils ______ sur l'occasion pour acheter cet appartement.", options: ["saute", "sautent", "sautons", "sautes"], answer: "sautent", type: "mc" },
+                            { text: "Nous ______ les détails de notre voyage.", options: ["connaissons", "connaisse", "connais", "connons"], answer: "connaissons", type: "mc" },
+                            { text: "Tu ______ pas mal de nouveaux mots en cours.", options: ["apprend", "apprends", "apprenons", "apprennent"], answer: "apprends", type: "mc" },
+                            { text: "Elle ______ son verre d'eau fraîche.", options: ["bois", "boit", "bouge", "boivent"], answer: "boit", type: "mc" },
+                            { text: "Vous ______ votre travail rapidement.", options: ["faisons", "fais", "faites", "font"], answer: "faites", type: "mc" },
+                            { text: "Les sportifs ______ leurs muscles à l'entraînement.", options: ["utilisent", "utilises", "utilisons", "utilisent"], answer: "utilisent", type: "mc" },
+                            { text: "Je ______ sur l'occasion pour poser une question.", options: ["saute", "sautent", "sautons", "sautes"], answer: "saute", type: "mc" }
+                        ] 
+                    },
+                    2: { 
+                        instruction: "Conjuguez le verbe entre parenthèses au présent", 
+                        questions: [
+                            { text: "J'_________________ (étudier) le français avec beaucoup de motivation.", answer: "étudie" }, 
+                            { text: "Vous _________________ (sauter) sur l'occasion d'apprendre une langue étrangère.", answer: "sautez" }, 
+                            { text: "Le professeur _________________ (expliquer) pas mal de règles grammaticales.", answer: "explique" }, 
+                            { text: "Tu _________________ (rougir) quand tes amis te font un compliment.", answer: "rougis" }, 
+                            { text: "Nous _________________ (regarder) un film intéressant en famille.", answer: "regardons" }, 
+                            { text: "Ils _________________ (partager) pas mal de souvenirs de vacances.", answer: "partagent" }, 
+                            { text: "Elle _________________ (choisir) une table près de la fenêtre au restaurant.", answer: "choisit" }, 
+                            { text: "Vous _________________ (voyager) souvent pendant les vacances d'été.", answer: "voyagez" }, 
+                            { text: "Mon ami _________________ (guérir) rapidement grâce au traitement.", answer: "guérit" }, 
+                            { text: "Tu _________________ (réagir) très calmement dans les situations difficiles.", answer: "réagis" }
+                        ] 
+                    },
+                    3: {
+                        instruction: "Lisez le texte ci-dessous et répondez aux questions",
+                        textFile: "texts/a2_sasaubro_text_1.txt",
+                        questions: [
+                            { text: "Où vit Sophie et comment est son quartier ?", options: ["Dans un vieil appartement au centre-ville.", "Dans une petite maison moderne dans un quartier vert.", "Dans une grande maison à Bordeaux.", "Dans un appartement sans espaces pour se promener."], answer: "Dans une petite maison moderne dans un quartier vert.", type: "mc" },
+                            { text: "Que sait-on du frère de Sophie ?", options: ["Il travaille avec elle dans une école de langues.", "Il habite avec Sophie et leur mère à Strasbourg.", "Il étudie à l'étranger.", "Il cherche un nouvel appartement."], answer: "Il étudie à l'étranger.", type: "mc" },
+                            { text: "L'expression « je saute sur l'occasion » dans le troisième paragraphe signifie...", options: ["J'ai peur de sortir.", "Je profite tout de suite du moment libre.", "Je refuse les invitations de mes amis.", "Je n'ai pas le temps de faire du sport."], answer: "Je profite tout de suite du moment libre.", type: "mc" },
+                            { text: "D'après le texte, qu'est-ce qui dérange particulièrement Sophie dans son quotidien ?", options: ["Le bruit des voitures et le froid en hiver.", "Écouter de la musique et cuisiner.", "Se promener dans la forêt.", "Boire du thé avec ses amis."], answer: "Le bruit des voitures et le froid en hiver.", type: "mc" },
+                            { text: "Quelles activités Sophie privilégie-t-elle pour ses jours de repos en fin de semaine ?", options: ["Elle travaille toute la journée à l'école.", "Elle voyage en train à Bordeaux.", "Elle lit un bon livre ou prend un thé avec des amis.", "Elle fait de la randonnée en haute montagne."], answer: "Elle fait de la randonnée en haute montagne.", type: "mc" },
+                            { text: "De quelle ville vient Sophie à l'origine ? (1 mot) _________________.", answer: "Bordeaux" }, 
+                            { text: "Dans quel type d'établissement travaille-t-elle ? Elle travaille dans une... (1 mot)", answer: "école" }, 
+                            { text: "Où habite son frère ? Il habite à l'_________________.", answer: "étranger" }, 
+                            { text: "Qu'est-ce qu'elle déteste en hiver ? Le _________________.", answer: "froid" }, 
+                            { text: "Quelle boisson partage-t-elle avec ses amis le week-end ? Un _________________.", answer: "thé" }
+                        ]
+                    },
+                    4: {
+                        instruction: "Traduisez les phrases suivantes",
+                        questions: [
+                            { text: "Vous terminez votre travail à dix-sept heures précises.<br>_________________", answer: "", type: "open" },
+                            { text: "J'écoute pas mal de podcasts pour améliorer ma prononciation.<br>_________________", answer: "", type: "open" },
+                            { text: "Nous organisons une fête d'anniversaire pour mon cousin.<br>_________________", answer: "", type: "open" },
+                            { text: "Tu sautes sur l'occasion pour trouver un stage intéressant.<br>_________________", answer: "", type: "open" },
+                            { text: "Ils passent pas mal de temps dans les parcs en été.<br>_________________", answer: "", type: "open" },
+                            { text: "Vous réfléchissez à une nouvelle idée de projet.<br>_________________", answer: "", type: "open" },
+                            { text: "Ma mère décore le salon avec de jolies fleurs.<br>_________________", answer: "", type: "open" },
+                            { text: "Tu visites pas mal de pays pendant tes vacances.<br>_________________", answer: "", type: "open" },
+                            { text: "Elle remplit sa bouteille d'eau avant le cours de sport.<br>_________________", answer: "", type: "open" },
+                            { text: "Ils habitent dans un village très propre.<br>_________________", answer: "", type: "open" }
+                        ]
+                    },
+                    5: {
+                        instruction: "Écrivez un court texte sur vous : qui vous êtes, d'où vous venez, où vous vivez et pourquoi, ce que vous aimez faire et ce que vous n'aimez pas (40 mots minimum)",
+                        type: "essay"
+                    },
+                    6: {
+                        instruction: "უყურეთ ვიდეორგოლს და უპასუხეთ კითხვებს",
+                        video: "videos/a2_video1.mp4",
+                        questions: [
+                            { text: "Quel accessoire rouge avec un petit ours Caillou porte-t-il autour du cou ? (1 mot) _________________.", answer: "Cravate" },
+                            { text: "Quel moyen de transport utilise-t-on dans le bâtiment pour monter aux étages ? (1 mot) _________________.", answer: "Ascenseur" },
+                            { text: "À quel étage (chiffre en lettres) se trouve le lieu de travail du papa ? (1 mot) _________________.", answer: "Quatre" },
+                            { text: "Comment s'appelle le papa de Caillou ? (1 mot) _________________.", answer: "Boris" },
+                            { text: "Quel est le prénom de la directrice qui dirige l'équipe ? (1 mot) _________________.", answer: "Valérie" },
+                            { text: "Quelle partie de son corps Caillou pose-t-il sur la vitre de l'appareil ? (1 mot) _________________.", answer: "Visage" },
+                            { text: "De quelle couleur est le feutre que Caillou prend sur la table ? (1 mot) _________________.", answer: "Rouge" },
+                            { text: "Que dessine Caillou sur les yeux de sa photo ? (1 mot) _________________.", answer: "Lunettes" },
+                            { text: "Où Caillou souhaite-t-il travailler plus tard quand il sera grand ? (1 mot) _________________.", answer: "Bureau" }
+                        ]
+                    }
+                },
+                /*
+                kvira_2: {
+                    1: { 
+                        instruction: "Choisissez la bonne forme verbale au présent", 
+                        questions: [
+                            { text: "Tu ___ au marché le dimanche ?", options: ["vas", "va", "vais", "vont"], answer: "vas", type: "mc" },
+                            { text: "Elles ___ de la gare à pied.", options: ["vient", "venez", "viennent", "venons"], answer: "viennent", type: "mc" },
+                            { text: "Il ___ prendre ses médicaments.", options: ["dois", "doit", "doivent", "devons"], answer: "doit", type: "mc" },
+                            { text: "Nous ___ très contents de vous voir.", options: ["sommes", "êtes", "sont", "suis"], answer: "sommes", type: "mc" },
+                            { text: "Vous ___ faim maintenant ?", options: ["ont", "avons", "avez", "ai"], answer: "avez", type: "mc" },
+                            { text: "Je ___ un verre d'eau, s'il vous plaît.", options: ["veut", "veux", "voulons", "veulent"], answer: "veux", type: "mc" },
+                            { text: "Tu ___ le train de huit heures ?", options: ["prends", "prend", "prenez", "prennent"], answer: "prends", type: "mc" },
+                            { text: "On ___ faire une pause de dix minutes.", options: ["peux", "peuvent", "peut", "pouvons"], answer: "peut", type: "mc" },
+                            { text: "Elle ___ toujours la vérité à ses parents.", options: ["dis", "dites", "disent", "dit"], answer: "dit", type: "mc" },
+                            { text: "Ils ___ au restaurant ce soir.", options: ["vont", "vais", "va", "allons"], answer: "vont", type: "mc" }
+                        ] 
+                    },
+                    2: { 
+                        instruction: "Complétez chaque phrase en conjuguant le verbe au présent de l'indicatif", 
+                        questions: [
+                            { text: "Vous _________________ (dire) toujours bonjour au voisin.", answer: "dites" }, 
+                            { text: "Ils _________________ (partir) en vacances en Italie.", answer: "partent" }, 
+                            { text: "Elle _________________ (être) en retard au rendez-vous.", answer: "est" }, 
+                            { text: "J'_________________ (avoir) beaucoup de travail aujourd'hui.", answer: "ai" }, 
+                            { text: "Nous _________________ (aller) au supermarché ensemble.", answer: "allons" }, 
+                            { text: "Je _________________ (faire) du vélo tous les week-ends.", answer: "fais" }, 
+                            { text: "Tu _________________ (pouvoir) venir avec nous ?", answer: "peux" }, 
+                            { text: "Vous _________________ (prendre) un thé ou un café ?", answer: "prenez" }, 
+                            { text: "Ils _________________ (vouloir) visiter ce musée.", answer: "veulent" }, 
+                            { text: "Nous _________________ (partir) demain matin à l'aube.", answer: "partons" }
+                        ] 
+                    },
+                    3: {
+                        instruction: "Traduisez les phrases suivantes du français vers le géorgien",
+                        questions: [
+                            { text: "Qu'est-ce que vous dites ?<br>_________________", answer: "", type: "open" },
+                            { text: "Ils partent en voyage demain.<br>_________________", answer: "", type: "open" },
+                            { text: "Je vais à la pharmacie.<br>_________________", answer: "", type: "open" },
+                            { text: "Nous avons une grande maison.<br>_________________", answer: "", type: "open" },
+                            { text: "Vous êtes prêts pour le cours ?<br>_________________", answer: "", type: "open" },
+                            { text: "Je prends un café noir sans sucre.<br>_________________", answer: "", type: "open" },
+                            { text: "Tu veux aller au cinéma avec moi ?<br>_________________", answer: "", type: "open" },
+                            { text: "Il fait très froid dehors aujourd'hui.<br>_________________", answer: "", type: "open" },
+                            { text: "Nous voyons nos amis ce soir.<br>_________________", answer: "", type: "open" },
+                            { text: "Elles viennent à la fête d'anniversaire.<br>_________________", answer: "", type: "open" }
+                        ]
+                    },
+                    4: {
+                        instruction: "Traduisez les phrases suivantes du géorgien vers le français",
+                        questions: [
+                            { text: "ისინი მოდიან სამსახურიდან (venir).<br>_________________", answer: "", type: "open" },
+                            { text: "თქვენ ხედავთ იმ ლამაზ სახლს? (voir).<br>_________________", answer: "", type: "open" },
+                            { text: "მე უნდა ვისწავლო ფრანგული (devoir).<br>_________________", answer: "", type: "open" },
+                            { text: "ჩვენ გვყავს პატარა ძაღლი (avoir).<br>_________________", answer: "", type: "open" },
+                            { text: "ის (მდედრ.) არის ძალიან დაკავებული (être).<br>_________________", answer: "", type: "open" },
+                            { text: "მე მივდივარ სუპერმარკეტში (aller).<br>_________________", answer: "", type: "open" },
+                            { text: "შენ მგზავრობ მატარებლით? (prendre).<br>_________________", answer: "", type: "open" },
+                            { text: "ჩვენ გვინდა დასვენება (vouloir).<br>_________________", answer: "", type: "open" },
+                            { text: "თქვენ შეგიძლიათ აქ მოხვიდეთ? (pouvoir / venir).<br>_________________", answer: "", type: "open" },
+                            { text: "ისინი ყოველდღე ვარჯიშობენ (faire du sport).<br>_________________", answer: "", type: "open" }
+                        ]
+                    },
+                    5: {
+                        instruction: "Racontez votre journée habituelle au présent. Utilisez au moins 3 verbes du 3e groupe (prendre, aller, faire, sortir, partir, voir, devoir, etc.) et les verbes comme se réveiller, se lever, se brosser, s’habiller, se coucher etc... 60 mots minimum.",
+                        type: "essay"
+                    },
+                    6: {
+                        instruction: "უყურეთ ვიდეორგოლს და უპასუხეთ კითხვებს",
+                        video: "videos/a2_video2.mp4",
+                        questions: [
+                            { text: "Que veulent préparer Caillou et son père : des pâtes ou du riz ? (1 mot) _________________.", answer: "Pâtes" },
+                            { text: "Dans quelle pièce de la maison vont-ils cuisiner ? (1 mot) _________________.", answer: "Cuisine" },
+                            { text: "Quel type de restaurant imaginent-ils ouvrir : français ou italien ? (1 mot) _________________.", answer: "Italien" },
+                            { text: "Qui Caillou veut-il inviter en plus de son grand-père ? (1 mot) _________________.", answer: "Grand-mère" },
+                            { text: "Quel plat le papi aime-t-il particulièrement ? (1 mot) _________________.", answer: "Pizza" },
+                            { text: "Quel ingrédient blanc et en poudre utilisent-ils pour faire la pâte ? (1 mot) _________________.", answer: "Farine" },
+                            { text: "Quelle première sauce étalent-ils sur la pâte à pizza ? (1 mot) _________________.", answer: "Tomate" },
+                            { text: "Que préparent Caillou et Mousseline sur une feuille de papier ? (1 mot) _________________.", answer: "Menu" },
+                            { text: "Quel type de pâtes longues Caillou fabrique-t-il avec la machine ? (1 mot) _________________.", answer: "Spaghetti" },
+                            { text: "Quel aliment râpé mettent-ils sur la sauce tomate de la pizza ? (1 mot) _________________.", answer: "Fromage" }
+                        ]
+                    }
+                },
+                kvira_3: {
+                },
+                kvira_4: {
+                },
+                kvira_5: {
+                },
+                kvira_6: {
+                },
+                kvira_7: {
+                },
+                kvira_8: {
+                },
+                kvira_9: {
+                },
+                kvira_10: {
+                },
+                kvira_11: {
+                },
+                kvira_12: {
+                },
+                kvira_13: {
+                },
+                kvira_14: {
+                },
+                kvira_15: {
+                },
+                kvira_16: {
+                },
+                kvira_17: {
+                },
+                kvira_18: {
+                },
+                kvira_19: {
+                },
+                kvira_20: {
+                },
+                kvira_21: {
+                },
+                kvira_22: {
+                },
+                kvira_23: {
+                },
+                kvira_24: {
+                },
+                kvira_25: {
+                },
+                kvira_26: {
+                }*/
+            },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            "B1 - სასაუბრო კურსი": {
+                kvira_1: {
+                    1: { instruction: "ინსტრუქცია სავარჯიშო 1-ისთვის (A1 კურსი)", questions: 
+                    [
+                        { text: "Je _________________ étudiant.", answer: "suis" }, 
+                        { text: "Tu _________________ français.", answer: "es" },
+                        { text: "Je _________________ étudiant.", answer: "suis" }, 
+                        { text: "Tu _________________ français.", answer: "es" },
+                        { text: "Je _________________ étudiant.", answer: "suis" }, 
+                        { text: "Tu _________________ français.", answer: "es" },
+                        { text: "Je _________________ étudiant.", answer: "suis" }, 
+                        { text: "Tu _________________ français.", answer: "es" },
+                        { text: "Je _________________ étudiant.", answer: "suis" }, 
+                        { text: "Tu _________________ français.", answer: "es" }
+                    ] },
+                    2: { 
+                        instruction: "მოუსმინეთ აუდიოჩანაწერს და აარჩიეთ სწორი პასუხი", 
+                        audio: "audios/b1_sasaubro.mp3",
+                        questions: [
+                            { text: "Quel არის მთავარი თემა ამ ჩანაწერის?", options: ["La musique", "Le voyage", "L'éducation", "Le travail"], answer: "Le voyage", type: "mc" },
+                            { text: "Où იმოგზაურა პირველმა სპიკერმა გასულ ზაფხულს?", options: ["À Paris", "À Lyon", "À Marseille", "À Nice"], answer: "À Paris", type: "mc" },
+                            { text: "Combien დღე გაგრძელდა მათი ტური?", options: ["2 jours", "5 jours", "7 jours", "10 jours"], answer: "7 jours", type: "mc" },
+                            { text: "Avec ვინ ერთად გაემგზავრა მთავარი პერსონაჟი?", options: ["Sa famille", "Ses amis", "Son collღgue", "Seul"], answer: "Ses amis", type: "mc" },
+                            { text: "Quel ტრანსპორტი გამოიყენეს მგზავრობისთვის?", options: ["Le train", "L'avion", "La voiture", "Le vღlo"], answer: "Le train", type: "mc" },
+                            { text: "Comment შეაფასეს მათ სასტუმროს მომსახურება?", options: ["Excellent", "Bon", "Mღdiocre", "Mauvais"], answer: "Excellent", type: "mc" },
+                            { text: "რა უპირატესობა ახსენა სპიკერმა მატარებლით მგზავრობისას? (უპასუხეთ ფრანგულად)", answer: "le paysage", type: "open" },
+                            { text: "რომელი მუზეუმი მოინახულეს მათ პირველ დღეს? (დაწერეთ ზუსტი სახელი)", answer: "Louvre", type: "open" },
+                            { text: "რა ამინდი იყო მოგზაურობის განმავლობაში? (უპასუხეთ ერთი სიტყვით)", answer: "beau", type: "open" },
+                            { text: "რა ურჩია სპიკერმა მსმენელებს მოგზაურობის დასასრულს?", answer: "voyager plus", type: "open" }
+                        ] 
+                    },
+                    3: {
+                        instruction: "წაიკითხეთ მოცემული ტექსტი და უპასქვთ კითხვებს",
+                        textFile: "texts/b1_sasaubro_text_1.txt",
+                        questions: [
+                            { text: "Quel est le sujet principal du texte?", options: ["L'environnement", "La colocation", "Le systღme scolaire", "Les vacances"], answer: "La colocation", type: "mc" },
+                            { text: "Pourquoi les ღtudiants choisissent-ils cette option?", options: ["Pour ღconomiser", "Pour faire la fღte", "Par obligation", "Pour habiter seul"], answer: "Pour ღconomiser", type: "mc" },
+                            { text: "Quel est l'inconvღnient majeur mentionnღ?", options: ["Le manque d'espace", "Le partage des tბches", "Le prix ღlevღ", "Le bruit constant"], answer: "Le partage des tბches", type: "mc" },
+                            { text: "Les colocataires doivent signer un contrat unique.", options: ["Vrai", "Faux"], answer: "Vrai", type: "mc" },
+                            { text: "La vie en communautღ convient ა tout le monde.", options: ["Vrai", "Faux"], answer: "Faux", type: "mc" },
+                            { text: "La colocation permet de rencontrer de nouvelles personnes.", options: ["Vrai", "Faux"], answer: "Vrai", type: "mc" },
+                            { text: "Qu'est-ce qui est essentiel pour rღussir une colocation?", answer: "la communication", type: "open" },
+                            { text: "Quel aspect financier est divisღ entre les habitants?", answer: "le loyer", type: "open" },
+                            { text: "Citez une rღgle de vie importante dans un appartement partagღ.", answer: "le respect", type: "open" },
+                            { text: "Quelle conclusion l'auteur tire-t-il de cette expღrience?", answer: "une belle expღrience", type: "open" }
+                        ]
+                    },
+                    4: {
+                        instruction: "დაწერეთ ესე მოცემული თემის ირგვლივ (მინიმუმ 150 - მაქსიმუმ 300 სიტყვა)",
+                        type: "essay"
+                    },
+                    5: {
+                        instruction: "გადათარგმნეთ შემდეგი წინადადებები ფრანგულად",
+                        questions: [
+                            { text: "წინადადება 1:<br>_________________", answer: "", type: "open" },
+                            { text: "წინადადება 2:<br>_________________", answer: "", type: "open" },
+                            { text: "წინადადება 3:<br>_________________", answer: "", type: "open" },
+                            { text: "წინადადება 4:<br>_________________", answer: "", type: "open" },
+                            { text: "წინადადება 5:<br>_________________", answer: "", type: "open" },
+                            { text: "წინადადება 6:<br>_________________", answer: "", type: "open" },
+                            { text: "წინადადება 7:<br>_________________", answer: "", type: "open" },
+                            { text: "წინადადება 8:<br>_________________", answer: "", type: "open" },
+                            { text: "წინადადება 9:<br>_________________", answer: "", type: "open" },
+                            { text: "წინადადება 10:<br>_________________", answer: "", type: "open" }
+                        ]
+                    },
+                    6: {
+                        instruction: "უყურეთ ვიდეორგოლს და უპასუხეთ კითხვებს",
+                        video: "videos/video1.mp4",
+                        questions: [
+                            { text: "რა არის ვიდეოს მთავარი თემა? (უპასუხეთ მოკლედ)", answer: "l'apprentissage", type: "open" },
+                            { text: "რომელი ქალაქია ნახსენები დასაწყისში? (დაწერეთ სახელი)", answer: "Paris", type: "open" },
+                            { text: "რა პრობლემაზე საუბრობს პირველი პერსონაჟი?", answer: "le temps", type: "open" },
+                            { text: "Quel არის სპიკერის მთავარი რეკომენდაცია?", options: ["Pratiquer tous les jours", "Regarder des films", "Voyager souvent", "Acheter un livre"], answer: "Pratiquer tous les jours", type: "mc" },
+                            { text: "რა სიხშირით უნდა გავიმეოროთ ახალი ლექსიკა?", options: ["კვირაში ერთხელ", "ყოველდღე", "თვეში ერთხელ", "საჭიროებისამებრ"], answer: "ყოველდღე", type: "mc" },
+                            { text: "რომელი პლატფორმაა ნახსენები ვიდეოში?", options: ["YouTube", "OuiSpeak", "Netflix", "TikTok"], answer: "OuiSpeak", type: "mc" },
+                            { text: "სპიკერი თვლის, რომ გრამატიკა ყველაზე მნიშვნელოვანია.", options: ["Vrai", "Faux"], answer: "Faux", type: "mc" },
+                            { text: "ფრანგული ენის შესწავლა შესაძლებელია მოკლე დროში.", options: ["Vrai", "Faux"], answer: "Vrai", type: "mc" },
+                            { text: "ვიდეო გადაღებულია სპეციალურად სტუდენტებისთვის.", options: ["Vrai", "Faux"], answer: "Vrai", type: "mc" },
+                            { text: "რა არის ბოლო სიტყვა, რომელსაც სპიკერი ამბობს ვიდეოს დასასრულს?", answer: "bon courage", type: "open" }
+                        ]
+                    }
+                },
+                kvira_2: {
+                    1: { instruction: "Complღtez avec le verbe avoir (Partie 1).", questions: [{ text: "J'_________________ un chien.", answer: "ai" }, { text: "Tu _________________ un chat.", answer: "as" }] }
+                },
+                kvira_26: {
+                    1: { instruction: "A1 - კვირა 26 სავარჯიშო", questions: [{ text: "Je suis en train d'_________________.", answer: "ღtudier" }] }
+                }
+            },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            "DELF A2 - კურსი": {
+                kvira_1: {
+                    1: { 
+                        instruction: "Choisissez la bonne forme verbale au présent", 
+                        questions: [
+                            { text: "Le directeur ______ le document important.", options: ["signe", "signes", "signons", "signent"], answer: "signe", type: "mc" },
+                            { text: "J'______ quand je parle devant beaucoup de monde.", options: ["hésites", "hésite", "hésitons", "hésitent"], answer: "hésite", type: "mc" },
+                            { text: "Vous ______ toujours des conseils utiles.", options: ["donne", "donnes", "donnons", "donnez"], answer: "donnez", type: "mc" },
+                            { text: "Ils ______ sur l'occasion pour acheter cet appartement.", options: ["saute", "sautent", "sautons", "sautes"], answer: "sautent", type: "mc" },
+                            { text: "Nous ______ les détails de notre voyage.", options: ["connaissons", "connaisse", "connais", "connons"], answer: "connaissons", type: "mc" },
+                            { text: "Tu ______ pas mal de nouveaux mots en cours.", options: ["apprend", "apprends", "apprenons", "apprennent"], answer: "apprends", type: "mc" },
+                            { text: "Elle ______ son verre d'eau fraîche.", options: ["bois", "boit", "bouge", "boivent"], answer: "boit", type: "mc" },
+                            { text: "Vous ______ votre travail rapidement.", options: ["faisons", "fais", "faites", "font"], answer: "faites", type: "mc" },
+                            { text: "Les sportifs ______ leurs muscles à l'entraînement.", options: ["utilisent", "utilises", "utilisons", "utilisent"], answer: "utilisent", type: "mc" },
+                            { text: "Je ______ sur l'occasion pour poser une question.", options: ["saute", "sautent", "sautons", "sautes"], answer: "saute", type: "mc" }
+                        ] 
+                    },
+                    2: { 
+                        instruction: "Conjuguez le verbe entre parenthèses au présent", 
+                        questions: [
+                            { text: "J'_________________ (étudier) le français avec beaucoup de motivation.", answer: "étudie" }, 
+                            { text: "Vous _________________ (sauter) sur l'occasion d'apprendre une langue étrangère.", answer: "sautez" }, 
+                            { text: "Le professeur _________________ (expliquer) pas mal de règles grammaticales.", answer: "explique" }, 
+                            { text: "Tu _________________ (rougir) quand tes amis te font un compliment.", answer: "rougis" }, 
+                            { text: "Nous _________________ (regarder) un film intéressant en famille.", answer: "regardons" }, 
+                            { text: "Ils _________________ (partager) pas mal de souvenirs de vacances.", answer: "partagent" }, 
+                            { text: "Elle _________________ (choisir) une table près de la fenêtre au restaurant.", answer: "choisit" }, 
+                            { text: "Vous _________________ (voyager) souvent pendant les vacances d'été.", answer: "voyagez" }, 
+                            { text: "Mon ami _________________ (guérir) rapidement grâce au traitement.", answer: "guérit" }, 
+                            { text: "Tu _________________ (réagir) très calmement dans les situations difficiles.", answer: "réagis" }
+                        ] 
+                    },
+                    3: {
+                        instruction: "Traduisez les phrases suivantes",
+                        questions: [
+                            { text: "Vous terminez votre travail à dix-sept heures précises.<br>_________________", answer: "", type: "open" },
+                            { text: "J'écoute pas mal de podcasts pour améliorer ma prononciation.<br>_________________", answer: "", type: "open" },
+                            { text: "Nous organisons une fête d'anniversaire pour mon cousin.<br>_________________", answer: "", type: "open" },
+                            { text: "Tu sautes sur l'occasion pour trouver un stage intéressant.<br>_________________", answer: "", type: "open" },
+                            { text: "Ils passent pas mal de temps dans les parcs en été.<br>_________________", answer: "", type: "open" },
+                            { text: "Vous réfléchissez à une nouvelle idée de projet.<br>_________________", answer: "", type: "open" },
+                            { text: "Ma mère décore le salon avec de jolies fleurs.<br>_________________", answer: "", type: "open" },
+                            { text: "Tu visites pas mal de pays pendant tes vacances.<br>_________________", answer: "", type: "open" },
+                            { text: "Elle remplit sa bouteille d'eau avant le cours de sport.<br>_________________", answer: "", type: "open" },
+                            { text: "Ils habitent dans un village très propre.<br>_________________", answer: "", type: "open" }
+                        ]
+                    },
+                    4: {
+                        instruction: "წაიკითხეთ ტექსტი და თითოეული ადამიანის გასწვრივ ჩაწერეთ მხოლოდ შესაბამისი დოკუმენტის ნომერი. მაგალითად: 3. თუ ადამიანი არც ერთ დოკუმენტს არ შეესაბამება ჩაწერეთ 0",
+                        textFile: "texts/a2_delf_text_1_1.txt",
+                        questions: [
+                            { text: "A. Alice a un enfant qui adore les animaux. _________________", answer: "5" },
+                            { text: "B. Pablo a une fille qui pratique la danse. _________________", answer: "4" },
+                            { text: "C. Kristel aime la mer et se passionne pour l'environnement. _________________", answer: "3" },
+                            { text: "D. Gabriel est très sportif. _________________", answer: "6" },
+                            { text: "E. Marie voudrait devenir cuisinière. _________________", answer: "0" },
+                            { text: "F. Peter veut devenir astronaute pour monter dans une fusée. _________________", answer: "2" },
+                            { text: "G. Paul aime beaucoup le cinéma français. _________________", answer: "0" },
+                            { text: "H. Mustafa adore s'amuser entre amis et jouer aux cartes. _________________", answer: "4" }
+                        ]
+                    },
+                    5: {
+                        instruction: "Vous habitez en France et vous recevez des amis étrangers pour les vacances. Vos amis veulent faire du sport. Vous lisez ces annonces dans un magazine. Qu'allez-vous proposer à chacun de vos amis ? Associez chaque document à la personne correspondante. Sinon, ecrivez 0.",
+                        textFile: "texts/a2_delf_text_1_2.txt",
+                        questions: [
+                            { text: "A. Manuel se déplace toujours à vélo. _________________", answer: "5" },
+                            { text: "B. Mohammed aime la nature et les promenades. _________________", answer: "4" },
+                            { text: "C. Kristel aime les sports d'hiver et adore glisser. _________________", answer: "2" },
+                            { text: "D. Reem aime les sports aquatiques. _________________", answer: "6" },
+                            { text: "E. Bassem aime les sports automobiles. _________________", answer: "0" },
+                            { text: "F. Peter adore la montagne et grimper. _________________", answer: "3" },
+                            { text: "G. Mira adore la danse classique. _________________", answer: "0" },
+                            { text: "H. Paloma veut faire un sport calme en famille. _________________", answer: "1" }
+                        ]
+                    },
+                    6: {
+                        instruction: "Vous habitez en France et vous devez aider vos amis à organiser plusieurs soirées. Vous lisez plusieurs descriptions de restaurants. Qu'allez-vous proposer à chacun de vos amis ? Associez chaque document à la personne correspondante. Sinon, ecrivez 0.",
+                        textFile: "texts/a2_delf_text_1_3.txt",
+                        questions: [
+                            { text: "A. Hélène aime les endroits très calmes. _________________", answer: "0" },
+                            { text: "B. Julia veut déjeuner dans un restaurant, en ville, où elle peut se connecter à Internet. _________________", answer: "2" },
+                            { text: "C. Zerfa aime manger en regardant un spectacle. _________________", answer: "6" },
+                            { text: "D. Mélanie aime dîner avec ses amis et écouter de la musique. _________________", answer: "4" },
+                            { text: "E. Mahban veut emmener son mari dans un restaurant qui propose des plats étrangers. _________________", answer: "5" },
+                            { text: "F. Johanna est végétarienne. _________________", answer: "0" },
+                            { text: "G. Matilda cherche un lieu pour goûter avec ses enfants. _________________", answer: "3" },
+                            { text: "H. Mathis doit organiser un dîner avec ses collègues pour 30 personnes. _________________", answer: "1" }
+                        ]
+                    }
+                },
+                /*
+                kvira_2: {
+                    1: { 
+                        instruction: "Choisissez la bonne forme verbale au présent", 
+                        questions: [
+                            { text: "Tu ___ au marché le dimanche ?", options: ["vas", "va", "vais", "vont"], answer: "vas", type: "mc" },
+                            { text: "Elles ___ de la gare à pied.", options: ["vient", "venez", "viennent", "venons"], answer: "viennent", type: "mc" },
+                            { text: "Il ___ prendre ses médicaments.", options: ["dois", "doit", "doivent", "devons"], answer: "doit", type: "mc" },
+                            { text: "Nous ___ très contents de vous voir.", options: ["sommes", "êtes", "sont", "suis"], answer: "sommes", type: "mc" },
+                            { text: "Vous ___ faim maintenant ?", options: ["ont", "avons", "avez", "ai"], answer: "avez", type: "mc" },
+                            { text: "Je ___ un verre d'eau, s'il vous plaît.", options: ["veut", "veux", "voulons", "veulent"], answer: "veux", type: "mc" },
+                            { text: "Tu ___ le train de huit heures ?", options: ["prends", "prend", "prenez", "prennent"], answer: "prends", type: "mc" },
+                            { text: "On ___ faire une pause de dix minutes.", options: ["peux", "peuvent", "peut", "pouvons"], answer: "peut", type: "mc" },
+                            { text: "Elle ___ toujours la vérité à ses parents.", options: ["dis", "dites", "disent", "dit"], answer: "dit", type: "mc" },
+                            { text: "Ils ___ au restaurant ce soir.", options: ["vont", "vais", "va", "allons"], answer: "vont", type: "mc" }
+                        ] 
+                    },
+                    2: { 
+                        instruction: "Complétez chaque phrase en conjuguant le verbe au présent de l'indicatif", 
+                        questions: [
+                            { text: "Vous _________________ (dire) toujours bonjour au voisin.", answer: "dites" }, 
+                            { text: "Ils _________________ (partir) en vacances en Italie.", answer: "partent" }, 
+                            { text: "Elle _________________ (être) en retard au rendez-vous.", answer: "est" }, 
+                            { text: "J'_________________ (avoir) beaucoup de travail aujourd'hui.", answer: "ai" }, 
+                            { text: "Nous _________________ (aller) au supermarché ensemble.", answer: "allons" }, 
+                            { text: "Je _________________ (faire) du vélo tous les week-ends.", answer: "fais" }, 
+                            { text: "Tu _________________ (pouvoir) venir avec nous ?", answer: "peux" }, 
+                            { text: "Vous _________________ (prendre) un thé ou un café ?", answer: "prenez" }, 
+                            { text: "Ils _________________ (vouloir) visiter ce musée.", answer: "veulent" }, 
+                            { text: "Nous _________________ (partir) demain matin à l'aube.", answer: "partons" }
+                        ] 
+                    },
+                    3: {
+                        instruction: "Traduisez les phrases suivantes du français vers le géorgien",
+                        questions: [
+                            { text: "Qu'est-ce que vous dites ?<br>_________________", answer: "", type: "open" },
+                            { text: "Ils partent en voyage demain.<br>_________________", answer: "", type: "open" },
+                            { text: "Je vais à la pharmacie.<br>_________________", answer: "", type: "open" },
+                            { text: "Nous avons une grande maison.<br>_________________", answer: "", type: "open" },
+                            { text: "Vous êtes prêts pour le cours ?<br>_________________", answer: "", type: "open" },
+                            { text: "Je prends un café noir sans sucre.<br>_________________", answer: "", type: "open" },
+                            { text: "Tu veux aller au cinéma avec moi ?<br>_________________", answer: "", type: "open" },
+                            { text: "Il fait très froid dehors aujourd'hui.<br>_________________", answer: "", type: "open" },
+                            { text: "Nous voyons nos amis ce soir.<br>_________________", answer: "", type: "open" },
+                            { text: "Elles viennent à la fête d'anniversaire.<br>_________________", answer: "", type: "open" }
+                        ]
+                    },
+                    4: {
+                        instruction: "Traduisez les phrases suivantes du géorgien vers le français",
+                        questions: [
+                            { text: "ისინი მოდიან სამსახურიდან (venir).<br>_________________", answer: "", type: "open" },
+                            { text: "თქვენ ხედავთ იმ ლამაზ სახლს? (voir).<br>_________________", answer: "", type: "open" },
+                            { text: "მე უნდა ვისწავლო ფრანგული (devoir).<br>_________________", answer: "", type: "open" },
+                            { text: "ჩვენ გვყავს პატარა ძაღლი (avoir).<br>_________________", answer: "", type: "open" },
+                            { text: "ის (მდედრ.) არის ძალიან დაკავებული (être).<br>_________________", answer: "", type: "open" },
+                            { text: "მე მივდივარ სუპერმარკეტში (aller).<br>_________________", answer: "", type: "open" },
+                            { text: "შენ მგზავრობ მატარებლით? (prendre).<br>_________________", answer: "", type: "open" },
+                            { text: "ჩვენ გვინდა დასვენება (vouloir).<br>_________________", answer: "", type: "open" },
+                            { text: "თქვენ შეგიძლიათ აქ მოხვიდეთ? (pouvoir / venir).<br>_________________", answer: "", type: "open" },
+                            { text: "ისინი ყოველდღე ვარჯიშობენ (faire du sport).<br>_________________", answer: "", type: "open" }
+                        ]
+                    },
+                    5: {
+                        instruction: "Lisez le texte suivant et répondez aux questions",
+                        textFile: "texts/a2_delf_text_2_1.txt",
+                        questions: [
+                            { text: "Quel est l'objectif principal de cet événement ?", options: ["Fêter une victoire en championnat", "Accueillir les nouveaux adhérents et présenter les activités", "Organiser un concours professionnel", "Rénover le complexe sportif"], answer: "Accueillir les nouveaux adhérents et présenter les activités", type: "mc" },
+                            { text: "Quand aura lieu la journée portes ouvertes ?", options: ["Samedi soir", "Dimanche à 10 h", "Vendredi midi", "Lundi matin"], answer: "Dimanche à 10 h", type: "mc" },
+                            { text: "Où se déroulera l'événement ?", options: ["Au parc municipal", "Dans la cour d'école", "Au complexe sportif municipal", "Au centre culturel"], answer: "Au complexe sportif municipal", type: "mc" },
+                            { text: "Que fournit le club pour les participants ?", options: ["Le repas chaud et le matériel d'entraînement", "Les chaussures de sport", "Les bouteilles en plastique", "Les serviettes de bain"], answer: "Le repas chaud et le matériel d'entraînement", type: "mc" },
+                            { text: "Que doivent obligatoirement apporter les sportifs pour limiter les déchets ?", options: ["Leur propre serviette", "Une gourde réutilisable", "Un sac poubelle", "Leurs couverts en bois"], answer: "Une gourde réutilisable", type: "mc" },
+                            { text: "L'événement a pour but d'accueillir les _________________ membres.", answer: "futurs" },
+                            { text: "Le déjeuner sera préparé par un _________________ local.", answer: "traiteur" },
+                            { text: "Un tournoi amical de _________________ aura lieu l'après-midi.", answer: "badminton" },
+                            { text: "Les vélos et les _________________ ne sont pas autorisés dans les couloirs.", answer: "trottinettes" },
+                            { text: "Les bénévoles doivent s'inscrire avant vendredi _________________.", answer: "midi" }
+                        ]
+                    },
+
+                    6: {
+                        instruction: "Lisez le texte suivant et répondez aux questions",
+                        textFile: "texts/a2_delf_text_2_2.txt",
+                        questions: [
+                            { text: "Pourquoi cet événement est-il organisé ?", options: ["Pour collecter des fonds pour la mairie", "Pour inaugurer le nouveau jardin partagé", "Pour fêter un anniversaire", "Pour nettoyer les rues du quartier"], answer: "Pour inaugurer le nouveau jardin partagé", type: "mc" },
+                            { text: "À quelle date et heure la fête commence-t-elle ?", options: ["Le samedi 15 mai à 11 h 30", "Le dimanche matin à 9 h", "Le samedi soir à 20 h", "Le jeudi 15 mai à midi"], answer: "Le samedi 15 mai à 11 h 30", type: "mc" },
+                            { text: "Quel type d'animation est prévu à 16 h ?", options: ["Un concert de rock", "Un spectacle de théâtre de rue", "Un match de football", "Une tombola solidaire"], answer: "Un spectacle de théâtre de rue", type: "mc" },
+                            { text: "Quelle règle concerne les animaux de compagnie ?", options: ["Ils sont totalement interdits", "Ils doivent rester dans une cage", "Ils sont autorisés en laisse", "Ils sont admis uniquement le matin"], answer: "Ils sont autorisés en laisse", type: "mc" },
+                            { text: "Que demande-t-on d'apporter pour éviter la vaisselle jetable ?", options: ["Des verres en plastique", "Des couverts et assiettes lavables", "Des serviettes en papier", "Des sacs en tissu"], answer: "Des couverts et assiettes lavables", type: "mc" },
+                            { text: "La fête se déroulera sur la place des _________________.", answer: "Tilleuls" },
+                            { text: "Le comité s'occupe du mobilier et des _________________.", answer: "rafraîchissements" },
+                            { text: "Chaque famille peut apporter une _________________ salée ou une quiche.", answer: "tarte" },
+                            { text: "Il est strictement interdit d'allumer des _________________ sur la place.", answer: "barbecues" },
+                            { text: "Les bénévoles doivent envoyer un courriel avant _________________ soir.", answer: "jeudi" }
+                        ]
+                    }
+                },
+                kvira_3: {
+                },
+                kvira_4: {
+                },
+                kvira_5: {
+                },
+                kvira_6: {
+                },
+                kvira_7: {
+                },
+                kvira_8: {
+                },
+                kvira_9: {
+                },
+                kvira_10: {
+                },
+                kvira_11: {
+                },
+                kvira_12: {
+                },
+                kvira_13: {
+                },
+                kvira_14: {
+                },
+                kvira_15: {
+                },
+                kvira_16: {
+                },
+                kvira_17: {
+                },
+                kvira_18: {
+                },
+                kvira_19: {
+                },
+                kvira_20: {
+                },
+                kvira_21: {
+                },
+                kvira_22: {
+                },
+                kvira_23: {
+                },
+                kvira_24: {
+                },
+                kvira_25: {
+                },
+                kvira_26: {
+                }*/
+            },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            "DELF B1 - კურსი": {
+                kvira_1: {
+                    1: { 
+                        instruction: "Complétez avec le verbe entre parenthèses au présent", 
+                        questions: [
+                            { text: "Tu _________________ (devoir) absolument lire cet article très intéressant.", answer: "dois" },
+                            { text: "Les enfants _________________ (grandir) tellement vite de nos jours.", answer: "grandissent" },
+                            { text: "Je _________________ (savoir) qu'il habite à Lyon depuis deux ans.", answer: "sais" },
+                            { text: "Vous _________________ (dire) toujours la vérité à vos proches.", answer: "dites" },
+                            { text: "Ils _________________ (mettre) leurs manteaux chauds parce qu'il fait froid.", answer: "mettent" },
+                            { text: "Mon frère _________________ (vouloir) changer d'appartement le mois prochain.", answer: "veut" },
+                            { text: "Nous _________________ (voyager) souvent en train à travers l'Europe.", answer: "voyageons" },
+                            { text: "Tu _________________ (pouvoir) m'aider à porter cette valise, s'il te plaît ?", answer: "peux" },
+                            { text: "Elle _________________ (écrire) un roman historique depuis plusieurs mois.", answer: "écrit" },
+                            { text: "Vous _________________ (réfléchir) longuement avant de prendre une décision importante.", answer: "réfléchissez" }
+                        ]
+                    },
+                    2: { 
+                        instruction: "Choisissez la bonne réponse", 
+                        questions: [
+                            { text: "Nous _________________ nos passeports avant de monter dans l'avion.", options: ["montrez", "montrons", "montrent", "montre"], answer: "montrons", type: "mc" },
+                            { text: "Tu _________________ beaucoup de progrès en expression orale.", options: ["fait", "faites", "fais", "faisons"], answer: "fais", type: "mc" },
+                            { text: "Ils _________________ une tasse de thé vert après le déjeuner.", options: ["buvons", "boit", "buvez", "boivent"], answer: "boivent", type: "mc" },
+                            { text: "Vous _________________ toujours avec politesse à vos collègues.", options: ["parlons", "parlez", "parlent", "parles"], answer: "parlez", type: "mc" },
+                            { text: "Je _________________ mes affaires et je vous rejoins.", options: ["ranges", "rangeons", "range", "rangent"], answer: "range", type: "mc" },
+                            { text: "Les médecins _________________ d'être très attentifs aux symptômes.", options: ["conseille", "conseillons", "conseillez", "conseillent"], answer: "conseillent", type: "mc" },
+                            { text: "Nous _________________ d'accord avec votre point de vue.", options: ["êtes", "sommes", "sont", "suis"], answer: "sommes", type: "mc" },
+                            { text: "Tu _________________ la différence entre ces deux concepts ?", options: ["voit", "voyons", "voyez", "vois"], answer: "vois", type: "mc" },
+                            { text: "Elle _________________ le formulaire d'inscription en ligne.", options: ["remplis", "remplit", "remplissent", "remplissons"], answer: "remplit", type: "mc" },
+                            { text: "Vous _________________ à la réunion de demain matin ?", options: ["venons", "viennent", "venez", "viens"], answer: "venez", type: "mc" }
+                        ]
+                    },
+                    3: {
+                        instruction: "Traduisez du français vers le géorgien",
+                        questions: [
+                            { text: "Vous pouvez m'envoyer ce document par courriel ?<br>_________________", answer: "", type: "open" },
+                            { text: "Ils partent en vacances à la montagne cet hiver.<br>_________________", answer: "", type: "open" },
+                            { text: "Je sais que cette situation est temporaire.<br>_________________", answer: "", type: "open" },
+                            { text: "Nous mangeons souvent des plats traditionnels en famille.<br>_________________", answer: "", type: "open" },
+                            { text: "Elle met son passeport dans son sac de voyage.<br>_________________", answer: "", type: "open" },
+                            { text: "Est-ce que tu veux visiter ce nouveau musée avec nous ?<br>_________________", answer: "", type: "open" },
+                            { text: "Les scientifiques cherchent de nouvelles solutions écologiques.<br>_________________", answer: "", type: "open" },
+                            { text: "Nous voyons clairement les résultats positifs de ce projet.<br>_________________", answer: "", type: "open" },
+                            { text: "Il réussit toujours à résoudre les problèmes complexes.<br>_________________", answer: "", type: "open" },
+                            { text: "Vous répondez rapidement aux questions des clients.<br>_________________", answer: "", type: "open" }
+                        ]
+                    },
+                    4: {
+                        instruction: "Traduisez du géorgien vers le français",
+                        questions: [
+                            { text: "ისინი მესიჯს უგზავნიან თავიანთ კოლეგებს.<br>_________________", answer: "", type: "open" },
+                            { text: "ჩვენ გვინდა ახალი ენის შესწავლა.<br>_________________", answer: "", type: "open" },
+                            { text: "შენ ყიდულობ ახალ წიგნს წიგნების მაღაზიაში.<br>_________________", answer: "", type: "open" },
+                            { text: "ისინი ხედავენ განსხვავებას ამ ორ მეთოდს შორის.<br>_________________", answer: "", type: "open" },
+                            { text: "მე ველოდები ავტობუსს გაჩერებაზე.<br>_________________", answer: "", type: "open" },
+                            { text: "თქვენ ყოველთვის სიმართლეს ამბობთ.<br>_________________", answer: "", type: "open" },
+                            { text: "ჩვენ ვმოგზაურობთ მატარებლით საფრანგეთში.<br>_________________", answer: "", type: "open" },
+                            { text: "ის ირჩევს ყოველთვის საუკეთესო ვარიანტს.<br>_________________", answer: "", type: "open" },
+                            { text: "მე მესმის თქვენი პრობლემა.<br>_________________", answer: "", type: "open" },
+                            { text: "სტუდენტები უსმენენ ლექტორს ყურადღებით.<br>_________________", answer: "", type: "open" }
+                        ]
+                    },
+                    5: {
+                        instruction: "Conjuguez 10 verbes du 3éme groupe au choix au présent: Être, Avoir, Aller, Faire, Prendre, Venir, Voir, Pouvoir, Vouloir, Devoir, Savoir, Partir, Sortir, Dormir, Comprendre, Attendre, Mettre, Dire, Écrire, Boire",
+                        type: "essay"
+                    },
+                    6: {
+                        instruction: "Vous êtes en France. C'est bientôt la fête des mères. Vous souhaitez envoyer un cadeau à votre mère. Vous voulez lui offrir :",
+                        textFile: "texts/b1_delf_text_1.txt",
+                        questions: [
+                            // Décoration
+                            { text: "Décoration : Le porte-documents éléphant est-il un objet de décoration ?", options: ["Oui", "Non"], answer: "Oui", type: "mc" },
+                            { text: "Décoration : Le cube réveil en bois est-il un objet de décoration ?", options: ["Oui", "Non"], answer: "Oui", type: "mc" },
+                            { text: "Décoration : Le coffret de sel d'Himalaya est-il un objet de décoration ?", options: ["Oui", "Non"], answer: "Oui", type: "mc" },
+                            { text: "Décoration : Le trophée tête de cerf en carton est-il un objet de décoration ?", options: ["Oui", "Non"], answer: "Oui", type: "mc" },
+
+                            // Utilité
+                            { text: "Utilité : Le porte-documents éléphant a-t-il une véritable utilité ?", options: ["Oui", "Non"], answer: "Oui", type: "mc" },
+                            { text: "Utilité : Le cube réveil en bois a-t-il une véritable utilité ?", options: ["Oui", "Non"], answer: "Oui", type: "mc" },
+                            { text: "Utilité : Le coffret de sel d'Himalaya a-t-il une véritable utilité ?", options: ["Oui", "Non"], answer: "Oui", type: "mc" },
+                            { text: "Utilité : Le trophée tête de cerf en carton a-t-il une véritable utilité ?", options: ["Oui", "Non"], answer: "Non", type: "mc" },
+
+                            // Consommation
+                            { text: "Consommation : Le porte-documents éléphant ne consomme-t-il pas d'énergie ?", options: ["Oui", "Non"], answer: "Oui", type: "mc" },
+                            { text: "Consommation : Le cube réveil en bois ne consomme-t-il pas d'énergie ?", options: ["Oui", "Non"], answer: "Non", type: "mc" },
+                            { text: "Consommation : Le coffret de sel d'Himalaya ne consomme-t-il pas d'énergie ?", options: ["Oui", "Non"], answer: "Oui", type: "mc" },
+                            { text: "Consommation : Le trophée tête de cerf en carton ne consomme-t-il pas d'énergie ?", options: ["Oui", "Non"], answer: "Oui", type: "mc" },
+
+                            // Poids
+                            { text: "Poids : Le porte-documents éléphant fait-il au maximum 300 g ?", options: ["Oui", "Non"], answer: "Oui", type: "mc" },
+                            { text: "Poids : Le cube réveil en bois fait-il au maximum 300 g ?", options: ["Oui", "Non"], answer: "Oui", type: "mc" },
+                            { text: "Poids : Le coffret de sel d'Himalaya fait-il au maximum 300 g ?", options: ["Oui", "Non"], answer: "Non", type: "mc" },
+                            { text: "Poids : Le trophée tête de cerf en carton fait-il au maximum 300 g ?", options: ["Oui", "Non"], answer: "Oui", type: "mc" },
+
+                            // Prix
+                            { text: "Prix : Le porte-documents éléphant coûte-t-il 40 euros au maximum ?", options: ["Oui", "Non"], answer: "Oui", type: "mc" },
+                            { text: "Prix : Le cube réveil en bois coûte-t-il 40 euros au maximum ?", options: ["Oui", "Non"], answer: "Oui", type: "mc" },
+                            { text: "Prix : Le coffret de sel d'Himalaya coûte-t-il 40 euros au maximum ?", options: ["Oui", "Non"], answer: "Non", type: "mc" },
+                            { text: "Prix : Le trophée tête de cerf en carton coûte-t-il 40 euros au maximum ?", options: ["Oui", "Non"], answer: "Non", type: "mc" }
+                        ]
+                    }
+                },
+                /*
+                kvira_2: {
+                },
+                kvira_3: {
+                },
+                kvira_4: {
+                },
+                kvira_5: {
+                },
+                kvira_6: {
+                },
+                kvira_7: {
+                },
+                kvira_8: {
+                },
+                kvira_9: {
+                },
+                kvira_10: {
+                },
+                kvira_11: {
+                },
+                kvira_12: {
+                },
+                kvira_13: {
+                },
+                kvira_14: {
+                },
+                kvira_15: {
+                },
+                kvira_16: {
+                },
+                kvira_17: {
+                },
+                kvira_18: {
+                },
+                kvira_19: {
+                },
+                kvira_20: {
+                },
+                kvira_21: {
+                },
+                kvira_22: {
+                },
+                kvira_23: {
+                },
+                kvira_24: {
+                },
+                kvira_25: {
+                },
+                kvira_26: {
+                }*/
+            }
+        };
+
+        function showError(msg) {
+            const errBox = document.getElementById('authError');
+            errBox.innerText = msg.message || msg || "დაფიქსირდა შეცდომა";
+            errBox.style.display = "block";
+        }
+
+        async function handleAuthSubmit(email, password, studentId) {
+            const { data: authData, error: authError } = await _supabase.auth.signInWithPassword({ email, password });
+            if (authError) return showError(authError);
+
+            const { data: studentData, error: dbError } = await _supabase
+                .from('Students')
+                .select('id, course, is_active')
+                .eq('id', studentId)
+                .eq('email', email)
+                .maybeSingle();
+
+            if (dbError || !studentData) {
+                await _supabase.auth.signOut();
+                return showError("არასწორი სტუდენტის ID ან ელ-ფოსტა.");
+            }
+
+            if (studentData.is_active === false) {
+                await _supabase.auth.signOut();
+                return showError("პლატფორმაზე წვდომა შეგეზღუდათ დავალიანების გამო. გთხოვთ, დაუკავშირდეთ ადმინისტრაციას.");
+            }
+
+            checkUserSession();
+        }
+
+        function submitForm(e) {
+            e.preventDefault();
+            document.getElementById('authError').style.display = "none";
+            const email = document.getElementById('emailInput').value;
+            const password = document.getElementById('passwordInput').value;
+            const studentId = document.getElementById('studentIdInput').value;
+            handleAuthSubmit(email, password, studentId);
+        }
+
+        async function handleLogout() {
+            await _supabase.auth.signOut();
+            checkUserSession();
+            location.reload();
+        }
+
+        async function checkUserSession() {
+            const { data: { session } } = await _supabase.auth.getSession();
+            
+            if (session) {
+                // Query using your exact database table schema names
+                const { data: studentData, error } = await _supabase
+                    .from('Students') // Notice the capital 'S'
+                    .select('course, is_active')
+                    .eq('auth_id', session.user.id) // Matching on your custom auth_id column
+                    .single();
+
+                // If the student was found but is explicitly set to inactive
+                if (!error && studentData && studentData.is_active === false) {
+                    alert("თქვენი პროფილი დეაქტივირებულია. გთხოვთ, მიმართოთ ადმინისტრატორს.");
+                    await _supabase.auth.signOut();
+                    location.reload();
+                    return;
+                }
+
+                // Standard workflow for active profiles
+                document.getElementById('authSection').style.display = 'none';
+                document.getElementById('protectedContent').style.display = 'block';
+                document.getElementById('logoutBtn').style.display = 'block';
+                
+                authenticatedUserEmail = session.user.email;
+                
+                if (!error && studentData) {
+                    studentCourse = studentData.course;
+                    document.getElementById('studentIdInput').value = session.user.id;
+                    loadSubjects();
+                }
+            } else {
+                document.getElementById('authSection').style.display = 'block';
+                document.getElementById('protectedContent').style.display = 'none';
+                document.getElementById('logoutBtn').style.display = 'none';
+            }
+        }
+
+        function handleSubjectChange() {
+            const selectElement = document.getElementById('subjectSelect');
+            const selectedValue = selectElement.value;
+            const titleElement = document.getElementById('exerciseTitle');
+            const sidebar = document.getElementById('exerciseSidebar');
+            const sendBtn = document.querySelector('.send-answers-btn');
+            const downloadBtn = document.getElementById('downloadWordBtn');
+            const feedback = document.getElementById('resultFeedback');
+
+            // Reset cache when changing weeks
+            for (let prop in userAnswersCache) { delete userAnswersCache[prop]; }
+            for (let prop in validationResultsCache) { delete validationResultsCache[prop]; }
+
+            if (!selectedValue) {
+                titleElement.innerText = studentCourse ? `${studentCourse} - სავარჯიშოები` : "ონლაინ სავარჯიშოები";
+                sidebar.style.display = "none";
+                if (sendBtn) sendBtn.style.display = "none";
+                if (downloadBtn) downloadBtn.style.display = "none";
+                document.getElementById('exerciseQuestionsContainer').innerHTML = '<div class="instruction-box">გთხოვთ აირჩიოთ კვირა და სავარჯიშო ბლოკი.</div>';
+                feedback.innerHTML = "";
+                return;
+            }
+
+            sidebar.style.display = "flex"; 
+            const selectedText = selectElement.options[selectElement.selectedIndex].text;
+            titleElement.innerText = `${studentCourse || ''} - ${selectedText}`;
+            loadExerciseBlock(1); 
+        }
+
+        function saveCurrentBlockAnswersToCache() {
+            const subject = document.getElementById('subjectSelect').value;
+            if (!studentCourse || !dataset[studentCourse] || !dataset[studentCourse][subject]) return;
+            
+            const prevBlockData = dataset[studentCourse][subject][currentActiveBlock];
+            if (!prevBlockData) return;
+
+            const cacheKeyPrefix = `${subject}_block_${currentActiveBlock}`;
+
+            if (prevBlockData.type === "essay") {
+                const essayTextarea = document.getElementById('essayTextarea');
+                if (essayTextarea) {
+                    userAnswersCache[`${cacheKeyPrefix}_essay`] = essayTextarea.value;
+                }
+            } else {
+                const questions = prevBlockData.questions || [];
+                questions.forEach((q, index) => {
+                    if (q.type === "mc" || q.type === "vf") {
+                        const checkedRadio = document.querySelector(`input[name="question_choice_${index}"]:checked`);
+                        if (checkedRadio) {
+                            userAnswersCache[`${cacheKeyPrefix}_q_${index}`] = checkedRadio.value;
+                        }
+                    } else {
+                        const input = document.getElementById(`input_q_${index}`);
+                        if (input) {
+                            userAnswersCache[`${cacheKeyPrefix}_q_${index}`] = input.value;
+                        }
+                    }
+                });
+            }
+        }
+
+        function loadExerciseBlock(blockNumber) {
+            saveCurrentBlockAnswersToCache();
+            currentActiveBlock = blockNumber;
+            const items = document.querySelectorAll('.sidebar-item');
+            items.forEach((item, index) => {
+                if ((index + 1) === blockNumber) item.classList.add('active');
+                else item.classList.remove('active');
+            });
+            renderExercise();
+        }
+
+        function updateWordCount() {
+            const textarea = document.getElementById('essayTextarea');
+            if (!textarea) return;
+            const text = textarea.value.trim();
+            const words = text ? text.split(/\s+/).length : 0;
+            document.getElementById('wordCounter').innerText = `სიტყვების რაოდენობა: ${words}`;
+        }
+
+        function renderExercise() {
+            const subject = document.getElementById('subjectSelect').value;
+            const container = document.getElementById('exerciseQuestionsContainer');
+            const sendBtn = document.querySelector('.send-answers-btn');
+            const downloadBtn = document.getElementById('downloadWordBtn');
+            document.getElementById('resultFeedback').innerHTML = "";
+
+            // Strictly show actions layout buttons only at the end of the final (6th) exercice block interface window
+            if (currentActiveBlock === 6) {
+                if (sendBtn) sendBtn.style.display = "inline-flex";
+                if (downloadBtn) downloadBtn.style.display = "inline-flex";
+            } else {
+                if (sendBtn) sendBtn.style.display = "none";
+                if (downloadBtn) downloadBtn.style.display = "none";
+            }
+
+            if (!studentCourse || !dataset[studentCourse] || !dataset[studentCourse][subject] || !dataset[studentCourse][subject][currentActiveBlock]) {
+                container.innerHTML = `<div class="instruction-box" style="border-left-color: var(--secondary); color: var(--secondary);">ამ კვირის სავარჯიშოები მიმდინარე კურსისთვის ჯერ არ არის დამატებული.</div>`;
+                return;
+            }
+
+            const blockData = dataset[studentCourse][subject][currentActiveBlock]; 
+            const instruction = blockData.instruction;
+            const cacheKeyPrefix = `${subject}_block_${currentActiveBlock}`;
+            
+            container.innerHTML = `<div class="instruction-box">${instruction}</div>`;
+
+            // Case 1: Essay Block
+            if (blockData.type === "essay") {
+                const cachedEssayValue = userAnswersCache[`${cacheKeyPrefix}_essay`] || "";
+                const essayDiv = document.createElement('div');
+                essayDiv.className = "form-group";
+                essayDiv.style.marginTop = "1.5rem";
+                essayDiv.innerHTML = `
+                    <textarea id="essayTextarea" class="essay-textarea-input" placeholder="დაწერეთ თქვენი ესე აქ..." oninput="updateWordCount()">${cachedEssayValue}</textarea>
+                    <div id="wordCounter" class="word-counter-view">სიტყვების რაოდენობა: 0</div>
+                `;
+                container.appendChild(essayDiv);
+                updateWordCount();
+                return;
+            }
+
+            // Inject audio player if present
+            if (blockData.audio) {
+                const audioDiv = document.createElement('div');
+                audioDiv.className = "audio-player-container";
+                audioDiv.innerHTML = `<audio controls src="${blockData.audio}"></audio>`;
+                container.appendChild(audioDiv);
+            }
+
+            // Inject video player if present
+            if (blockData.video) {
+                const videoDiv = document.createElement('div');
+                videoDiv.className = "video-player-container";
+                videoDiv.innerHTML = `<video controls src="${blockData.video}"></video>`;
+                container.appendChild(videoDiv);
+            }
+
+            // Inject text file presentation box if present
+            if (blockData.textFile) {
+                const textDiv = document.createElement('div');
+                textDiv.className = "text-file-container";
+                textDiv.innerText = "იტვირთება ტექსტი...";
+                fetch(blockData.textFile)
+                    .then(res => {
+                        if (!res.ok) throw new Error("File not found");
+                        return res.text();
+                    })
+                    .then(data => {
+                        textDiv.innerText = data;
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        textDiv.innerText = "ტექსტის ჩატვირთვა ვერ მოხერხდა.";
+                    });
+                container.appendChild(textDiv);
+            }
+
+            // General Questions Render Loop
+            const questions = blockData.questions || [];
+            questions.forEach((q, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = "exercise-sentence-item";
+                const cachedAnswerValue = userAnswersCache[`${cacheKeyPrefix}_q_${index}`] || "";
+                const valObj = validationResultsCache[`${cacheKeyPrefix}_q_${index}`];
+                
+                if (q.type === "mc" || q.type === "vf") {
+                    questionDiv.appendChild(document.createTextNode(`${index + 1}. ${q.text}`));
+                    const optionsGroup = document.createElement('div');
+                    optionsGroup.className = "options-group";
+                    
+                    q.options.forEach(opt => {
+                        const label = document.createElement('label');
+                        label.className = "option-label";
+                        
+                        const radio = document.createElement('input');
+                        radio.type = "radio";
+                        radio.name = `question_choice_${index}`;
+                        radio.value = opt;
+                        radio.className = "choice-radio-input";
+                        radio.dataset.correctAnswer = q.answer;
+                        if (cachedAnswerValue === opt) {
+                            radio.checked = true;
+                            if (valObj !== undefined) {
+                                label.classList.add(valObj.isCorrect ? 'correct-choice' : 'incorrect-choice');
+                            }
+                        }
+                        
+                        label.appendChild(radio);
+                        label.appendChild(document.createTextNode(` ${opt}`));
+                        optionsGroup.appendChild(label);
+                    });
+                    questionDiv.appendChild(optionsGroup);
+                } else {
+                    const parts = q.text.split("_________________");
+                    questionDiv.appendChild(document.createTextNode(`${index + 1}. `));
+                    
+                    // Allow to easily modify width via inline style as requested
+                    if (q.text.includes("<br>")) {
+                        const labelSpan = document.createElement('span');
+                        labelSpan.innerHTML = parts[0];
+                        questionDiv.appendChild(labelSpan);
+                    } else {
+                        questionDiv.appendChild(document.createTextNode(parts[0]));
+                    }
+                    
+                    const input = document.createElement('input');
+                    input.type = "text";
+                    input.className = "blank-input";
+                    
+                    // Specific design adjustments strictly for Exercice 4 (full width)
+                    if (currentActiveBlock === 3 || currentActiveBlock === 4) {
+                        input.style.width = "100%";
+                        input.style.borderBottom = "2px dashed #b4bfcd";
+                        input.style.textAlign = "left";
+                        input.style.marginTop = "0.5rem";
+                        input.style.display = "block";
+                        input.style.marginLeft = "0";
+                    } else {
+                        input.style.width = "150px"; // Default size for all other exercises
+                    }
+                    
+                    input.dataset.correctAnswer = q.answer;
+                    input.id = `input_q_${index}`;
+                    input.autocomplete = "off";
+                    input.value = cachedAnswerValue;
+                    
+                    if (valObj !== undefined) {
+                        input.classList.add(valObj.isCorrect ? 'correct' : 'incorrect');
+                    }
+                    
+                    questionDiv.appendChild(input);
+                    if (parts[1]) {
+                        if (q.text.includes("<br>")) {
+                            const remainingSpan = document.createElement('span');
+                            remainingSpan.innerHTML = parts[1];
+                            questionDiv.appendChild(remainingSpan);
+                        } else {
+                            questionDiv.appendChild(document.createTextNode(parts[1]));
+                        }
+                    }
+                }
+
+                if (valObj !== undefined) {
+                    const badge = document.createElement('div');
+                    badge.style.marginTop = "0.35rem";
+                    badge.style.fontSize = "0.92rem";
+                    badge.style.fontWeight = "600";
+                    if (valObj.isCorrect) {
+                        badge.style.color = "#10b981";
+                        badge.innerHTML = `<i class="fa-solid fa-circle-check"></i> სწორია!${valObj.feedback ? `<span style="color: #64748b; font-weight: 500;">${valObj.feedback}</span>` : ""}`;
+                    } else {
+                        badge.style.color = "#ef4135";
+                        const answerHint = q.answer ? ` (სწორი პასუხი: ${q.answer})` : "";
+                        badge.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> არასწორია!${answerHint}`;
+                    }
+                    questionDiv.appendChild(badge);
+                }
+                
+                container.appendChild(questionDiv);
+            });
+        }
+
+        function evaluateAllExercisesLive() {
+            const subject = document.getElementById('subjectSelect').value;
+            let fullStructuredPayload = "";
+
+            for (let b = 1; b <= 6; b++) {
+                const blockData = dataset[studentCourse]?.[subject]?.[b];
+                if (!blockData) {
+                    fullStructuredPayload += `\n=========================================\nExercice ${b}: (მონაცემები არ არის დამატებული)\n=========================================\n`;
+                    continue;
+                }
+
+                fullStructuredPayload += `\n=========================================\nExercice ${b}: ${blockData.instruction}\n=========================================\n`;
+                const cacheKeyPrefix = `${subject}_block_${b}`;
+
+                if (blockData.type === "essay") {
+                    let textContent = "";
+                    if (b === currentActiveBlock) {
+                        const essayTextarea = document.getElementById('essayTextarea');
+                        textContent = essayTextarea ? essayTextarea.value.trim() : "";
+                    } else {
+                        textContent = (userAnswersCache[`${cacheKeyPrefix}_essay`] || "").trim();
+                    }
+                    const wordsCount = textContent ? textContent.split(/\s+/).length : 0;
+                    fullStructuredPayload += `ესეს ტიპის დავალება:\nსიტყვების რაოდენობა: ${wordsCount}\nტექსტი:\n${textContent || "(ცარიელი)"}\n`;
+                } else {
+                    const questions = blockData.questions || [];
+                    questions.forEach((q, index) => {
+                        let studentAns = "";
+                        if (b === currentActiveBlock) {
+                            if (q.type === "mc" || q.type === "vf") {
+                                const checkedRadio = document.querySelector(`input[name="question_choice_${index}"]:checked`);
+                                studentAns = checkedRadio ? checkedRadio.value : "";
+                            } else {
+                                const input = document.getElementById(`input_q_${index}`);
+                                studentAns = input ? input.value : "";
+                            }
+                        } else {
+                            studentAns = userAnswersCache[`${cacheKeyPrefix}_q_${index}`] || "";
+                        }
+
+                        const trimmedStudentAns = studentAns.trim();
+                        const displayAns = trimmedStudentAns || "______";
+
+                        let statusSuffix = "";
+
+                        // Evaluate only short-answer questions, MC, and VF with defined answers (case and accent insensitive)
+                        if (q.type === "mc" || q.type === "vf" || (q.answer && q.answer.trim() !== "")) {
+                            const isCorrect = normalizeShortAnswer(trimmedStudentAns) === normalizeShortAnswer(q.answer);
+                            
+                            const isSentenceStart = q.text ? (q.text.trim().startsWith("_________________") || q.text.trim().startsWith("<br>_________________")) : false;
+                            const formattingNote = isCorrect ? getFormattingFeedback(trimmedStudentAns, q.answer, isSentenceStart) : "";
+                            
+                            validationResultsCache[`${cacheKeyPrefix}_q_${index}`] = {
+                                isCorrect: isCorrect,
+                                feedback: formattingNote
+                            };
+
+                            if (isCorrect) {
+                                statusSuffix = ` -> [სწორია! ✅${formattingNote ? formattingNote : ""}]`;
+                            } else {
+                                statusSuffix = ` -> [არასწორია! ❌ (სწორი პასუხი: ${q.answer})]`;
+                            }
+                        }
+
+                        const originalText = q.text.replace(/<br>/g, " ");
+                        const completedSentence = originalText.includes("_________________") ? 
+                            originalText.replace("_________________", ` [ ${displayAns} ] `) : 
+                            `${originalText} -> პასუხი: [ ${displayAns} ]`;
+
+                        fullStructuredPayload += `${index + 1}: ${completedSentence}${statusSuffix}\n`;
+                    });
+                }
+            }
+
+            renderExercise();
+            return { payload: fullStructuredPayload };
+        }
+
+        function sendAnswersToEmail() {
+            saveCurrentBlockAnswersToCache();
+            const subjectSelect = document.getElementById('subjectSelect');
+            const subject = subjectSelect.value;
+            const selectedWeek = subjectSelect.options[subjectSelect.selectedIndex].text;
+            const studentId = document.getElementById('studentIdInput').value || "N/A";
+            const feedback = document.getElementById('resultFeedback');
+
+            feedback.innerHTML = `<span style="color: var(--text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> იგზავნება...</span>`;
+
+            // Instant synchronous evaluation for short answers
+            const resultsData = evaluateAllExercisesLive();
+
+            // EmailJS Integration Area
+            emailjs.init("ubHY-_bGG6-4A4a3d");
+
+            const templateParams = {
+                to_email: "ouispeakinfo@gmail.com",
+                from_email: authenticatedUserEmail, 
+                student_id: studentId,
+                course: studentCourse,
+                week: selectedWeek,
+                exercise_block: "ყველა ბლოკი (1-6)",
+                answers_payload: resultsData.payload
+            };
+
+            emailjs.send("service_4k5phem", "template_dpz0tuk", templateParams)
+                .then(() => {
+                    feedback.innerHTML = `<span style="color: #10b981;"><i class="fa-solid fa-circle-check"></i> 6-ვე სავარჯიშოს პასუხები წარმატებით გაიგზავნა!</span>`;
+                }, (error) => {
+                    console.error("Email delivery failed:", error);
+                    feedback.innerHTML = `<span style="color: var(--secondary);"><i class="fa-solid fa-circle-xmark"></i> გაგზავნა ვერ მოხერხდა. სცადეთ მოგვიანებით.</span>`;
+                });
+        }
+
+        function downloadWordFile() {
+            saveCurrentBlockAnswersToCache();
+            const subjectSelect = document.getElementById('subjectSelect');
+            const selectedWeek = subjectSelect.options[subjectSelect.selectedIndex].text;
+            
+            // Loop and compile logs for all 6 exercises blocks
+            let fullStructuredPayload = "";
+            for (let b = 1; b <= 6; b++) {
+                const blockData = dataset[studentCourse]?.[subjectSelect.value]?.[b];
+                if (!blockData) continue;
+                fullStructuredPayload += `\n=========================================\nExercice ${b}: ${blockData.instruction}\n=========================================\n`;
+                const cacheKeyPrefix = `${subjectSelect.value}_block_${b}`;
+
+                if (blockData.type === "essay") {
+                    const textContent = (userAnswersCache[`${cacheKeyPrefix}_essay`] || "").trim();
+                    const wordsCount = textContent ? textContent.split(/\s+/).length : 0;
+                    fullStructuredPayload += `ესეს ტიპის დავალება:\nსიტყვების რაოდენობა: ${wordsCount}\nტექსტი:\n${textContent || "(ცარიელი)"}\n`;
+                } else {
+                    const questions = blockData.questions || [];
+                    questions.forEach((q, index) => {
+                        const studentAns = userAnswersCache[`${cacheKeyPrefix}_q_${index}`] || "";
+                        const trimmedStudentAns = studentAns.trim();
+                        const displayAns = trimmedStudentAns || "______";
+                        const originalText = q.text.replace(/<br>/g, " ");
+                        const completedSentence = originalText.includes("_________________") ? 
+                            originalText.replace("_________________", ` [ ${displayAns} ] `) : 
+                            `${originalText} -> პასუხი: [ ${displayAns} ]`;
+                        fullStructuredPayload += `${index + 1}: ${completedSentence}\n`;
+                    });
+                }
+            }
+            
+            // Generate clean standard web-doc architecture schema data layout string stream
+            const headerInfo = `OuiSpeak სავარჯიშოების ანგარიში\nკურსი: ${studentCourse || 'N/A'}\nკვირა: ${selectedWeek}\nსტუდენტის ID: ${document.getElementById('studentIdInput').value || 'N/A'}\n-----------------------------------------\n`;
+            const finalStringContent = headerInfo + fullStructuredPayload;
+            
+            const blob = new Blob([finalStringContent], { type: "application/msword;charset=utf-8" });
+            const downloadUrl = URL.createObjectURL(blob);
+            
+            const temporaryAnchor = document.createElement('a');
+            temporaryAnchor.href = downloadUrl;
+            temporaryAnchor.download = `${studentCourse || 'OuiSpeak'}_${selectedWeek}_Exercises.doc`;
+            document.body.appendChild(temporaryAnchor);
+            temporaryAnchor.click();
+            document.body.removeChild(temporaryAnchor);
+            URL.revokeObjectURL(downloadUrl);
+        }
+
+        checkUserSession();
+    </script>
+</body>
+</html>

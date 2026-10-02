@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OuiSpeak - ფრანგული ენის სკოლა</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        th:first-child, td:first-child {
+            width: 40px;
+            white-space: nowrap;
+        }
+        
+        :root {
+            --primary: #0055a5;
+            --secondary: #ef4135;
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 10px 30px -10px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 20px 40px -15px rgba(0, 0, 0, 0.15);
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Premium Brand Wrapper Box */
+        .premium-container-box {
+            max-width: 1200px;
+            margin: 0.5rem auto;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 24px;
+            box-shadow: var(--shadow-lg), 0 4px 30px rgba(0, 0, 0, 0.03);
+            box-sizing: border-box;
+        }
+
+        /* Modernized Header */
+        header {
+            background-color: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: var(--shadow-sm);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            border-radius: var(--radius-md) var(--radius-md) 0 0;
+        }
+
+        .header-container {
+            max-width: 1140px;
+            margin: 0 auto;
+            padding: 0.85rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand-wrapper {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .brand-wrapper:hover {
+            opacity: 0.9;
+        }
+
+        .brand-logo {
+            height: 42px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .nav-links {
+            display: flex;
+            flex-wrap: wrap; 
+            gap: 2rem;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: var(--transition);
+            position: relative;
+            padding: 0.25rem 0;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .logout-btn {
+            background-color: #fee2e2;
+            color: #ef4135;
+            border: none;
+            padding: 0.5rem 1.25rem;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: none;
+        }
+
+        .logout-btn:hover {
+            background-color: #fca5a5;
+        }
+
+        /* Clean Glassmorphism Auth Section */
+        #authSection {
+            display: none; /* Initially hidden */
+            max-width: 420px;
+            margin: 5rem auto;
+            padding: 3rem 2.5rem;
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            display: none; /* Hidden by default to prevent flash */
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.88rem;
+            color: #475569;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            box-sizing: border-box;
+            font-size: 0.95rem;
+            background-color: #f8fafc;
+            color: var(--text-main);
+            transition: var(--transition);
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            background-color: #fff;
+            box-shadow: 0 0 0 4px rgba(0, 85, 165, 0.1);
+        }
+
+        .auth-btn {
+            width: 100%;
+            background-color: var(--text-main);
+            color: white;
+            padding: 0.9rem;
+            border: none;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 0.5rem;
+        }
+
+        .auth-btn:hover {
+            background-color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .auth-error {
+            background-color: #fff1f2;
+            color: #e11d48;
+            border: 1px solid #ffe4e6;
+            padding: 0.85rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 1.5rem;
+            display: none;
+            font-size: 0.9rem;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .auth-switch {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .auth-switch span {
+            color: var(--primary);
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .forgot-pass-link {
+            display: block;
+            text-align: right;
+            margin-top: -0.75rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+        
+        .forgot-pass-link:hover {
+            color: var(--primary);
+        }
+
+        #protectedContent {
+            display: none;
+        }
+
+        /* Modern Hero Typography */
+        .intro-section {
+            max-width: 800px;
+            margin: 4rem auto 2.5rem auto;
+            text-align: center;
+            padding: 0 1.5rem;
+            position: relative;
+        }
+
+        .intro-section h1 {
+            font-size: clamp(2.3rem, 3.2vw, 4.5rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--text-main) 30%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+            letter-spacing: -0.03em;
+            line-height: 1.5;
+        }
+
+        .intro-section p {
+            font-size: 1rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            background: #ffffff;
+            display: inline-block;
+            padding: 0.6rem 1.5rem;
+            border-radius: 50px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        /* Decorative Background Elements */
+        .intro-section::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+
+        main {
+            max-width: 1140px;
+            margin: 0 auto 5rem auto;
+            padding: 0 1.5rem;
+        }
+
+        /* Modern Card Matrix Layout */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            padding: 2.5rem 2rem;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: var(--primary);
+        }
+
+        .card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-lg);
+            border-color: transparent;
+        }
+
+        .card:nth-child(even)::before { background: var(--secondary); }
+        .card.success-card::before { background: var(--primary); }
+
+        .card-icon {
+            font-size: 2.2rem;
+            margin-bottom: 1.25rem;
+            display: inline-block;
+        }
+
+        .card h2 {
+            margin: 0 0 0.75rem 0;
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+
+        .card p {
+            margin: 0 0 2rem 0;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            flex-grow: 1;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: #f1f5f9;
+            color: var(--text-main);
+            text-align: center;
+            padding: 0.85rem 1.5rem;
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .btn:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn i {
+            margin-right: 6px;
+        }
+
+        .card:nth-child(even) .btn:hover { background-color: var(--secondary); }
+        .card.success-card .btn:hover { background-color: var(--primary); }
+
+        /* Blocked State Styling */
+        .card.blocked-course {
+            opacity: 0.6;
+            background-color: #f8fafc;
+            cursor: not-allowed;
+            border-color: var(--border-color);
+        }
+        
+        .card.blocked-course::before {
+            background: #cbd5e1 !important;
+        }
+
+        .card.blocked-course:hover {
+            transform: none;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .card.blocked-course .btn {
+            background-color: #e2e8f0 !important;
+            color: #94a3b8 !important;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .card.blocked-course::after {
+            content: "🔒 დაბლოკილია";
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: #475569;
+            color: white;
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 30px;
+            font-weight: 600;
+        }
+
+        /* Modern Minimalist Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 2rem;
+            box-sizing: border-box;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 3rem;
+            border-radius: var(--radius-lg);
+            max-width: 960px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 1.5rem; right: 1.5rem;
+            font-size: 1.5rem;
+            background: #f1f5f9; border: none;
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: var(--text-muted);
+            transition: var(--transition);
+        }
+
+        .close-btn:hover {
+            background-color: #fee2e2;
+            color: #ef4135;
+        }
+
+        .modal-header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1.25rem;
+        }
+
+        .modal-header-container h2 { margin: 0; font-size: 1.6rem; font-weight: 800; letter-spacing: -0.02em; }
+
+        .download-btn {
+            background-color: var(--text-main);
+            color: white;
+            padding: 0.75rem 1.25rem;
+            font-size: 0.9rem;
+            border-radius: var(--radius-md);
+            border: none; cursor: pointer;
+            font-weight: 600;
+            display: flex; align-items: center; gap: 0.5rem;
+            transition: var(--transition);
+        }
+
+        .download-btn:hover { background-color: var(--primary); }
+
+        /* Document Blueprint Container */
+        #pdfContainer {
+            width: 100%;
+            max-width: 860px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            box-sizing: border-box;
+        }
+
+        .header-section {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #ffffff;
+            padding: 40px;
+            border-radius: var(--radius-md);
+            margin-bottom: 35px;
+            position: relative;
+            text-align: left;
+        }
+
+        .header-section h1 {
+            font-size: 26pt;
+            margin: 0 0 10px 0;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .header-section .badge {
+            display: inline-block;
+            background-color: var(--primary);
+            color: #ffffff;
+            font-size: 8.5pt;
+            font-weight: 700;
+            padding: 5px 14px;
+            border-radius: 50px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 14px;
+        }
+
+        .header-section .subtitle {
+            font-size: 11pt;
+            color: #94a3b8;
+            margin: 0;
+            font-weight: 400;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-bottom: 25px;
+            table-layout: fixed;
+        }
+
+        tr {
+            page-break-inside: avoid;
+        }
+
+        th {
+            background-color: #f8fafc;
+            color: #475569;
+            font-weight: 700;
+            font-size: 9.5pt;
+            padding: 16px 20px;
+            text-align: left;
+            border-bottom: 2px solid var(--border-color);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 20px;
+            font-size: 10.5pt;
+            line-height: 1.6;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: top;
+            word-wrap: break-word;
+        }
+
+        .week-column {
+            font-weight: 700;
+            color: var(--primary);
+            width: 12%;
+            font-size: 11pt;
+        }
+
+        .content-column {
+            width: 52%;
+            color: #334155;
+            padding-right: 24px;
+            text-align: left;
+        }
+
+        .focus-column {
+            width: 36%;
+            color: #475569;
+            background-color: #fafafa;
+            border-left: 1px solid #f1f5f9;
+            text-align: left;
+            padding: 20px;
+        }
+
+        .tag-oral {
+            display: inline-block;
+            background-color: #f0fdf4;
+            color: #166534;
+            font-size: 8pt;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-left: 6px;
+            white-space: nowrap;
+        }
+
+        .tag-ecrit {
+            display: inline-block;
+            background-color: #eff6ff;
+            color: #1e40af;
+            font-size: 8pt;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-left: 6px;
+            white-space: nowrap;
+        }
+
+        .grammar-block {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed var(--border-color);
+        }
+
+        .grammar-title {
+            font-weight: 700;
+            color: var(--text-main);
+            font-size: 9pt;
+        }
+
+        .vocab-title {
+            font-weight: 600;
+            color: #475569;
+            font-size: 9pt;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #fafcff;
+        }
+        
+        tbody tr:nth-child(even) .focus-column {
+            background-color: #f5f7fa;
+        }
+
+        /* Modern Stylish Footer Styling */
+        footer {
+            margin-top: 5rem;
+            padding: 2rem 1.5rem 0.5rem 1.5rem;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2.5rem;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+
+        .footer-links a:hover {
+            color: var(--primary);
+        }
+
+        .footer-copyright {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 768px) {
+            .premium-container-box { padding: 0.75rem; border-radius: var(--radius-lg); }
+            .header-container { flex-direction: column; gap: 1.25rem; text-align: center; padding: 1.25rem 1rem; }
+            nav { width: 100%; justify-content: center; flex-direction: column; gap: 1rem; }
+            
+            .nav-links { 
+                gap: 1.25rem; 
+                justify-content: center; 
+            }
+            
+            #authSection { margin: 2rem auto; padding: 2rem 1.5rem; }
+            .modal-content { padding: 1.5rem; }
+            .modal-header-container { flex-direction: column; gap: 1rem; align-items: flex-start; }
+            .download-btn { width: 100%; justify-content: center; }
+            footer { flex-direction: column; text-align: center; gap: 1.25rem; padding-top: 1.5rem; }
+            .footer-links { justify-content: center; gap: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="premium-container-box">
+
+        <header>
+            <div class="header-container">
+                <a href="#" class="brand-wrapper">
+                    <img src="images/logo.png" alt="Lingone Logo" class="brand-logo">
+                </a>
+                <nav>
+                    <ul class="nav-links">
+                        <li><a href="index.html">კურსები</a></li>
+                        <li><a id="exercisesNavLink" style="cursor: pointer;">სავარჯიშოები</a></li>
+                        <li><a id="vocabNavLink" style="cursor: pointer;">ლექსიკა</a></li>
+                        <li><a href="recordings.html">ჩანაწერები</a></li>
+                        <li><a href="scores.html">შეფასებები</a></li>
+                    </ul>
+                    <button class="logout-btn" id="logoutBtn" onclick="handleLogout()">გამოსვლა</button>
+                </nav>
+            </div>
+        </header>
+
+        <section id="authSection">
+            <h2 id="authTitle" style="text-align: center; margin-bottom: 2rem; font-weight: 800; letter-spacing: -0.02em;">შესვლა სისტემაში</h2>
+            <div class="auth-error" id="authError"></div>
+            
+            <form id="authForm" onsubmit="handleAuthSubmit(event)">
+                <div class="form-group" id="firstNameGroup" style="display: none;">
+                    <label>სახელი (First Name)</label>
+                    <input type="text" id="firstNameInput">
+                </div>
+                <div class="form-group" id="lastNameGroup" style="display: none;">
+                    <label>გვარი (Last Name)</label>
+                    <input type="text" id="lastNameInput">
+                </div>
+                <div class="form-group" id="courseGroup" style="display: none;">
+                    <label>აირჩიეთ კურსი (Select Course)</label>
+                    <select id="courseInput">
+                        <option value="" disabled selected>აირჩიეთ სასურველი კურსი</option>
+                        <option value="A1 - სასაუბრო კურსი">A1 - სასაუბრო კურსი</option>
+                        <option value="A2 - სასაუბრო კურსი">A2 - სასაუბრო კურსი</option>
+                        <!-- <option value="B1 - სასაუბრო კურსი">B1 - სასაუბრო კურსი</option> -->
+                        <option value="DELF A2 - კურსი">DELF A2 - კურსი</option>
+                        <option value="DELF B1 - კურსი">DELF B1 - კურსი</option>
+                    </select>
+                </div>
+                 <div class="form-group" id="studentIdGroup">
+                    <label>სტუდენტის ID (Student ID)</label>
+                    <input type="text" id="studentIdInput" required>
+                </div>
+                <div class="form-group" id="emailGroup">
+                    <label>ელ-ფოსტა (Email)</label>
+                    <input type="email" id="emailInput" required>
+                </div>
+                <div id="birthdayGroup" class="form-group" style="display: none;">
+                    <label>დაბადების თარიღი (Birthday):</label>
+                    <input type="date" id="birthdayInput">
+                </div>
+                <div class="form-group" id="passwordGroup">
+                    <label>პაროლი (Password)</label>
+                    <input type="password" id="passwordInput" required minlength="6">
+                </div>
+                
+                <span class="forgot-pass-link" id="forgotPasswordLink" onclick="toggleForgotPasswordMode(true)">დაგავიწყდათ პაროლი?</span>
+
+                <button type="submit" class="auth-btn" id="authSubmitBtn">შესვლა</button>
+            </form>
+
+            <form id="updatePasswordForm" style="display: none;" onsubmit="handleUpdatePassword(event)">
+                <div class="form-group">
+                    <label>ახალი პაროლი (New Password)</label>
+                    <input type="password" id="newPasswordInput" required minlength="6">
+                </div>
+                <button type="submit" class="auth-btn">პაროლის განახლება</button>
+            </form>
+
+            <div class="auth-switch" id="authSwitchContainer">
+                არ გაქვთ ანგარიში? <span onclick="toggleAuthMode(true)">რეგისტრაცია</span>
+            </div>
+        </section>
+
+        <div id="protectedContent">
+            <section id="coursesSection">
+                <div class="intro-section">
+                    <h1>OuiSpeak სკოლის 2026 წლის სასწავლო პროგრამების ჩამონათვალი</h1>
+                    <p>ამ გვერდზე თქვენ შეგიძლიათ გაეცნოთ კურსების სასწავლო პროგრამებს დეტალურად. დავალებების, ლექსიკისა
+                        თუ შეფასებების სანახავად გადადით შესაბამის ჩანართში
+                    </p>
+                </div>
+                <main>
+                    <div class="grid">
+                        <div class="card success-card" id="card_A1_-_სასაუბრო_კურსი">
+                            <div>
+                                <div class="card-icon">🇫🇷</div>
+                                <h2>A1 - სასაუბრო კურსი</h2>
+                                <p>კურსის განმავლობაში თქვენ ძალიან სწრაფად ისწავლით ფრანგულად კითხვას...</p>
+                            </div>
+                            <button class="btn syllabus-link" data-course="3"><i class="fa-solid fa-download"></i>სილაბუსის ნახვა</button>
+                        </div>
+
+                        <div class="card" id="card_A2_-_სასაუბრო_კურსი">
+                            <div>
+                                <div class="card-icon">🇫🇷</div>
+                                <h2>A2 - სასაუბრო კურსი</h2>
+                                <p>სასაუბრო პრაქტიკა და ენობრივი უნარების გაუმჯობესება A2 დონეზე...</p>
+                            </div>
+                            <button class="btn syllabus-link" data-course="4"><i class="fa-solid fa-download"></i>სილაბუსის ნახვა</button>
+                        </div>
+
+                        <div class="card" id="card_B1_-_სასაუბრო_კურსი">
+                            <div>
+                                <div class="card-icon">🇫🇷</div>
+                                <h2>B1 - სასაუბრო კურსი</h2>
+                                <p>სასაუბრო პრაქტიკა და ენობრივი უნარების გაუმჯობესება B1 დონეზე...</p>
+                            </div>
+                            <button class="btn syllabus-link" data-course="5"><i class="fa-solid fa-download"></i>სილაბუსის ნახვა</button>
+                        </div>
+
+                        <div class="card" id="card_DELF_A2_-_კურსი">
+                            <div>
+                                <div class="card-icon">🇫🇷</div>
+                                <h2>DELF A2 - კურსი</h2>
+                                <p>ინტენსიური 26-კვირიანი მოსამზადებელი კურსი, DELF-ის გამოცდისთვის A2 დონეზე...</p>
+                            </div>
+                            <button class="btn syllabus-link" data-course="1"><i class="fa-solid fa-download"></i>სილაბუსის ნახვა</button>
+                        </div>
+
+                        <div class="card" id="card_DELF_B1_-_კურსი">
+                            <div>
+                                <div class="card-icon">🇫🇷</div>
+                                <h2>DELF B1 - კურსი</h2>
+                                <p>ინტენსიური 26-კვირიანი მოსამზადებელი კურსი, DELF-ის გამოცდისთვის B1 დონეზე...</p>
+                            </div>
+                            <button class="btn syllabus-link" data-course="2"><i class="fa-solid fa-download"></i>სილაბუსის ნახვა</button>
+                        </div>
+                    </div>
+                </main>
+            </section>
+
+            <section id="exercisesSection" style="display: none; max-width: 800px; margin: 0 auto; padding: 2rem 1.5rem;">
+                <h2>ხელმისაწვდომი სავარჯიშოები</h2>
+                <div id="exercisesContainer"></div>
+            </section>
+        </div>
+
+        <footer>
+            <div class="footer-copyright">
+                &copy; 2026 OuiSpeak. ყველა უფლება დაცულია.
+            </div>
+            <ul class="footer-links">
+                <li><a href="contact.html">კონტაქტი</a></li>
+                <li><a href="policy.html">კონფიდენციალურობის პოლიტიკა</a></li>
+                <li><a href="code.html">აკადემიური კეთილსინდისიერების კოდექსი</a></li>
+            </ul>
+        </footer>
+
+    </div> <div id="previewModal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+            <div class="modal-header-container">
+                <h2 id="modalNavTitle">სილაბუსის გადახედვა</h2>
+                <button class="download-btn" id="downloadPdfBtn">📥 ჩამოტვირთვა (PDF)</button>
+            </div>
+            
+            <div id="pdfContainer">
+                <div class="header-section">
+                    <span class="badge" id="pdfBadge">Cours de français</span>
+                    <h1 id="pdfMainTitle">სასწავლო პროგრამა</h1>
+                    <p class="subtitle" id="pdfSubtitle">ინტენსიური სასწავლო კურსი</p>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="border-top-left-radius: 6px;">კვირა</th>
+                            <th>სასწავლო მასალა</th>
+                            <th style="border-top-right-radius: 6px; padding-left: 16px;">ლექსიკა და გრამატიკა</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modalBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = "https://yuydaturorsdshtdajcf.supabase.co"; 
+        const SUPABASE_ANON_KEY = "sb_publishable_xlmbZTsExgJWyjN9IdC8xA_NaILka38";
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let isSignUpMode = false;
+        let isRecoveryMode = false;
+        let isForgotPasswordMode = false;
+        let currentCourseTitle = "Syllabus";
+        let studentCurrentCourse = null;
+
+        function showError(msg) {
+            const errBox = document.getElementById('authError');
+            errBox.innerText = msg.message || msg || "დაფიქსირდა შეცდომა";
+            errBox.style.display = "block";
+        }
+
+        function clearAuthForm() {
+            const fields = ['emailInput', 'passwordInput', 'firstNameInput', 'lastNameInput', 'studentIdInput', 'birthdayInput', 'courseInput'];
+            fields.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+        }
+
+        function toggleForgotPasswordMode(forgotMode) {
+            isForgotPasswordMode = forgotMode;
+            document.getElementById('authError').style.display = "none";
+            
+            const studentIdGroup = document.getElementById('studentIdGroup');
+            const studentIdInput = document.getElementById('studentIdInput');
+            const passwordGroup = document.getElementById('passwordGroup');
+            const passwordInput = document.getElementById('passwordInput');
+            const forgotLink = document.getElementById('forgotPasswordLink');
+            
+            if (forgotMode) {
+                document.getElementById('authTitle').innerText = "პაროლის აღდგენა";
+                studentIdGroup.style.display = 'none';
+                studentIdInput.removeAttribute('required');
+                passwordGroup.style.display = 'none';
+                passwordInput.removeAttribute('required');
+                
+                document.getElementById('authSubmitBtn').innerText = "ბმულის გაგზავნა";
+                document.getElementById('authSwitchContainer').innerHTML = `გახსოვთ პაროლი? <span onclick="toggleForgotPasswordMode(false)">შესვლა</span>`;
+                forgotLink.style.display = 'none';
+            } else {
+                document.getElementById('authTitle').innerText = "შესვლა სისტემაში";
+                studentIdGroup.style.display = 'block';
+                studentIdInput.setAttribute('required', '');
+                passwordGroup.style.display = 'block';
+                passwordInput.setAttribute('required', '');
+                
+                document.getElementById('authSubmitBtn').innerText = "შესვლა";
+                document.getElementById('authSwitchContainer').innerHTML = `არ გაქვთ ანგარიში? <span onclick="toggleAuthMode(true)">რეგისტრაცია</span>`;
+                forgotLink.style.display = 'block';
+            }
+        }
+
+        function toggleAuthMode(signUpMode) {
+            clearAuthForm();
+            isSignUpMode = signUpMode;
+            isForgotPasswordMode = false;
+            document.getElementById('authError').style.display = "none";
+            
+            document.getElementById('firstNameGroup').style.display = signUpMode ? 'block' : 'none';
+            document.getElementById('lastNameGroup').style.display = signUpMode ? 'block' : 'none';
+            document.getElementById('birthdayGroup').style.display = signUpMode ? 'block' : 'none';
+            document.getElementById('courseGroup').style.display = signUpMode ? 'block' : 'none';
+            document.getElementById('forgotPasswordLink').style.display = signUpMode ? 'none' : 'block';
+            
+            const studentIdGroup = document.getElementById('studentIdGroup');
+            const studentIdInput = document.getElementById('studentIdInput');
+            const passwordGroup = document.getElementById('passwordGroup');
+            const passwordInput = document.getElementById('passwordInput');
+            const courseInput = document.getElementById('courseInput');
+            
+            passwordGroup.style.display = 'block';
+            passwordInput.setAttribute('required', '');
+
+            if (signUpMode) {
+                studentIdGroup.style.display = 'none';
+                studentIdInput.removeAttribute('required');
+                courseInput.setAttribute('required', '');
+            } else {
+                studentIdGroup.style.display = 'block';
+                studentIdInput.setAttribute('required', '');
+                courseInput.removeAttribute('required');
+            }
+            
+            document.getElementById('authTitle').innerText = signUpMode ? "ახალი რეგისტრაცია" : "შესვლა სისტემაში";
+            document.getElementById('authSubmitBtn').innerText = signUpMode ? "რეგისტრაცია" : "შესვლა";
+            document.getElementById('authSwitchContainer').innerHTML = signUpMode ? 
+                `უკვე გაქვთ ანგარიში? <span onclick="toggleAuthMode(false)">შესვლა</span>` : 
+                `არ გაქვთ ანგარიში? <span onclick="toggleAuthMode(true)">რეგისტრაცია</span>`;
+        }
+
+        function generateRandomId() {
+            return Math.floor(1000000000 + Math.random() * 9000000000);
+        }
+
+        async function handleAuthSubmit(e) {
+            e.preventDefault();
+            document.getElementById('authError').style.display = "none";
+            
+            const email = document.getElementById('emailInput').value;
+
+            if (isForgotPasswordMode) {
+                const { error } = await _supabase.auth.resetPasswordForEmail(email, {
+                    redirectTo: window.location.href,
+                });
+                if (error) return showError(error);
+                alert("პაროლის აღდგენის ბმული გაიგზავნა თქვენს ელ-ფოსტაზე!");
+                toggleForgotPasswordMode(false);
+                return;
+            }
+
+            const password = document.getElementById('passwordInput').value;
+
+            if (isSignUpMode) {
+                const firstName = document.getElementById('firstNameInput').value;
+                const lastName = document.getElementById('lastNameInput').value;
+                const birthday = document.getElementById('birthdayInput').value;
+                const course = document.getElementById('courseInput').value;
+                const randomId = generateRandomId();
+                
+                if(!course) {
+                    return showError("გთხოვთ აირჩიოთ კურსი.");
+                }
+
+                const { data, error } = await _supabase.auth.signUp({ email, password });
+                if (error) return showError(error);
+
+                if (data.user) {
+                    const { error: dbError } = await _supabase
+                        .from('Students')
+                        .insert([
+                            { 
+                                id: randomId, 
+                                auth_id: data.user.id, 
+                                firstName: firstName, 
+                                lastName: lastName, 
+                                email: email,
+                                birthday: birthday || null,
+                                course: course
+                            }
+                        ]);
+
+                    if (dbError) {
+                        return showError("ვერ მოხერხდა მონაცემების შენახვა.");
+                    }
+
+                    await _supabase.auth.signOut();
+                    window.location.href = "welcome.html"; 
+                }
+            } else {
+                const studentId = document.getElementById('studentIdInput').value;
+                
+                const { data: authData, error: authError } = await _supabase.auth.signInWithPassword({ email, password });
+                if (authError) return showError(authError);
+
+                const { data: studentData, error: dbError } = await _supabase
+                    .from('Students')
+                    .select('id, course, is_active')
+                    .eq('id', studentId)
+                    .eq('email', email)
+                    .maybeSingle();
+
+                if (dbError || !studentData) {
+                    await _supabase.auth.signOut();
+                    return showError("არასწორი სტუდენტის ID ან ელ-ფოსტა.");
+                }
+
+                if (studentData.is_active === false) {
+                    await _supabase.auth.signOut();
+                    return showError("პლატფორმაზე წვდომა შეგეზღუდათ დავალიანების გამო. გთხოვთ, დაუკავშირდეთ ადმინისტრაციას.");
+                }
+
+                handleCourseAccess(studentData.course);
+            }
+        }
+
+        async function handleUpdatePassword(e) {
+            e.preventDefault();
+            document.getElementById('authError').style.display = "none";
+            
+            const newPassword = document.getElementById('newPasswordInput').value;
+            const { error } = await _supabase.auth.updateUser({ password: newPassword });
+
+            if (error) {
+                return showError(error);
+            }
+
+            alert("პაროლი წარმატებით განახლდა!");
+            isRecoveryMode = false;
+            await _supabase.auth.signOut();
+        }
+
+        function handleCourseAccess(courseName) {
+            studentCurrentCourse = courseName;
+            const allCourseCards = [
+                'card_A1_-_სასაუბრო_კურსი',
+                'card_A2_-_სასაუბრო_კურსი',
+                'card_B1_-_სასაუბრო_კურსი',
+                'card_DELF_A2_-_კურსი',
+                'card_DELF_B1_-_კურსი'
+            ];
+
+            // მომავალში აქ ჩაამატებთ სხვა დასაბლოკ კურსებსაც მძიმით გამოყოფილს
+            const lockedCourses = [
+                //'card_A1_-_სასაუბრო_კურსი',
+                //'card_A2_-_სასაუბრო_კურსი',
+                'card_B1_-_სასაუბრო_კურსი',
+                //'card_DELF_A2_-_კურსი',
+                //'card_DELF_B1_-_კურსი'
+            ];
+
+            allCourseCards.forEach(id => {
+                const card = document.getElementById(id);
+                if (card) {
+                    if (lockedCourses.includes(id)) {
+                        card.classList.add('blocked-course');
+                        const btn = card.querySelector('.btn');
+                        if (btn) btn.setAttribute('disabled', 'true');
+                    } else {
+                        card.classList.remove('blocked-course');
+                        const btn = card.querySelector('.btn');
+                        if (btn) btn.removeAttribute('disabled');
+                    }
+                }
+            });
+        }
+
+        function clearCourseFilters() {
+            const allCourseCards = [
+                'card_A1_-_სასაუბრო_კურსი',
+                'card_A2_-_სასაუბრო_კურსი',
+                'card_B1_-_სასაუბრო_კურსი',
+                'card_DELF_A2_-_კურსი',
+                'card_DELF_B1_-_კურსი'
+            ];
+
+            // მომავალში აქაც ჩაამატებთ ზუსტად იგივე კურსებს, რაც ზემოთ ფუნქციაშია
+            const lockedCourses = [
+                //'card_A1_-_სასაუბრო_კურსი',
+                //'card_A2_-_სასაუბრო_კურსი',
+                'card_B1_-_სასაუბრო_კურსი',
+                //'card_DELF_A2_-_კურსი',
+                //'card_DELF_B1_-_კურსი'
+            ];
+
+            allCourseCards.forEach(id => {
+                const card = document.getElementById(id);
+                if (card) {
+                    if (lockedCourses.includes(id)) {
+                        card.classList.add('blocked-course');
+                        const btn = card.querySelector('.btn');
+                        if (btn) btn.setAttribute('disabled', 'true');
+                    } else {
+                        card.classList.remove('blocked-course');
+                        const btn = card.querySelector('.btn');
+                        if (btn) btn.removeAttribute('disabled');
+                    }
+                }
+            });
+        }
+
+        async function handleLogout() {
+            await _supabase.auth.signOut();
+            clearCourseFilters();
+        }
+
+        async function loadExercises() {
+            const { data: exercises, error } = await _supabase.from('Exercises').select('*');
+            if (error) return;
+            const container = document.getElementById('exercisesContainer');
+            container.innerHTML = "";
+            if (exercises && exercises.length > 0) {
+                exercises.forEach(ex => {
+                    const exDiv = document.createElement('div');
+                    exDiv.className = 'exercise-container';
+                    exDiv.innerHTML = `
+                        <div class="exercise-q">${ex.question}</div>
+                        <div class="exercise-options">
+                            <label class="option-label"><input type="radio" name="ex_${ex.id}" value="A"> A) ${ex.option_a}</label>
+                            <label class="option-label"><input type="radio" name="ex_${ex.id}" value="B"> B) ${ex.option_b}</label>
+                            <label class="option-label"><input type="radio" name="ex_${ex.id}" value="C"> C) ${ex.option_c}</label>
+                        </div>`;
+                    container.appendChild(exDiv);
+                });
+            } else {
+                container.innerHTML = "<p>ამჟამად სავარჯიშოები არ არის დამატებული.</p>";
+            }
+        }
+
+        const originalSyllabusHTML = `
+            <tr>
+                <td class="week-column">1</td>
+                <td class="content-column">ტესტისა და მისი სტრუქტურის გაცნობა, მოსასმენი დავალებების ტექნიკები, შესავალი მოსასმენ დავალებებში : გავიგოთ ანონსები და ინსტრუქციები <span class="tag-oral">Comprehension de l'oral</span></td>
+                <td class="focus-column" style="padding-left: 16px;"><span class="vocab-title">▪ ლექსიკა : ანონსები მაღაზიებში, აეროპორტებსა და მატარებლის სადგურებზე </span><div class="grammar-block"><span class="grammar-title">გრამატიკა:</span> დრო Présent, ზმნების ჯგუფები და უღლება (პირველი, მეორე და მესამე ჯგუფის ზმნები)</div></td>
+            </tr>
+            <tr>
+                <td class="week-column">2</td>
+                <td class="content-column">მოსასმენი დავალებების გაგრძელება : გავიგოთ ანონსები და ინსტრუქციები <span class="tag-oral">Comprehension de l'oral</span></td>
+                <td class="focus-column" style="padding-left: 16px;"><span class="vocab-title">▪ ლექსიკა : ანონსები მაღაზიებში, აეროპორტებსა და მატარებლის სადგურებზე - ნაწილი 2</span><div class="grammar-block"><span class="grammar-title">გრამატიკა:</span> დრო Passé composé</div></td>
+            </tr>
+            <tr>
+                <td class="week-column">3</td>
+                <td class="content-column">შესავალი წაკითხულის გააზრებაში : წავიკითხოთ ინფორმაციული ბანერები <span class="tag-ecrit">Comprehension des écrits</span></td>
+                <td class="focus-column" style="padding-left: 16px;"><span class="vocab-title">▪ ლექსიკა : სატელევიზიო არხები და გადაცემები, ცეკვის წრეები და სპორტული კლუბები </span><div class="grammar-block"><span class="grammar-title">გრამატიკა:</span> დრო Imparfait</div></td>
+            </tr>
+            <tr>
+                <td class="week-column">4</td>
+                <td class="content-column">შესავალი წერით ნაწილში : განვიხილოთ წერითი ნაწილის სტრუქტურა; დავწეროთ ჩვენი მოგზაურობის ან არდადეგების შესახებ <span class="tag-ecrit">Production écrite</span></td>
+                <td class="focus-column" style="padding-left: 16px;"><span class="vocab-title">▪ ლექსიკა : მოგზაურობა და არდადეგები</span><div class="grammar-block"><span class="grammar-title">გრამატიკა:</span> ახლო მომავალი დრო (Futur proche)</div></td>
+            </tr>
+            <tr>
+                <td class="week-column">5</td>
+                <td class="content-column">შესავალი სასაუბრო ნაწილში : ვისაუბროთ ჩვენს შესახებ და გავაცნოთ გამსაუბრებელს ჩვენი თავი <span class="tag-oral">Production orale</span></td>
+                <td class="focus-column" style="padding-left: 16px;"><span class="vocab-title">▪ ლექსიკა : საკუთარი თავის აღწერა; ოჯახის წევრები</span><div class="grammar-block"><span class="grammar-title">გრამატიკა:</span> ახლო წარსული დრო (Passé recent)</div></td>
+            </tr>
+            <tr>
+                <td class="week-column">6</td>
+                <td class="content-column">მოსასმენი დავალებების გაგრძელება : გავიგოთ ანონსები და ინსტრუქციები რასაც გვაძლევენ - ნაწილი 2 <span class="tag-oral">Comprehension de l'oral</span></td>
+                <td class="focus-column" style="padding-left: 16px;"><span class="vocab-title">▪ ლექსიკა : ანონსები მაღაზიებში, აეროპორტებსა და მატარებლის სადგურებზე</span><div class="grammar-block"><span class="grammar-title">გრამატიკა:</span> სამი ნასწავლი დროის შეჯამება (ახლანდელი, ახლო წარსული და ახლო მომავალი)</div></td>
+            </tr>
+            <tr>
+                <td class="week-column">7</td>
+                <td class="content-column">გასული გააზრების დავალებების გაგრძელება : წავიკითხოთ ინფორმაციული ბანერები - ნაწილი 2 <span class="tag-ecrit">Comprehension des écrits</span></td>
+                <td class="focus-column" style="padding-left: 16px;"><span class="vocab-title">▪ ლექსიკა : ინფორმაციული ბანერები, სარეკლამო ბანერები, სარესტორნო სარეკლამო ბანერები</span><div class="grammar-block"><span class="grammar-title">გრამარიკა:</span> ბრძანებითი კილო (Impératif)</div></td>
+            </tr>
+            <tr>
+                <td class="week-column">8</td>
+                <td class="content-column">წერითი დავალებების გაგრძელება : დღესასწაულები, რაიმე მნიშვნელოვანის აღნიშვნა და დაგეგმილი ღონისძიებები <span class="tag-ecrit">Production écrite</span></td>
+                <td class="focus-column" style="padding-left: 16px;"><span class="vocab-title">▪ ლექსიკა : წვეულებები, დაბადების დღეები, ქორწილები</span><div class="grammar-block"><span class="grammar-title">გრამატიკა:</span> მარტივი მომავალი დრო (Futur simple)</div></td>
+            </tr>
+            <tr>
+                <td class="week-column">9</td>
+                <td class="content-column">სასაუბრო დავალებების გაგრძელება : ვისაუბროთ ჩვენი გასული დღის შესახებ <span class="tag-oral">Production orale</span></td>
+                <td class="focus-column" style="padding-left: 16px;"><span class="vocab-title">▪ ლექსიკა : ნაცვალსახელოვანი ზმნები: se réveiller, se lever, s'habiller, se brosser... </span><div class="grammar-block"><span class="grammar-title">გრამატიკა:</span> ორი ნასწავლი დროის შედარება (ახლო მომავალი და მარტივი მომავალი დროები)</div></td>
+            </tr>
+            <tr>
+                <td class="week-column">10</td>
+                <td class="content-column">მოსასმენი დავალებების გაგრძელება : გავიგოთ რადიო გადაცემების სტრუქტურა <span class="tag-oral">Comprehension de l'oral</span></td>
+                <td class="focus-column" style="padding-left: 16px;"><span class="vocab-title">▪ ლექსიკა : რადიო გადაცემები და სიახლეები</span><div class="grammar-block"><span class="grammar-title">გრამატიკა:</span> წარსული დროების შედარება (Passé composed, Imparfait)</div></td>
+            </tr>
+            <tr>
+                <td class="week-column">11</td>
+                <td class="content-column">წასაკითხი დავალებების გაგრძელება : წავიკითხოთ წერილები და ელექტრონული ფოსტა <span class="tag-ecrit">Comprehension des écrits</span></td>
+                <td class="focus-column" style="padding-left: 16px;"><span class="vocab-title">▪ ლექსიკა : პირადი და ოფიციალური წერილები</span><div class="grammar-block"><span class="grammar-title">გრამატიკა:</span> წინადადებების განხილვა ყველა განვლილ დროსა და კილოში</div></td>
+            </tr>
+            <tr>
+                <td class="week-column">12</td>
+                <td class="content-column">წერითი დავალებების გაგრძელება : დავწეროთ ჩვენი გამოცდილების შესახებ, თუ რა მოხდა, ან რა გადაგვხდა თავს <span class="tag-ecrit">Production écrite</span></td>
+                <td class="focus-column" style="padding-left: 16px;"><span class="vocab-title">▪ ლექსიკა : თავგადასავლები და ყოველდღიური ისტორიები</span><div class="grammar-block"><span class="grammar-title">გრამატიკა:</span> დროების შეჯამება და პრაქტიკული ანალიზი - ნაწილი 2</div></td>
+            </tr>
+            <tr>
+                <td class="week-column">13</td>
+                <td class="content-column">სასაუბრო დავალებების გაგრძელება : ვესაუბროთ გამომცდელს და ვუპასუხოთ მის მიერ დასმულ შეკითხვებს ჩვენს შესახებ <span class="tag-oral">Production orale</span></td>
+                <td class="focus-column" style="padding-left: 16px;"><span class="vocab-title">▪ ლექსიკა : ინტერესები, ჰობი და პროფესიები</span><div class="grammar-block"><span class="grammar-title">გრამატიკა:</span> კითხვითი წინადადებების კონსტრუქციები - ნაწილი 3</div></td>
+            </tr>
+            <tr>
+                <td class="week-column">14</td>
+                <td class="content-column">მოსასმენი დავალებების გაგრძელება : გავიგოთ რას გვეუნნება ფრანგულად მოსაუბრე ადამიანი <span class="tag-oral">Comprehension de l'oral</span></td>
+                <td class="focus-column" style="padding-left: 16px;"><span class="vocab-title">▪ ლექსიკა : დიალოგები ქუჩაში და მაღაზიაში</span><div class="grammar-block"><span class="grammar-title">გრამატიკა:</span> არტიკლები : განსაზღვრული და განუსაზღვრელი</div></td>
+            </tr>
+            <tr>
+                <td class="week-column">15</td>
+                <td class="content-column">წასაკითხი დავალებების გაგრძელება : წავიკითხოთ და გავიაზროთ ინსტრუქციები <span class="tag-ecrit">Comprehension des écrits</span></td>
+                <td class="focus-column" style="padding-left: 16px;"><span class="vocab-title">▪ ლექსიკა : რეცეპტები, ტექნიკური მითითებები</span><div class="grammar-block"><span class="grammar-title">გრამატიკა:</span> არტიკლები : ნაწილობრივი (Articles partitifs)</div></td>
+            </tr>
+            <tr>
+                <td class="week-column">16</td>
+                <td class="content-column">წერითი დავალებების გაგრძელება : ვუპასუხოთ წერილს, გადავიხადოთ მადლობა, დავპატიჟოთ ან ინფორმაცია მივაწოდოთ <span class="tag-ecrit">Production écrite</span></td>
+                <td class="focus-column" style="padding-left: 16px;"><span class="vocab-title">▪ ლექსიკა : მადლობისა და მიწვევის ფორმულები</span><div class="grammar-block"><span class="grammar-title">გრამატიკა:</span> მიმართებითი ნაცვალსახელები (Qui და Que)</div></td>
+            </tr>
+            <tr>
+                <td class="week-column">17</td>
+                <td class="content-column">სასაუბრო დავალებების გაგრძელება : ვისაუბროთ კონკრეტული თემების შესახებ, რომელსაც გამომცდელი მოგვაწვდის <span class="tag-oral">Production orale</span></td>
+                <td class="focus-column" style="padding-left: 16px;"><span class="vocab-title">▪ ლექსიკა : კულტურა, გარემო და ტრანსპორტი</span><div class="grammar-block"><span class="grammar-title">გრამატიკა:</span> მიმართებითი ნაცვალსახელები (Qui და Que) - ნაწილი 2</div></td>
+            </tr>
+            <tr>
+                <td class="week-column">18</td>
+                <td class="content-column">მოსასმენი დავალებების გაგრძელება : გავიგოთ რას საუბრობენ ფრანგები ერთმანეთში <span class="tag-oral">Comprehension de l'oral</span></td>
+                <td class="focus-column" style="padding-left: 16px;"><span class="vocab-title">▪ ლექსიკა : ყოველდღიური ჟარგონები და ფრაზები</span><div class="grammar-block"><span class="grammar-title">გრამატიკა:</span> კონსტრუქციები: • « Etre en train de » • « Être sur le point de »</div></td>
+            </tr>
+            <tr>
+                <td class="week-column">19</td>
+                <td class="content-column">წასაკითხი დავალებების გაგრძელება : წავიკითხოთ უბრალოდ ინტერესისთვის ან რაიმე კონკრეტული ინფორმაციის მისაღებად <span class="tag-ecrit">Comprehension des écrits</span></td>
+                <td class="focus-column" style="padding-left: 16px;"><span class="vocab-title">▪ ლექსიკა : მოკლე სტატიები და ახალი ამბები</span><div class="grammar-block"><span class="grammar-title">გრამატიკა:</span> კონსტრუქცია « J'aurais dû »</div></td>
+            </tr>
+            <tr>
+                <td class="week-column">20</td>
+                <td class="content-column">წერითი დავალებების გაგრძელება : ვუპასუხოთ წერილს, გადავიხადოთ მადლობა - ნაწილი 2 <span class="tag-ecrit">Production écrite</span></td>
+                <td class="focus-column" style="padding-left: 16px;"><span class="vocab-title">▪ ლექსიკა : ოფიციალური შეწერების სტილი</span><div class="grammar-block"><span class="grammar-title">გრამატიკა:</span> კონსტრუქცია « J'aurais pu » და მისი შედარება კონსტრუქციასთან « J'aurais dû »</div></td>
+            </tr>
+            <tr>
+                <td class="week-column">21</td>
+                <td class="content-column">სასაუბრო დავალებების გაგრძელება : ვისაუბროთ კონკრეტულ საკითხზე გამომცდელთან და ვუპასუხოთ შეკითხვებს <span class="tag-oral">Production orale</span></td>
+                <td class="focus-column" style="padding-left: 16px;"><span class="vocab-title">▪ ლექსიკა : არგუმენტირებული პასუხები</span><div class="grammar-block"><span class="grammar-title">გრამატიკა:</span> ადგილმდებარეობის ნაცვალსახელი "Y" (Le pronom Y)</div></td>
+            </tr>
+            <tr>
+                <td class="week-column">22</td>
+                <td class="content-column">მთლიანი ტესტის დამუშავება - ნაწილი 1</td>
+                <td class="focus-column" style="padding-left: 16px;"><span class="vocab-title">▪ შესაბამისი ლექსიკა</span><div class="grammar-block"><span class="grammar-title">გრამატიკა:</span> დროების გამეორება</div></td>
+            </tr>
+            <tr>
+                <td class="week-column">23</td>
+                <td class="content-column">მთლიანი ტესტის დამუშავება - ნაწილი 2</td>
+                <td class="focus-column" style="padding-left: 16px;"><span class="vocab-title">▪ შესაბამისი ლექსიკა</span><div class="grammar-block"><span class="grammar-title">გრამატიკა:</span> ზოგადი საკითხები</div></td>
+            </tr>
+            <tr>
+                <td class="week-column">24</td>
+                <td class="content-column">მთლიანი ტესტის დამუშავება - ნაწილი 3</td>
+                <td class="focus-column" style="padding-left: 16px;"><span class="vocab-title">▪ შესაბამისი ლექსიკა</span><div class="grammar-block"><span class="grammar-title">გრამატიკა:</span> ზოგადი საკითხები 2</div></td>
+            </tr>
+            <tr>
+                <td class="week-column">25</td>
+                <td class="content-column">მთლიანი ტესტის დამუშავება - ნაწილი 4</td>
+                <td class="focus-column" style="padding-left: 16px;"><span class="vocab-title">▪ შესაბამისი ლექსიკა</span><div class="grammar-block"><span class="grammar-title">გრამატიკა:</span> ზოგადი საკითხები 3</div></td>
+            </tr>
+            <tr>
+                <td class="week-column" style="border-bottom-left-radius: 6px;">26</td>
+                <td class="content-column" style="border-bottom: 1px solid #f1f5f9;">გამოცდისთვის მომზადება, ზოგადი საკითხები</td>
+                <td class="focus-column" style="padding-left: 16px; border-bottom-right-radius: 6px;"><span class="vocab-title">▪ შესაბამისი ლექსიკა</span><div class="grammar-block"><span class="grammar-title">გრამატიკა:</span> ზოგადი საკითხები 4</div></td>
+            </tr>
+        `;
+
+        const syllabusData = {
+            "1": originalSyllabusHTML, 
+            "2": `
+                <tr>
+                    <td class="week-column">1</td>
+                    <td class="content-column">B1 დონის სტრუქტურის გაცნობა, არგუმენტირებული ესეს საფუძვლები <span class="tag-ecrit">Production écrite</span></td>
+                    <td class="focus-column" style="padding-left: 16px;"><span class="vocab-title">▪ ლექსიკა: საზოგადოებრივი პრობლემები, ეკოლოგია</span><div class="grammar-block"><span class="grammar-title">გრამატიკა:</span> Subjonctif présent - შესავალი და უღლება</div></td>
+                </tr>
+                <tr>
+                    <td class="week-column">2-26</td>
+                    <td class="content-column">ინტენსიური მომზადება DELF B1 გამოცდისთვის (აქ ჩაწერე დანარჩენი კვირები)...</td>
+                    <td class="focus-column" style="padding-left: 16px;"><span class="vocab-title">▪ შესაბამისი ლექსიკა</span><div class="grammar-block"><span class="grammar-title">გრამატიკა:</span> B1 დონის კომპლექსური სტრუქტურები</div></td>
+                </tr>
+            `,
+            "3": `
+                <tr>
+                    <td class="week-column">1</td>
+                    <td class="content-column">ფრანგული ანბანი, კითხვის წესები და მისალმების ფორმები <span class="tag-oral">Production orale</span></td>
+                    <td class="focus-column" style="padding-left: 16px;"><span class="vocab-title">▪ ლექსიკა: მისალმება, დამშვიდობება, თავაზიანი ფრაზები</span><div class="grammar-block"><span class="grammar-title">გრამატიკა:</span> ზმნები Être და Avoir ახლანდელ დროში</div></td>
+                </tr>
+                <tr>
+                    <td class="week-column">2-26</td>
+                    <td class="content-column">სასაუბრო პრაქტიკა დამწყებთათვის ყოველდღიურ თემებზე...</td>
+                    <td class="focus-column" style="padding-left: 16px;"><span class="vocab-title">▪ ყოველდღიური ლექსიკა</span><div class="grammar-block"><span class="grammar-title">გრამატიკა:</span> მარტივი წინადადებების კონსტრუქციები</div></td>
+                </tr>
+            `
+        };
+
+        const syllabusPdfs = {
+            "A1 - სასაუბრო კურსი": "pdfs/speak_a1_syllabus.pdf",
+            "A2 - სასაუბრო კურსი": "pdfs/speak_a2_syllabus.pdf",
+            "B1 - სასაუბრო კურსი": "pdfs/speak_b1_syllabus.pdf",
+            "DELF A2 - კურსი": "pdfs/delf_a2_syllabus.pdf",
+            "DELF B1 - კურსი": "pdfs/delf_b1_syllabus.pdf",
+            "Delf A2 - კურსი": "pdfs/delf_a2_syllabus.pdf",
+            "Delf B1 - კურსი": "pdfs/delf_b1_syllabus.pdf"
+        };
+
+        document.querySelectorAll('.syllabus-link').forEach(button => {
+            button.addEventListener('click', function() {
+                const cardTitle = this.parentElement.querySelector('h2').innerText;
+                const pdfPath = syllabusPdfs[cardTitle.trim()];
+                if (pdfPath) {
+                    window.open(pdfPath, '_blank');
+                } else {
+                    alert("ფაილი ვერ მოიძებნა.");
+                }
+            });
+        });
+
+        document.getElementById('downloadPdfBtn').addEventListener('click', function() {
+            const element = document.getElementById('pdfContainer');
+            const opt = {
+                margin:       [0.4, 0.4, 0.4, 0.4],
+                filename:     `${currentCourseTitle.replace(/\s+/g, '_')}_Syllabus.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { 
+                    scale: 2, 
+                    useCORS: true, 
+                    scrollY: 0, 
+                    scrollX: 0, 
+                    x: 0,
+                    windowWidth: 800,
+                    width: element.clientWidth
+                },
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+        });
+
+        function closeModal() { document.getElementById('previewModal').style.display = 'none'; }
+        window.onclick = function(e) { if (e.target == document.getElementById('previewModal')) closeModal(); }
+
+        document.getElementById('exercisesNavLink').addEventListener('click', function(e) {
+            e.preventDefault();
+            if (!studentCurrentCourse) {
+                alert("გთხოვთ ჯერ გაიაროთ ავტორიზაცია კურზე წვდომისთვის.");
+                return;
+            }
+            window.location.href = "exercice.html";
+        });
+        document.getElementById('vocabNavLink').addEventListener('click', function(e) {
+            e.preventDefault();
+            if (!studentCurrentCourse) {
+                alert("გთხოვთ ჯერ გაიაროთ ავტორიზაცია კურზე წვდომისთვის.");
+                return;
+            }
+            window.location.href = "vocab.html";
+        });
+
+        /* --- THE FIXED SINGLE AUTHENTICATION FLOW --- */
+        async function verifyStudentPermissions(user) {
+            try {
+                const { data: studentData, error } = await _supabase
+                    .from('Students')
+                    .select('course, is_active')
+                    .eq('auth_id', user.id)
+                    .maybeSingle(); 
+                
+                if (error) {
+                    console.error("Database error verifying student:", error);
+                    return;
+                }
+
+                if (studentData) {
+                    if (studentData.is_active === false) {
+                        await _supabase.auth.signOut();
+                        showError("პლატფორმაზე წვდომა შეგეზღუდათ დავალიანების გამო. გთხოვთ, დაუკავშირდეთ ადმინისტრაციას.");
+                        return;
+                    }
+                    handleCourseAccess(studentData.course);
+                }
+            } catch (err) {
+                console.error("Session verification catch block:", err);
+            }
+        }
+
+        _supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'PASSWORD_RECOVERY') {
+                isRecoveryMode = true;
+                document.getElementById('authSection').style.display = 'block';
+                document.getElementById('authTitle').innerText = "პაროლის შეცვლა";
+                document.getElementById('authForm').style.display = 'none';
+                document.getElementById('authSwitchContainer').style.display = 'none';
+                document.getElementById('updatePasswordForm').style.display = 'block';
+                
+                document.getElementById('protectedContent').style.display = 'none';
+                document.getElementById('logoutBtn').style.display = 'none';
+            } else if (session && !isRecoveryMode) {
+                document.getElementById('authSection').style.display = 'none';
+                document.getElementById('protectedContent').style.display = 'block';
+                document.getElementById('logoutBtn').style.display = 'block';
+                
+                verifyStudentPermissions(session.user);
+                loadExercises();
+            } else if (!session) {
+                isRecoveryMode = false;
+                document.getElementById('authSection').style.display = 'block';
+                document.getElementById('authForm').style.display = 'block';
+                document.getElementById('authSwitchContainer').style.display = 'block';
+                document.getElementById('updatePasswordForm').style.display = 'none';
+                
+                document.getElementById('protectedContent').style.display = 'none';
+                document.getElementById('logoutBtn').style.display = 'none';
+                studentCurrentCourse = null; 
+                clearCourseFilters();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -110,6 +110,17 @@
             color: var(--primary);
         }
 
+        .nav-links a .header-student-score {
+            display: none;
+            margin-left: 0.5rem;
+            background: #eff6ff;
+            color: var(--primary);
+            padding: 0.1rem 0.6rem;
+            border-radius: 100px;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
         .logout-btn {
             background-color: #fee2e2;
             color: #ef4135;
@@ -442,6 +453,16 @@
             .total-score-box { width: 100%; }
             .scores-grid { padding: 1.5rem; grid-template-columns: 1fr; }
         }
+        .nav-links a .header-student-score {
+    display: none;
+    margin-left: 0.5rem;
+    background: #eff6ff;
+    color: var(--primary);
+    padding: 0.1rem 0.6rem;
+    border-radius: 100px;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
     </style>
 </head>
 <body>
@@ -458,7 +479,7 @@
                         <li><a id="exercisesNavLink" style="cursor: pointer;">სავარჯიშოები</a></li>
                         <li><a id="vocabNavLink" style="cursor: pointer;">ლექსიკა</a></li>
                         <li><a href="recordings.html">ჩანაწერები</a></li>
-                        <li><a href="scores.html" class="active">შეფასებები</a></li>
+                        <li><a href="scores.html" class="active" id="scoresNavLink"><span id="headerStudentName">შეფასებები</span><span class="header-student-score" id="headerStudentScoreBox"><span id="headerStudentScore">0</span>/100</span></a></li>
                     </ul>
                     <button class="logout-btn" id="logoutBtn" onclick="handleLogout()">გამოსვლა</button>
                 </nav>
@@ -548,6 +569,41 @@
             window.location.href = "index.html";
         }
 
+        async function loadHeaderScore(userEmail) {
+    try {
+        const { data: student } = await _supabase
+            .from('Students')
+            .select('id, firstName, lastName')
+            .eq('email', userEmail)
+            .maybeSingle();
+        if (!student) return;
+
+        document.getElementById('headerStudentName').innerText = `${student.firstName} ${student.lastName}`;
+
+        let { data: sc } = await _supabase
+            .from('scores')
+            .select('homework, vocab1, vocab2, writing, speaking')
+            .eq('student_id', student.id)
+            .maybeSingle();
+
+        if (!sc) {
+            ({ data: sc } = await _supabase
+                .from('Scores')
+                .select('homework, vocab1, vocab2, writing, speaking')
+                .eq('student_id', student.id)
+                .maybeSingle());
+        }
+
+        if (sc) {
+            const total = ['homework', 'vocab1', 'vocab2', 'writing', 'speaking']
+                .reduce((sum, k) => sum + parseInt(sc[k] || 0, 10), 0);
+            document.getElementById('headerStudentScore').innerText = total;
+            document.getElementById('headerStudentScoreBox').style.display = 'inline-block';
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
         function updateUI(session) {
             if (session && session.user) {
                 document.getElementById('authRequiredMessage').style.display = 'none';
@@ -597,6 +653,7 @@
 
                 studentCurrentCourse = student.course;
                 document.getElementById('studentName').innerText = `${student.firstName} ${student.lastName}`;
+                document.getElementById('headerStudentName').innerText = `${student.firstName} ${student.lastName}`;
                 document.getElementById('studentCourse').innerHTML = `<i class="fas fa-graduation-cap"></i> კურსი: ${student.course}`;
                 document.getElementById('studentIdDisplay').innerHTML = `<i class="fas fa-id-card"></i> ID: ${student.id}`;
 
@@ -625,6 +682,8 @@
                     document.getElementById('score_speaking').innerText = parseInt(finalData.speaking || 0, 10);
                     const total = (parseInt(finalData.homework || 0, 10) + parseInt(finalData.vocab1 || 0, 10) + parseInt(finalData.vocab2 || 0, 10) + parseInt(finalData.writing || 0, 10) + parseInt(finalData.speaking || 0, 10));
                     document.getElementById('totalScore').innerText = total;
+                    document.getElementById('headerStudentScore').innerText = total;
+                    document.getElementById('headerStudentScoreBox').style.display = 'inline-block';
                 }
 
             } catch (err) {
@@ -649,6 +708,7 @@
             }
             window.location.href = "vocab.html";
         });
+
     </script>
 </body>
 </html>

@@ -718,6 +718,16 @@
                 margin-bottom: 1.5rem;
             }
         }
+        .nav-links a .header-student-score {
+    display: none;
+    margin-left: 0.5rem;
+    background: #eff6ff;
+    color: var(--primary);
+    padding: 0.1rem 0.6rem;
+    border-radius: 100px;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
     </style>
 </head>
 <body>
@@ -735,7 +745,7 @@
                         <li><a href="exercice.html" style="color: var(--primary); font-weight: 600;">სავარჯიშოები</a></li>
                         <li><a id="vocabNavLink" href="vocab.html" style="cursor: pointer;">ლექსიკა</a></li>
                         <li><a href="recordings.html">ჩანაწერები</a></li>
-                        <li><a href="scores.html">შეფასებები</a></li>
+                        <li><a href="scores.html" id="scoresNavLink"><span id="headerStudentName">შეფასებები</span><span class="header-student-score" id="headerStudentScoreBox"><span id="headerStudentScore">0</span>/100</span></a></li>
                     </ul>
                     <button class="logout-btn" id="logoutBtn" onclick="handleLogout()">გამოსვლა</button>
                 </nav>
@@ -859,6 +869,45 @@
         const userAnswersCache = {};
         const validationResultsCache = {};
 
+
+async function loadHeaderScore(userEmail) {
+    try {
+        const { data: student } = await _supabase
+            .from('Students')
+            .select('id, firstName, lastName')
+            .eq('email', userEmail)
+            .maybeSingle();
+        if (!student) return;
+
+        document.getElementById('headerStudentName').innerText = `${student.firstName} ${student.lastName}`;
+
+        let { data: sc } = await _supabase
+            .from('scores')
+            .select('homework, vocab1, vocab2, writing, speaking')
+            .eq('student_id', student.id)
+            .maybeSingle();
+
+        if (!sc) {
+            ({ data: sc } = await _supabase
+                .from('Scores')
+                .select('homework, vocab1, vocab2, writing, speaking')
+                .eq('student_id', student.id)
+                .maybeSingle());
+        }
+
+        if (sc) {
+            const total = ['homework', 'vocab1', 'vocab2', 'writing', 'speaking']
+                .reduce((sum, k) => sum + parseInt(sc[k] || 0, 10), 0);
+            document.getElementById('headerStudentScore').innerText = total;
+            document.getElementById('headerStudentScoreBox').style.display = 'inline-block';
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+
+
         function normalizeShortAnswer(str) {
             return (str || "")
                 .normalize("NFD")
@@ -973,12 +1022,12 @@
                         video: "videos/a1_video1.mp4",
                         questions: [
                             { text: "რა არის პირველი სიტყვა რასაც ამბობს პერსონაჟი? _________________", answer: "bonjour" },
-                            { text: "რა სიტყვას ამბობს იასამნისფერი პერსონაჟი მას შემდეგ რაც იტყვის oui, ça va bien, _________________.", answer: "merci" },
+                            { text: "რა სიტყვას ამბობს შინდისფერი პერსონაჟი მას შემდეგ რაც იტყვის oui, ça va bien, _________________.", answer: "merci" },
                             { text: "რას ეუბნება მთავარი პერსონაჟი იასამნისფერ ყვითელკოპლებიან პერსონაჟს? _________________.", answer: "enchanté" },
-                            { text: "დააკვირდით მზის მდებარეობას როცა პერსონაჟი ამბობს bonne après-midi. რა იქნება მისი თარგმანი ქართულად?", options: ["კარგ საღამოს გისურვებთ", "კარგ შუადღეს გისურვებთ"], answer: "კარგ შუადღეს გისურვებთ", type: "mc" },
+                            { text: "დააკვირდით მზის მდებარეობას როცა პერსონაჟი ამბობს bonne après-midi. რა იქნება მისი თარგმანი ქართულად?", options: ["კარგ საღამოს გისურვებთ", "კარგ შუადღეს გისურვებთ"], answer: "კარგ საღამოს გისურვებთ", type: "mc" },
                             { text: "რომელ პერსონაჟს ეუბნება მთავარი გმირი 'სასიამოვნოა თქვენი გაცნობა'?", options: ["წითელს", "მწვანეს", "იასამნისფერს", "სტაფილოსფერს"], answer: "იასამნისფერს", type: "mc" },
                             { text: "დააკვირდით მზის მდებარეობას როცა პერსონაჟი ამბობს bonsoir. რა იქნება მისი თარგმანი ქართულად?", options: ["საღამომშვიდობისა", "ღამემშვიდობისა"], answer: "საღამომშვიდობისა", type: "mc" },
-                            { text: "ვიდეოს მიხედვით რა იქნება ქართულად bonne nuit ?", options: ["საღამომშვიდობისა", "ღამემშვიდობისა"], answer: "ღამემშვიდობისა", type: "mc" },
+                            { text: "ვიდეოს მიხედვით რა იქნება ქართულად bonne nuit ?", options: ["საღამომშვიდობისა", "ღამემშვიდობისა"], answer: "საღამომშვიდობისა", type: "mc" },
                             { text: "მთავარი გმირი ლურჯ პერსონაჟს ეუბნება: à demain.", options: ["მართალია", "ტყუილია"], answer: "მართალია", type: "mc" },
                             { text: "Repetez-ს ქართული მნიშვნელობაა 'გაიმაეორეთ'", options: ["მართალია", "ტყუილია"], answer: "მართალია", type: "mc" },
                             { text: "Salut მისალმების უფრო ოფიციალური ფორმაა ვიდრე Bonjour.", options: ["მართალია", "ტყუილია"], answer: "ტყუილია", type: "mc" }
@@ -2642,6 +2691,11 @@
         }
 
         checkUserSession();
+         _supabase.auth.getSession().then(({ data }) => {
+        if (data && data.session && data.session.user) {
+            loadHeaderScore(data.session.user.email);
+        }
+    });
     </script>
 </body>
 </html>

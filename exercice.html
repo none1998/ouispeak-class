@@ -580,6 +580,27 @@
             box-shadow: 0 4px 12px rgba(0, 85, 165, 0.15);
         }
 
+        .save-progress-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.95rem;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+        }
+
+        .save-progress-btn:hover {
+            background-color: #004487;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 85, 165, 0.15);
+        }
+
         .download-btn {
             background-color: #10b981;
             color: white;
@@ -798,11 +819,16 @@
                             </div>
 
                             <div class="action-buttons-wrapper">
+                                <button id="saveProgressBtn" class="save-progress-btn" onclick="saveProgressToBrowser()" style="display: none;">
+                                    <i class="fa-solid fa-floppy-disk"></i> შენახვა
+                                </button>
+                                <span id="saveProgressStatus" style="font-size: 0.9rem; font-weight: 600; color: #10b981;"></span>
                                 <button class="send-answers-btn" onclick="sendAnswersToEmail()" style="display: none;">
                                     <i class="fa-solid fa-paper-plane"></i> პასუხების გაგზავნა
                                 </button>
                                 <div class="result-feedback" id="resultFeedback"></div>
                             </div>
+                            
                         </div>
                     </div>
                 </div>
@@ -2167,6 +2193,9 @@
             for (let prop in userAnswersCache) { delete userAnswersCache[prop]; }
             for (let prop in validationResultsCache) { delete validationResultsCache[prop]; }
 
+            // Restore previously saved progress (from browser storage) for the selected week
+            restoreSavedProgress(selectedValue);
+
             if (!selectedValue) {
                 titleElement.innerText = studentCourse ? `${studentCourse} - სავარჯიშოები` : "ონლაინ სავარჯიშოები";
                 sidebar.style.display = "none";
@@ -2181,6 +2210,40 @@
             const selectedText = selectElement.options[selectElement.selectedIndex].text;
             titleElement.innerText = `${studentCourse || ''} - ${selectedText}`;
             loadExerciseBlock(1); 
+        }
+
+        // ===== Progress saving (browser localStorage) =====
+        function getProgressStorageKey(subject) {
+            return `ouispeak_progress_${authenticatedUserEmail || 'guest'}_${studentCourse || 'nocourse'}_${subject}`;
+        }
+
+        function saveProgressToBrowser() {
+            const subject = document.getElementById('subjectSelect').value;
+            const status = document.getElementById('saveProgressStatus');
+            if (!subject) return;
+            saveCurrentBlockAnswersToCache();
+            try {
+                localStorage.setItem(getProgressStorageKey(subject), JSON.stringify(userAnswersCache));
+                status.style.color = "#10b981";
+                status.innerHTML = '<i class="fa-solid fa-circle-check"></i> შენახულია!';
+            } catch (e) {
+                console.error("Saving progress failed:", e);
+                status.style.color = "#ef4135";
+                status.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> შენახვა ვერ მოხერხდა.';
+            }
+            setTimeout(() => { status.innerHTML = ""; }, 3000);
+        }
+
+        function restoreSavedProgress(subject) {
+            const saveBtn = document.getElementById('saveProgressBtn');
+            if (saveBtn) saveBtn.style.display = subject ? "inline-flex" : "none";
+            if (!subject) return;
+            try {
+                const saved = localStorage.getItem(getProgressStorageKey(subject));
+                if (saved) Object.assign(userAnswersCache, JSON.parse(saved));
+            } catch (e) {
+                console.error("Restoring progress failed:", e);
+            }
         }
 
         function saveCurrentBlockAnswersToCache() {

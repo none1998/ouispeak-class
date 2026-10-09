@@ -2092,9 +2092,102 @@ async function loadHeaderScore(userEmail) {
                         ]
                     }
                 },
-                /*
+                
                 kvira_2: {
+                    1: {
+                        instruction: "Conjuguez les verbes au passé composé avec l'auxiliaire AVOIR",
+                        questions: [
+                            { text: "Ce matin, nous _________ une grande salle pour la réunion.", options: ["avons préparé", "sommes préparés", "avons préparer", "avons préparés"], answer: "avons préparé", type: "mc" },
+                            { text: "Est-ce que tu _________ au message de ton collègue ?", options: ["es répondu", "as répondu", "as répondus", "es répondues"], answer: "as répondu", type: "mc" },
+                            { text: "Les étudiants _________ une formation très intéressante la semaine dernière.", options: ["sont suivis", "ont suivre", "ont suivi", "sont suivre"], answer: "ont suivi", type: "mc" },
+                            { text: "J'_________ mes lunettes de soleil à la plage hier après-midi.", options: ["ai perdu", "suis perdu", "ai perdue", "suis perdue"], answer: "ai perdu", type: "mc" },
+                            { text: "Vous _________ combien d'heures cette nuit ?", options: ["êtes dormis", "avez dormir", "êtes dormir", "avez dormi"], answer: "avez dormi", type: "mc" },
+                            { text: "Elle _________ une robe magnifique pour la cérémonie de samedi.", options: ["est choisie", "a choisi", "a choisie", "est choisir"], answer: "a choisi", type: "mc" },
+                            { text: "Ils _________ une nouvelle route pour contourner le centre-ville.", options: ["ont construit", "sont construits", "ont construire", "sont construire"], answer: "ont construit", type: "mc" },
+                            { text: "Nous _________ une lettre de confirmation par la poste.", options: ["sommes reçus", "avons recevoir", "avons reçu", "sommes recevoir"], answer: "avons reçu", type: "mc" },
+                            { text: "Tu _________ la fenêtre parce qu'il faisait trop chaud dans la pièce ?", options: ["es ouvert", "as ouvert", "as ouvrir", "es ouverte"], answer: "as ouvert", type: "mc" },
+                            { text: "L'année dernière, j'_________ une voiture électrique pour la première fois.", options: ["ai conduit", "suis conduit", "ai conduire", "suis conduire"], answer: "ai conduit", type: "mc" }
+                        ]
+                    },
+                    2: {
+                        instruction: "Conjuguez les verbes au passé composé avec l'auxiliaire ÊTRE",
+                        questions: [
+                            { text: "Valérie _________________ très tôt ce matin pour éviter les bouchons. (partir)", answer: "est partie" },
+                            { text: "Ses cousins _________________ de leur voyage au Japon hier soir. (revenir)", answer: "sont revenus" },
+                            { text: "Les deux amies _________________ d'accord sur le choix du projet. (tomber)", answer: "sont tombées" },
+                            { text: "Lucas _________________ dans le bureau sans frapper à la porte. (entrer)", answer: "est entré" },
+                            { text: "Elles _________________ de très bonnes amies au cours de l'année. (devenir)", answer: "sont devenues" },
+                            { text: "Est-ce que tu _________________ chez toi pendant tout le week-end, Clara ? (rester)", answer: "es restée" },
+                            { text: "Les visiteurs _________________ sur le toit de la tour pour voir la vue. (monter)", answer: "sont montés" },
+                            { text: "Nous (deux femmes) _________________ les premières à la conférence. (arriver)", answer: "sommes arrivées" },
+                            { text: "Le scientifique _________________ à l'âge de 85 ans dans sa ville natale. (mourir)", answer: "est mort" },
+                            { text: "Elles _________________ du train avec d'immenses valises. (descendre)", answer: "sont descendues" }
+                        ]
+                    },
+                    3: {
+                        instruction: "Traduisez les phrases suivantes du français vers le géorgien",
+                        questions: [
+                            { text: "Hier, j'ai acheté un nouveau livre et j'ai lu trois chapitres.<br>_________________", answer: "", type: "open" },
+                            { text: "Nous sommes allés au cinéma samedi soir.<br>_________________", answer: "", type: "open" },
+                            { text: "Elle a fini ses devoirs avant de sortir avec ses amies.<br>_________________", answer: "", type: "open" },
+                            { text: "Ils sont arrivés à la gare avec dix minutes de retard.<br>_________________", answer: "", type: "open" },
+                            { text: "Tu as pris le petit-déjeuner ce matin ?<br>_________________", answer: "", type: "open" },
+                            { text: "Mes sœurs sont restées à la maison toute la journée.<br>_________________", answer: "", type: "open" },
+                            { text: "Le professeur a expliqué la leçon avec beaucoup de patience.<br>_________________", answer: "", type: "open" },
+                            { text: "Je suis tombé dans la rue, mais je ne me suis pas fait mal.<br>_________________", answer: "", type: "open" },
+                            { text: "Vous avez choisi une très belle couleur pour votre salon.<br>_________________", answer: "", type: "open" },
+                            { text: "Paul est né en France, mais il a grandi en Géorgie.<br>_________________", answer: "", type: "open" }
+                        ]
+                    },
+                    4: {
+                        instruction: "Traduisez les phrases suivantes du géorgien vers le français",
+                        questions: [
+                            { text: "გუშინ მე ვნახე კარგი ფილმი.<br>_________________", answer: "", type: "open" },
+                            { text: "ის გვიან მოვიდა სახლში.<br>_________________", answer: "", type: "open" },
+                            { text: "ჩვენ წავედით რესტორანში მეგობრებთან ერთად.<br>_________________", answer: "", type: "open" },
+                            { text: "შენ ისაუზმე ამ დილით?<br>_________________", answer: "", type: "open" },
+                            { text: "ბავშვებმა დაწერეს თავიანთი დავალებები.<br>_________________", answer: "", type: "open" },
+                            { text: "მარიამი საფრანგეთში წავიდა გასულ კვირას.<br>_________________", answer: "", type: "open" },
+                            { text: "მათ იყიდეს ახალი ბინა ცენტრში.<br>_________________", answer: "", type: "open" },
+                            { text: "მე დავკარგე ჩემი გასაღები პარკში.<br>_________________", answer: "", type: "open" },
+                            { text: "თქვენ დაასრულეთ სამუშაო?<br>_________________", answer: "", type: "open" },
+                            { text: "ის დაიბადა 1998 წელს.<br>_________________", answer: "", type: "open" }
+                        ]
+                    },
+                    5: {
+                        instruction: "Lisez les options de restaurants et analysez les critères pour chaque établissement",
+                        textFile: "texts/b1_delf_text_2.txt",
+                        questions: [
+                            { text: "Bistro « Le Goût du Jour » : Est-il ouvert le dimanche soir ?", options: ["oui", "non"], answer: "oui", type: "mc" },
+                            { text: "Bistro « Le Goût du Jour » : Le prix du menu est-il inférieur ou égal à 15 € ?", options: ["oui", "non"], answer: "non", type: "mc" },
+                            { text: "Pizzeria Bella : Le restaurant accepte-t-il les chiens à l'intérieur ?", options: ["oui", "non"], answer: "oui", type: "mc" },
+                            { text: "Buffet « Saveurs du Monde » : Est-il ouvert le lundi soir ?", options: ["oui", "non"], answer: "non", type: "mc" },
+                            { text: "Café-Resto « Le Petit Jardin » : Propose-t-il un service pour le dîner du soir ?", options: ["oui", "non"], answer: "non", type: "mc" },
+                            { text: "Le menu complet au Bistro « Le Goût du Jour » coûte _________________ € par personne.", answer: "18" },
+                            { text: "À la Pizzeria Bella, le prix maximum d'un plat est de _________________ €.", answer: "14" },
+                            { text: "Le tarif du buffet à volonté « Saveurs du Monde » est de _________________ € par personne.", answer: "25" },
+                            { text: "Le Café-Resto « Le Petit Jardin » ferme ses portes à _________________ heures l'après-midi.", answer: "15" },
+                            { text: "La Pizzeria Bella propose des pizzas cuites au feu de _________________.", answer: "bois" }
+                        ]
+                    },
+                    6: {
+                        instruction: "Compréhension de texte et prise de décision pour un groupe (Type DELF B1)",
+                        textFile: "texts/b1_delf_text_2.txt",
+                        questions: [
+                            { text: "Un groupe de 5 amis cherche un restaurant pour DIMANCHE SOIR avec un budget de 15 € max/personne et avec leur chien. Quel lieu convient ?", options: ["Bistro « Le Goût du Jour »", "Pizzeria Bella", "Buffet « Saveurs du Monde »", "Café-Resto « Le Petit Jardin »"], answer: "Pizzeria Bella", type: "mc" },
+                            { text: "Pourquoi le Bistro « Le Goût du Jour » ne convient-il pas pour ce groupe ?", options: ["Il est fermé le dimanche", "Le menu coûte 18 € (dépasse 15 €)", "Les chiens y sont interdits", "Il n'y a pas de terrasse"], answer: "Le menu coûte 18 € (dépasse 15 €)", type: "mc" },
+                            { text: "Pourquoi le Buffet « Saveurs du Monde » ne convient-il pas pour ce groupe ?", options: ["Il est trop cher (25 €) et les chiens y sont interdits", "Il est fermé le dimanche", "Il n'a pas de parking", "Il ferme trop tôt"], answer: "Il est trop cher (25 €) et les chiens y sont interdits", type: "mc" },
+                            { text: "Pourquoi le Café-Resto « Le Petit Jardin » ne convient-il pas pour la soirée de dimanche ?", options: ["Il est uniquement ouvert pour le déjeuner du lundi au vendredi", "Il est réservé aux adultes", "Le prix est trop élevé", "Les boissons ne sont pas incluses"], answer: "Il est uniquement ouvert pour le déjeuner du lundi au vendredi", type: "mc" },
+                            { text: "Quel établissement propose un parking gratuit pour ses clients ?", options: ["Bistro « Le Goût du Jour »", "Pizzeria Bella", "Buffet « Saveurs du Monde »", "Café-Resto « Le Petit Jardin »"], answer: "Buffet « Saveurs du Monde »", type: "mc" },
+                            { text: "Le restaurant qui respecte l'ensemble des critères du groupe pour dimanche soir est la _________________.", answer: "Pizzeria Bella" },
+                            { text: "Le budget maximal fixé par le groupe d'amis est de _________________ € par personne.", answer: "15" },
+                            { text: "Au Buffet « Saveurs du Monde », la formule proposée est une formule à _________________.", answer: "volonté" },
+                            { text: "Les chiens sont acceptés au Bistro « Le Goût du Jour » uniquement en _________________.", answer: "terrasse" },
+                            { text: "Le Café-Resto « Le Petit Jardin » propose des boissons adaptées au régime _________________.", answer: "végétalien" }
+                        ]
+                    },
                 },
+                /*
                 kvira_3: {
                 },
                 kvira_4: {

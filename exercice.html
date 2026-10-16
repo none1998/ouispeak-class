@@ -728,6 +728,260 @@
     font-weight: 700;
     font-size: 0.85rem;
 }
+
+        /* ===== AI correction feedback (translation & essay exercises) ===== */
+        .ai-fb {
+            margin-top: 0.6rem;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            text-align: left;
+        }
+
+        .ai-fb-correct {
+            background: rgba(16, 185, 129, 0.08);
+            border-left: 4px solid #10b981;
+            color: #047857;
+            font-weight: 600;
+        }
+
+        .ai-fb-wrong {
+            background: rgba(239, 65, 53, 0.06);
+            border-left: 4px solid #ef4135;
+            color: var(--text-main);
+        }
+
+        .ai-fb-wrong .ai-fb-title {
+            color: #ef4135;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .ai-fb-wrong .ai-fb-right {
+            color: #047857;
+            font-weight: 600;
+            margin-top: 0.25rem;
+        }
+
+        .ai-fb-empty {
+            background: #f1f5f9;
+            border-left: 4px solid #94a3b8;
+            color: var(--text-muted);
+        }
+
+        /* ===== Clear (გასუფთავება) button at the end of every exercise ===== */
+        .exercise-clear-wrapper {
+            margin-top: 1.75rem;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .exercise-clear-btn {
+            background: transparent;
+            color: #ef4135;
+            border: 1.5px solid rgba(239, 65, 53, 0.45);
+            padding: 0.6rem 1.25rem;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 0.92rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .exercise-clear-btn:hover {
+            background: rgba(239, 65, 53, 0.08);
+            border-color: #ef4135;
+            transform: translateY(-1px);
+        }
+
+        /* ===== Futuristic "please wait" overlay (light theme, matches the site) ===== */
+        .ai-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.25rem;
+            background:
+                radial-gradient(circle at 18% 22%, rgba(0, 85, 165, 0.14), transparent 45%),
+                radial-gradient(circle at 82% 78%, rgba(239, 65, 53, 0.12), transparent 45%),
+                rgba(248, 250, 252, 0.8);
+            -webkit-backdrop-filter: blur(14px);
+            backdrop-filter: blur(14px);
+            animation: aiOverlayIn 0.35s ease both;
+            cursor: wait;
+        }
+
+        @keyframes aiOverlayIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .ai-overlay-card {
+            position: relative;
+            width: min(92vw, 470px);
+            padding: 2.6rem 2rem 2.2rem;
+            border-radius: 28px;
+            background: #ffffff;
+            box-shadow: var(--shadow-lg), 0 0 60px rgba(0, 85, 165, 0.12);
+            text-align: center;
+            color: var(--text-main);
+            overflow: hidden;
+            isolation: isolate;
+        }
+
+        /* rotating soft light edge */
+        .ai-overlay-card::before {
+            content: "";
+            position: absolute;
+            inset: -70%;
+            background: conic-gradient(from 0deg, transparent 0 62%, rgba(0, 85, 165, 0.85) 78%, rgba(96, 165, 250, 0.85) 88%, rgba(239, 65, 53, 0.8) 94%, transparent 100%);
+            animation: aiSpin 4.5s linear infinite;
+            z-index: -2;
+        }
+
+        .ai-overlay-card::after {
+            content: "";
+            position: absolute;
+            inset: 1.5px;
+            border-radius: 26.5px;
+            background:
+                radial-gradient(circle at 50% 0%, rgba(0, 85, 165, 0.07), transparent 60%),
+                #ffffff;
+            z-index: -1;
+        }
+
+        @keyframes aiSpin {
+            to { transform: rotate(360deg); }
+        }
+
+        .ai-orb {
+            position: relative;
+            width: 92px;
+            height: 92px;
+            margin: 0 auto 1.7rem;
+        }
+
+        .ai-orb span {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 2.5px solid transparent;
+        }
+
+        .ai-orb span:nth-child(1) {
+            border-top-color: var(--primary);
+            border-right-color: rgba(0, 85, 165, 0.18);
+            animation: aiSpin 1.3s linear infinite;
+        }
+
+        .ai-orb span:nth-child(2) {
+            inset: 13px;
+            border-bottom-color: #60a5fa;
+            border-left-color: rgba(96, 165, 250, 0.2);
+            animation: aiSpin 1.9s linear infinite reverse;
+        }
+
+        .ai-orb span:nth-child(3) {
+            inset: 26px;
+            border-top-color: var(--secondary);
+            border-right-color: rgba(239, 65, 53, 0.18);
+            animation: aiSpin 2.6s linear infinite;
+        }
+
+        .ai-orb::after {
+            content: "";
+            position: absolute;
+            inset: 39px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #ffffff 0%, #93c5fd 45%, var(--primary) 100%);
+            box-shadow: 0 0 18px 4px rgba(0, 85, 165, 0.35);
+            animation: aiPulse 1.8s ease-in-out infinite;
+        }
+
+        @keyframes aiPulse {
+            0%, 100% { transform: scale(0.85); opacity: 0.85; }
+            50% { transform: scale(1.15); opacity: 1; }
+        }
+
+        .ai-overlay-title {
+            font-size: 1.55rem;
+            font-weight: 800;
+            letter-spacing: -0.01em;
+            margin: 0 0 0.35rem;
+            background: linear-gradient(90deg, var(--primary), #3b82f6 55%, var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+        }
+
+        .ai-overlay-text {
+            font-size: 1.05rem;
+            font-weight: 500;
+            line-height: 1.55;
+            color: #475569;
+            margin: 0 0 1.7rem;
+        }
+
+        .ai-overlay-progress-track {
+            position: relative;
+            height: 8px;
+            border-radius: 100px;
+            background: var(--border-color);
+            overflow: hidden;
+        }
+
+        .ai-overlay-progress-fill {
+            position: relative;
+            height: 100%;
+            width: 6%;
+            border-radius: 100px;
+            background: linear-gradient(90deg, var(--primary), #3b82f6, var(--secondary));
+            transition: width 0.5s ease;
+            overflow: hidden;
+        }
+
+        .ai-overlay-progress-fill::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, 0.6) 50%, transparent 80%);
+            transform: translateX(-100%);
+            animation: aiShimmer 1.6s ease-in-out infinite;
+        }
+
+        @keyframes aiShimmer {
+            to { transform: translateX(100%); }
+        }
+
+        .ai-overlay-count {
+            margin-top: 0.8rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+        }
+
+        .ai-overlay-note {
+            margin-top: 1.1rem;
+            font-size: 0.82rem;
+            color: #94a3b8;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .ai-overlay-card::before,
+            .ai-orb span,
+            .ai-orb::after,
+            .ai-overlay-progress-fill::after {
+                animation: none;
+            }
+        }
     </style>
 </head>
 <body>
@@ -2785,6 +3039,430 @@ async function loadHeaderScore(userEmail) {
             document.body.removeChild(temporaryAnchor);
             URL.revokeObjectURL(downloadUrl);
         }
+
+        // ===== AI correction (translation & essay exercises only) =====
+        // Checking runs once, after the student clicks the send button at the end of Exercice 6.
+        const AI_CORRECTION_API_KEY = "AQ.Ab8RN6KyHsllPkWoeGK-9R3NCjb7JGqT1ayg81VHr2jKYBuWxA";
+        // Models are tried in order; if the first is busy/unavailable the next one is used automatically
+        const AI_CORRECTION_MODELS = ["gemini-flash-latest", "gemini-flash-lite-latest"];
+
+        // Stores AI results (key -> { answer, res }) so they can be shown again and added to the email
+        const aiCorrectionCache = {};
+        let aiCheckInProgress = false;
+
+        function aiEscapeHtml(str) {
+            return String(str === undefined || str === null ? "" : str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/\n/g, "<br>");
+        }
+
+        function aiGetCurrentBlockInfo() {
+            const subject = document.getElementById('subjectSelect').value;
+            if (!studentCourse || !dataset[studentCourse] || !dataset[studentCourse][subject]) return null;
+            const blockData = dataset[studentCourse][subject][currentActiveBlock];
+            if (!blockData) return null;
+            return { subject, blockData, cacheKeyPrefix: `${subject}_block_${currentActiveBlock}` };
+        }
+
+        // Translation questions that have no fixed answer in the code are corrected by AI
+        function aiIsTranslationQuestion(q) {
+            return q && q.type === "open" && (!q.answer || q.answer.trim() === "");
+        }
+
+        function aiBuildFeedbackHtml(res) {
+            if (res.is_correct) {
+                return `<div class="ai-fb ai-fb-correct"><i class="fa-solid fa-circle-check"></i> სწორია, ყოჩაღ!</div>`;
+            }
+            return `<div class="ai-fb ai-fb-wrong">
+                <div class="ai-fb-title"><i class="fa-solid fa-circle-xmark"></i> არასწორია</div>
+                <div><strong>შეცდომები:</strong> ${aiEscapeHtml(res.errors)}</div>
+                <div class="ai-fb-right"><strong>სწორი ვერსია:</strong> ${aiEscapeHtml(res.correct)}</div>
+            </div>`;
+        }
+
+        function aiShowFeedback(parentEl, res, boxId) {
+            const old = parentEl.querySelector(`[data-ai-box="${boxId}"]`);
+            if (old) old.remove();
+            const holder = document.createElement('div');
+            holder.setAttribute('data-ai-box', boxId);
+            holder.innerHTML = aiBuildFeedbackHtml(res);
+            parentEl.appendChild(holder);
+        }
+
+        function aiHideFeedback(parentEl, boxId) {
+            const old = parentEl.querySelector(`[data-ai-box="${boxId}"]`);
+            if (old) old.remove();
+        }
+
+        function aiSleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function aiPostToGemini(model, promptText, thinkingOff) {
+            const generationConfig = { temperature: 0.2, responseMimeType: "application/json" };
+            if (thinkingOff) generationConfig.thinkingConfig = { thinkingBudget: 0 };
+            return fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-goog-api-key": AI_CORRECTION_API_KEY
+                },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: promptText }] }],
+                    generationConfig
+                })
+            });
+        }
+
+        async function aiCallGemini(promptText) {
+            let lastError = new Error("Gemini request failed");
+
+            for (const model of AI_CORRECTION_MODELS) {
+                for (let attempt = 1; attempt <= 2; attempt++) {
+                    try {
+                        // "Thinking" is switched off for speed; if the model rejects that setting, retry without it
+                        let response = await aiPostToGemini(model, promptText, true);
+                        if (response.status === 400) response = await aiPostToGemini(model, promptText, false);
+
+                        // Model name not available -> go to the next model
+                        if (response.status === 404) {
+                            lastError = new Error(`Gemini API error 404 (${model})`);
+                            break;
+                        }
+                        // Temporary overload / rate limit -> short wait, retry, then next model
+                        if ([429, 500, 502, 503, 504].includes(response.status)) {
+                            lastError = new Error(`Gemini API error ${response.status} (${model})`);
+                            await aiSleep(attempt * 1000);
+                            continue;
+                        }
+                        // Real errors (bad key, forbidden, ...) -> stop immediately
+                        if (!response.ok) throw new Error(`Gemini API error ${response.status}`);
+
+                        const data = await response.json();
+                        const parts = data?.candidates?.[0]?.content?.parts || [];
+                        const raw = parts.map(p => p.text || "").join("").replace(/```json|```/g, "").trim();
+                        return JSON.parse(raw);
+                    } catch (err) {
+                        // Network hiccup or unreadable reply -> retry; anything else -> stop
+                        if (err instanceof TypeError || err instanceof SyntaxError) {
+                            lastError = err;
+                            await aiSleep(attempt * 1000);
+                            continue;
+                        }
+                        throw err;
+                    }
+                }
+            }
+            throw lastError;
+        }
+
+        function aiBuildTranslationPrompt(instruction, items) {
+            return `You are a kind but precise French teacher for Georgian-speaking students.
+The exercise instruction (in Georgian) is: "${instruction}"
+From this instruction and the sentences, work out the translation direction (Georgian -> French or French -> Georgian).
+Below is a JSON list of items. "source" is the sentence to translate, "student_answer" is the student's translation.
+
+For EACH item decide whether the student's translation is correct. Check grammar, conjugation, agreement, articles, word order, spelling and accents, and meaning.
+- Accept any natural, correct alternative translation (it does not have to match a single reference).
+- Ignore a missing or different final punctuation mark and capital letter at the start.
+- If it is correct: is_correct = true, errors = "", correct = "".
+- If it is wrong: is_correct = false, "errors" = a SHORT explanation IN GEORGIAN (max 2 short sentences) of exactly what is wrong (quote the wrong word/form and give the correct form, e.g. "viennet (ორთოგრაფია: viennent)"), and "correct" = the full correct translation in the target language.
+
+Reply ONLY with JSON in this exact shape, with one object per item and the same "index" values:
+{"results":[{"index":0,"is_correct":true,"errors":"","correct":""}]}
+
+Items:
+${JSON.stringify(items)}`;
+        }
+
+        function aiBuildEssayPrompt(instruction, text) {
+            return `You are a kind but precise French teacher for Georgian-speaking students.
+The writing task given to the student (in Georgian) is: "${instruction}"
+Here is the student's text:
+"""
+${text}
+"""
+
+Check whether the text fulfils the task, and check grammar, conjugation, agreement, articles, vocabulary, word order, spelling and accents.
+- If everything is correct: is_correct = true, errors = "", correct = "".
+- If there are mistakes: is_correct = false, "errors" = a concise list IN GEORGIAN of each mistake (quote the wrong part and give the correction in one short line per mistake; use line breaks between mistakes; also say if the task requirements are not met, e.g. fewer sentences than asked), and "correct" = the full corrected version of the student's text in French.
+
+Reply ONLY with JSON in this exact shape:
+{"is_correct":true,"errors":"","correct":""}`;
+        }
+
+        // ---------- "Please wait" overlay ----------
+        function aiShowOverlay(total) {
+            aiHideOverlay();
+            const overlay = document.createElement('div');
+            overlay.id = "aiOverlay";
+            overlay.className = "ai-overlay";
+            overlay.setAttribute('role', 'alertdialog');
+            overlay.setAttribute('aria-live', 'polite');
+            overlay.innerHTML = `
+                <div class="ai-overlay-card">
+                    <div class="ai-orb"><span></span><span></span><span></span></div>
+                    <h2 class="ai-overlay-title">გთხოვთ მოიცადოთ,</h2>
+                    <p class="ai-overlay-text">მიმდინარეობს პასუხების შემოწმება</p>
+                    <div class="ai-overlay-progress-track"><div class="ai-overlay-progress-fill" id="aiOverlayFill"></div></div>
+                    <div class="ai-overlay-count" id="aiOverlayCount"></div>
+                    <div class="ai-overlay-note">გვერდი არ დახუროთ</div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            const page = document.querySelector('.premium-container-box');
+            if (page) page.inert = true;
+            document.body.style.overflow = "hidden";
+            aiUpdateOverlay(0, total);
+        }
+
+        function aiUpdateOverlay(done, total) {
+            const fill = document.getElementById('aiOverlayFill');
+            const count = document.getElementById('aiOverlayCount');
+            const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+            if (fill) fill.style.width = Math.max(pct, 6) + "%";
+            if (count) count.innerText = `${done} / ${total}`;
+        }
+
+        function aiHideOverlay() {
+            const overlay = document.getElementById('aiOverlay');
+            if (overlay) overlay.remove();
+            const page = document.querySelector('.premium-container-box');
+            if (page) page.inert = false;
+            document.body.style.overflow = "";
+        }
+
+        // Runs async tasks with a small limit of parallel requests
+        async function aiRunTasks(tasks, limit, onTaskDone) {
+            let next = 0;
+            async function worker() {
+                while (next < tasks.length) {
+                    const task = tasks[next++];
+                    try { await task(); } catch (e) { console.error("AI task failed:", e); }
+                    onTaskDone();
+                }
+            }
+            await Promise.all(Array.from({ length: Math.min(limit, tasks.length) }, worker));
+        }
+
+        // Checks ALL translation + essay answers of the 6 exercise blocks of the selected week
+        async function aiCheckAllAnswers() {
+            if (!AI_CORRECTION_API_KEY || AI_CORRECTION_API_KEY === "PASTE_YOUR_GEMINI_API_KEY_HERE") return;
+            const subject = document.getElementById('subjectSelect').value;
+            if (!studentCourse || !subject) return;
+
+            const tasks = [];
+            const chunkSize = 5;
+
+            for (let b = 1; b <= 6; b++) {
+                const blockData = dataset[studentCourse]?.[subject]?.[b];
+                if (!blockData) continue;
+                const prefix = `${subject}_block_${b}`;
+
+                if (blockData.type === "essay") {
+                    const key = `${prefix}_essay`;
+                    const raw = userAnswersCache[key] || "";
+                    const text = raw.trim();
+                    if (!text) continue;
+                    const cached = aiCorrectionCache[key];
+                    if (cached && cached.answer.trim() === text) continue;
+                    tasks.push(async () => {
+                        const result = await aiCallGemini(aiBuildEssayPrompt(blockData.instruction, text));
+                        aiCorrectionCache[key] = {
+                            answer: raw,
+                            res: {
+                                is_correct: result.is_correct === true,
+                                errors: result.errors || "",
+                                correct: result.correct || ""
+                            }
+                        };
+                    });
+                } else {
+                    const items = [];
+                    (blockData.questions || []).forEach((q, index) => {
+                        if (!aiIsTranslationQuestion(q)) return;
+                        const key = `${prefix}_q_${index}`;
+                        const raw = userAnswersCache[key] || "";
+                        const answer = raw.trim();
+                        if (!answer) return;
+                        const cached = aiCorrectionCache[key];
+                        if (cached && cached.answer.trim() === answer) return;
+                        const source = q.text.split("_________________")[0].replace(/<br>/g, " ").trim();
+                        items.push({ index, source, student_answer: answer, raw, key });
+                    });
+                    for (let i = 0; i < items.length; i += chunkSize) {
+                        const chunk = items.slice(i, i + chunkSize);
+                        tasks.push(async () => {
+                            const promptItems = chunk.map(it => ({ index: it.index, source: it.source, student_answer: it.student_answer }));
+                            const result = await aiCallGemini(aiBuildTranslationPrompt(blockData.instruction, promptItems));
+                            const list = Array.isArray(result.results) ? result.results : [];
+                            chunk.forEach(it => {
+                                const r = list.find(x => Number(x.index) === it.index);
+                                if (!r) return;
+                                aiCorrectionCache[it.key] = {
+                                    answer: it.raw,
+                                    res: {
+                                        is_correct: r.is_correct === true,
+                                        errors: r.errors || "",
+                                        correct: r.correct || ""
+                                    }
+                                };
+                            });
+                        });
+                    }
+                }
+            }
+
+            if (tasks.length === 0) return;
+
+            aiShowOverlay(tasks.length);
+            let done = 0;
+            await aiRunTasks(tasks, 3, () => {
+                done++;
+                aiUpdateOverlay(done, tasks.length);
+            });
+            // let the progress bar visibly reach 100% before the overlay disappears
+            await aiSleep(600);
+        }
+
+        // Adds the AI verdicts to the text that is sent by email (original function stays untouched)
+        function aiFormatInline(res) {
+            const oneLine = (s) => String(s || "").replace(/\s*\n+\s*/g, " ").trim();
+            if (res.is_correct) return "[AI: სწორია ✅]";
+            return `[AI: არასწორია ❌ | შეცდომები: ${oneLine(res.errors)} | სწორი ვერსია: ${oneLine(res.correct)}]`;
+        }
+
+        function aiAugmentPayload(payload) {
+            const subject = document.getElementById('subjectSelect').value;
+            const sections = String(payload).split(/(?=\n=+\nExercice \d+:)/);
+
+            return sections.map(section => {
+                const m = section.match(/Exercice (\d+):/);
+                if (!m) return section;
+                const b = Number(m[1]);
+                const blockData = dataset[studentCourse]?.[subject]?.[b];
+                if (!blockData) return section;
+                const prefix = `${subject}_block_${b}`;
+
+                if (blockData.type === "essay") {
+                    const raw = userAnswersCache[`${prefix}_essay`] || "";
+                    if (!raw.trim()) return section;
+                    const cached = aiCorrectionCache[`${prefix}_essay`];
+                    let note;
+                    if (!cached) {
+                        note = "AI შემოწმება: ვერ შესრულდა (მასწავლებელმა შეამოწმოს ხელით)";
+                    } else if (cached.res.is_correct) {
+                        note = "AI შემოწმება: სწორია ✅";
+                    } else {
+                        note = `AI შემოწმება: არასწორია ❌\nშეცდომები: ${cached.res.errors}\nსწორი ვერსია: ${cached.res.correct}`;
+                    }
+                    return section.replace(/\s+$/, "") + `\n${note}\n`;
+                }
+
+                const questions = blockData.questions || [];
+                return section.split("\n").map(line => {
+                    const lm = line.match(/^(\d+): /);
+                    if (!lm) return line;
+                    const index = Number(lm[1]) - 1;
+                    const q = questions[index];
+                    if (!aiIsTranslationQuestion(q)) return line;
+                    const raw = userAnswersCache[`${prefix}_q_${index}`] || "";
+                    if (!raw.trim()) return line;
+                    const cached = aiCorrectionCache[`${prefix}_q_${index}`];
+                    if (!cached) return `${line} -> [AI: შემოწმება ვერ შესრულდა]`;
+                    return `${line} -> ${aiFormatInline(cached.res)}`;
+                }).join("\n");
+            }).join("");
+        }
+
+        // ---------- Clear (გასუფთავება) button ----------
+        function clearCurrentExerciseAnswers() {
+            const info = aiGetCurrentBlockInfo();
+            if (!info) return;
+            if (!confirm("ნამდვილად გსურთ ამ სავარჯიშოში ჩაწერილი პასუხების წაშლა?")) return;
+            const prefix = `${info.cacheKeyPrefix}_`;
+            [userAnswersCache, validationResultsCache, aiCorrectionCache].forEach(store => {
+                Object.keys(store).forEach(k => { if (k.startsWith(prefix)) delete store[k]; });
+            });
+            renderExercise();
+        }
+
+        // ---------- Hooks on top of the existing functions (original code untouched) ----------
+        const _originalRenderExercise = renderExercise;
+        renderExercise = function () {
+            _originalRenderExercise.apply(this, arguments);
+
+            const info = aiGetCurrentBlockInfo();
+            if (!info) return;
+            const { blockData, cacheKeyPrefix } = info;
+            const container = document.getElementById('exerciseQuestionsContainer');
+            const isEssay = blockData.type === "essay";
+            const questions = blockData.questions || [];
+
+            // Show saved AI feedback (after sending) for essay / translation answers that were not edited since
+            if (isEssay) {
+                const textarea = document.getElementById('essayTextarea');
+                if (textarea) {
+                    const cached = aiCorrectionCache[`${cacheKeyPrefix}_essay`];
+                    if (cached && cached.answer === textarea.value) {
+                        aiShowFeedback(textarea.parentElement, cached.res, "essay");
+                    }
+                    textarea.addEventListener('input', () => aiHideFeedback(textarea.parentElement, "essay"));
+                }
+            } else {
+                const itemEls = container.querySelectorAll('.exercise-sentence-item');
+                questions.forEach((q, index) => {
+                    if (!aiIsTranslationQuestion(q)) return;
+                    const el = itemEls[index];
+                    const input = document.getElementById(`input_q_${index}`);
+                    if (!el || !input) return;
+                    const cached = aiCorrectionCache[`${cacheKeyPrefix}_q_${index}`];
+                    if (cached && cached.answer === input.value) {
+                        aiShowFeedback(el, cached.res, "q");
+                    }
+                    input.addEventListener('input', () => aiHideFeedback(el, "q"));
+                });
+            }
+
+            // Clear button at the end of every exercise
+            const clearWrapper = document.createElement('div');
+            clearWrapper.className = "exercise-clear-wrapper";
+            clearWrapper.innerHTML = `
+                <button type="button" class="exercise-clear-btn" onclick="clearCurrentExerciseAnswers()">
+                    <i class="fa-solid fa-eraser"></i> გასუფთავება
+                </button>
+            `;
+            container.appendChild(clearWrapper);
+        };
+
+        const _originalEvaluateAllExercisesLive = evaluateAllExercisesLive;
+        evaluateAllExercisesLive = function () {
+            const result = _originalEvaluateAllExercisesLive.apply(this, arguments);
+            try {
+                result.payload = aiAugmentPayload(result.payload);
+            } catch (e) {
+                console.error("Adding AI results to the payload failed:", e);
+            }
+            return result;
+        };
+
+        const _originalSendAnswersToEmail = sendAnswersToEmail;
+        sendAnswersToEmail = async function () {
+            if (aiCheckInProgress) return;
+            aiCheckInProgress = true;
+            try {
+                saveCurrentBlockAnswersToCache();
+                await aiCheckAllAnswers();
+            } catch (e) {
+                console.error("AI correction failed:", e);
+            } finally {
+                aiHideOverlay();
+                aiCheckInProgress = false;
+            }
+            return _originalSendAnswersToEmail.apply(this, arguments);
+        };
 
         checkUserSession();
          _supabase.auth.getSession().then(({ data }) => {

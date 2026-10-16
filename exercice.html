@@ -3042,7 +3042,8 @@ async function loadHeaderScore(userEmail) {
 
         // ===== AI correction (translation & essay exercises only) =====
         // Checking runs once, after the student clicks the send button at the end of Exercice 6.
-        const AI_CORRECTION_API_KEY = "AQ.Ab8RN6KyHsllPkWoeGK-9R3NCjb7JGqT1ayg81VHr2jKYBuWxA";
+        // The Gemini key is NOT stored in this page. It lives as a secret inside the Supabase Edge Function below.
+        const AI_CORRECTION_ENDPOINT = `${SUPABASE_URL}/functions/v1/gemini-correct`;
         // Models are tried in order; if the first is busy/unavailable the next one is used automatically
         const AI_CORRECTION_MODELS = ["gemini-flash-latest", "gemini-flash-lite-latest"];
 
@@ -3100,19 +3101,22 @@ async function loadHeaderScore(userEmail) {
             return new Promise(resolve => setTimeout(resolve, ms));
         }
 
-        function aiPostToGemini(model, promptText, thinkingOff) {
-            const generationConfig = { temperature: 0.2, responseMimeType: "application/json" };
-            if (thinkingOff) generationConfig.thinkingConfig = { thinkingBudget: 0 };
-            return fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+        async function aiPostToGemini(model, promptText, thinkingOff) {
+            // Logged-in student's session token is used so only signed-in students can use the correction
+            let token = SUPABASE_ANON_KEY;
+            try {
+                const { data } = await _supabase.auth.getSession();
+                if (data && data.session && data.session.access_token) token = data.session.access_token;
+            } catch (e) { /* fall back to the anon key */ }
+
+            return fetch(AI_CORRECTION_ENDPOINT, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "x-goog-api-key": AI_CORRECTION_API_KEY
+                    "apikey": SUPABASE_ANON_KEY,
+                    "Authorization": `Bearer ${token}`
                 },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: promptText }] }],
-                    generationConfig
-                })
+                body: JSON.stringify({ model, prompt: promptText, thinkingOff })
             });
         }
 
@@ -3249,7 +3253,6 @@ Reply ONLY with JSON in this exact shape:
 
         // Checks ALL translation + essay answers of the 6 exercise blocks of the selected week
         async function aiCheckAllAnswers() {
-            if (!AI_CORRECTION_API_KEY || AI_CORRECTION_API_KEY === "PASTE_YOUR_GEMINI_API_KEY_HERE") return;
             const subject = document.getElementById('subjectSelect').value;
             if (!studentCourse || !subject) return;
 

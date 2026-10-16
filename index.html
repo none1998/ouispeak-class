@@ -908,11 +908,19 @@
     <script>
         const SUPABASE_URL = "https://yuydaturorsdshtdajcf.supabase.co"; 
         const SUPABASE_ANON_KEY = "sb_publishable_xlmbZTsExgJWyjN9IdC8xA_NaILka38";
+        // --- PASSWORD RESET FIX: read the reset link info from the URL before Supabase clears it ---
+        const resetHashParams = new URLSearchParams(window.location.hash.replace(/^#+/, ''));
+        const resetQueryParams = new URLSearchParams(window.location.search);
+        const cameFromResetLink = resetHashParams.get('type') === 'recovery' || resetQueryParams.get('type') === 'recovery';
+        const resetLinkError = resetHashParams.get('error_description') || resetQueryParams.get('error_description');
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let isSignUpMode = false;
         let isRecoveryMode = false;
         let isForgotPasswordMode = false;
+        if (cameFromResetLink) {
+            isRecoveryMode = true;
+        }
         let currentCourseTitle = "Syllabus";
         let studentCurrentCourse = null;
 
@@ -1048,7 +1056,7 @@
 
             if (isForgotPasswordMode) {
                 const { error } = await _supabase.auth.resetPasswordForEmail(email, {
-                    redirectTo: window.location.href,
+                    redirectTo: window.location.origin + window.location.pathname,
                 });
                 if (error) return showError(error);
                 alert("პაროლის აღდგენის ბმული გაიგზავნა თქვენს ელ-ფოსტაზე!");
@@ -1495,6 +1503,15 @@
                 
                 document.getElementById('protectedContent').style.display = 'none';
                 document.getElementById('logoutBtn').style.display = 'none';
+            } else if (session && isRecoveryMode) {
+                document.getElementById('authSection').style.display = 'block';
+                document.getElementById('authTitle').innerText = "პაროლის შეცვლა";
+                document.getElementById('authForm').style.display = 'none';
+                document.getElementById('authSwitchContainer').style.display = 'none';
+                document.getElementById('updatePasswordForm').style.display = 'block';
+                
+                document.getElementById('protectedContent').style.display = 'none';
+                document.getElementById('logoutBtn').style.display = 'none';
             } else if (session && !isRecoveryMode) {
                 document.getElementById('authSection').style.display = 'none';
                 document.getElementById('protectedContent').style.display = 'block';
@@ -1516,6 +1533,10 @@
                 clearCourseFilters();
             }
         });
+
+        if (resetLinkError) {
+            showError(resetLinkError);
+        }
     </script>
 </body>
 </html>

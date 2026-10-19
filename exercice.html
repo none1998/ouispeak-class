@@ -1372,9 +1372,90 @@ async function loadHeaderScore(userEmail) {
                         ]
                     }
                 },
-                /*
+                
                 kvira_3: {
+                    1: { 
+                        instruction: "Choisissez la bonne forme des verbes du 2e groupe au présent de l'indicatif.", 
+                        questions: [
+                        { text: "Je ______ très vite.", options: ["grandis", "grandit", "grandissons", "grandissez"], answer: "grandis", type: "mc" },
+                        { text: "Tu ______ ton exercice.", options: ["finis", "finit", "finissez", "finissent"], answer: "finis", type: "mc" },
+                        { text: "Il ______ une belle voiture.", options: ["choisit", "choisis", "choisissent", "choisissons"], answer: "choisit", type: "mc" },
+                        { text: "Elle ______ son test de français.", options: ["réussit", "réussis", "réussissent", "réussissez"], answer: "réussit", type: "mc" },
+                        { text: "On ______ avant de parler.", options: ["réfléchit", "réfléchis", "réfléchissent", "réfléchissons"], answer: "réfléchit", type: "mc" },
+                        { text: "Nous ______ nos efforts.", options: ["unissons", "unissez", "unissent", "unis"], answer: "unissons", type: "mc" },
+                        { text: "Vous ______ les artistes.", options: ["applaudissez", "applaudis", "applaudit", "applaudissent"], answer: "applaudissez", type: "mc" },
+                        { text: "Ils ______ de timidité.", options: ["rougissent", "rougit", "rougissez", "rougis"], answer: "rougissent", type: "mc" },
+                        { text: "Je ______ chaque année.", options: ["vieillis", "vieillit", "vieillissons", "vieillissez"], answer: "vieillis", type: "mc" },
+                        { text: "Nous ______ rapidement.", options: ["guérissons", "guérissez", "guérissent", "guéris"], answer: "guérissons", type: "mc" }
+                        ] 
+                    },
+                    2: { 
+                        instruction: "Choisissez la bonne forme des verbes du 1er groupe au présent de l'indicatif.", 
+                        questions: [
+                        { text: "Je ______ une chanson.", options: ["chante", "chantes", "chantons", "chantez"], answer: "chante", type: "mc" },
+                        { text: "Tu ______ très bien.", options: ["nages", "nage", "nagez", "nagent"], answer: "nages", type: "mc" },
+                        { text: "Il ______ un bon repas.", options: ["cuisine", "cuisines", "cuisinent", "cuisinons"], answer: "cuisine", type: "mc" },
+                        { text: "Elle ______ un paysage.", options: ["dessine", "dessines", "dessinons", "dessinez"], answer: "dessine", type: "mc" },
+                        { text: "Nous ______ en été.", options: ["voyageons", "voyagez", "voyagent", "voyages"], answer: "voyageons", type: "mc" },
+                        { text: "Vous ______ le dîner.", options: ["préparez", "prépares", "prépare", "préparent"], answer: "préparez", type: "mc" },
+                        { text: "Ils ______ un manteau chaud.", options: ["portent", "porte", "portez", "portons"], answer: "portent", type: "mc" },
+                        { text: "Elles ______ dans le parc.", options: ["marchent", "marche", "marchez", "marchons"], answer: "marchent", type: "mc" },
+                        { text: "Je ______ la porte.", options: ["ferme", "fermes", "fermons", "fermez"], answer: "ferme", type: "mc" },
+                        { text: "Nous ______ le cours.", options: ["commençons", "commencez", "commencent", "commences"], answer: "commençons", type: "mc" }
+                        ] 
+                    },
+                    3: {
+                        instruction: "Traduisez les phrases suivantes du français vers le géorgien",
+                        questions: [
+                        { text: "Je chante.<br>_________________", answer: "მე ვმღერი", type: "open" },
+                        { text: "Tu finis.<br>_________________", answer: "შენ ამთავრებ", type: "open" },
+                        { text: "Il cuisine.<br>_________________", answer: "ის ამზადებს", type: "open" },
+                        { text: "Elle choisit.<br>_________________", answer: "ის ირჩევს", type: "open" },
+                        { text: "Nous voyageons.<br>_________________", answer: "ჩვენ ვმოგზაურობთ", type: "open" },
+                        { text: "Vous réussissez.<br>_________________", answer: "თქვენ აღწევთ წარმატებას", type: "open" },
+                        { text: "Ils habitent ici.<br>_________________", answer: "ისინი ცხოვრობენ აქ", type: "open" },
+                        { text: "Ils réfléchissent.<br>_________________", answer: "ისინი ფიქრობენ", type: "open" },
+                        { text: "Je mange du chocolat.<br>_________________", answer: "მე ვჭამ შოკოლადს", type: "open" },
+                        { text: "Tu grandis.<br>_________________", answer: "შენ იზრდები", type: "open" }
+                        ]
+                    },
+                    4: {
+                        instruction: "Traduisez les phrases suivantes du géorgien vers le français",
+                        questions: [
+                        { text: "მე ვმღერი<br>_________________", answer: "Je chante", type: "open" },
+                        { text: "შენ ამთავრებ<br>_________________", answer: "Tu finis", type: "open" },
+                        { text: "ის ამზადებს<br>_________________", answer: "Il cuisine", type: "open" },
+                        { text: "ის (მდედრობითი) ირჩევს<br>_________________", answer: "Elle choisit", type: "open" },
+                        { text: "ჩვენ ვმოგზაურობთ<br>_________________", answer: "Nous voyageons", type: "open" },
+                        { text: "თქვენ აღწევთ წარმატებას<br>_________________", answer: "Vous réussissez", type: "open" },
+                        { text: "ისინი ცხოვრობენ აქ<br>_________________", answer: "Ils habitent ici", type: "open" },
+                        { text: "ისინი (მდედრობითი) ფიქრობენ<br>_________________", answer: "Elles réfléchissent", type: "open" },
+                        { text: "მე ვჭამ შოკოლადს<br>_________________", answer: "Je mange du chocolat", type: "open" },
+                        { text: "შენ იზრდები<br>_________________", answer: "Tu grandis", type: "open" }
+                        ]
+                    },
+                    5: {
+                        instruction: "შეადგინეთ 10 მარტივი წინადადება, სადაც გამოიყენებთ ზუსტად 5 ცალ პირველი ჯგუფის ზმნას და ზუსტად 5 ცალ მეორე ჯგუფის ზმნას.",
+                        type: "essay"
+                    },
+                    6: {
+                        instruction: "უყურეთ ვიდეორგოლს და უპასუხეთ კითხვებს",
+                        video: "videos/a1_video3.mp4",
+                        questions: [
+                            { "text": "როგორი ფანჯარა აქვს ოთახს?", "options": ["Une petite fenêtre", "Une grande fenêtre", "Une fenêtre moyenne", "Pas de fenêtre"], "answer": "Une grande fenêtre", "type": "mc" },
+                            { "text": "სად დევს მაღვიძარა?", "options": ["Sur la table", "Sur le lit", "Au bord de la fenêtre", "Sur l'armoire"], "answer": "Au bord de la fenêtre", "type": "mc" },
+                            { "text": "რა ფერისაა მაღვიძარა?", "options": ["Bleu", "Rouge", "Blanc", "Jaune"], "answer": "Rouge", "type": "mc" },
+                            { "text": "რა დროს რეკავს მაღვიძარა ყოველდღე დილით?", "options": ["À 6 heures du matin", "À 7 heures du matin", "À 8 heures du matin", "À 9 heures du matin"], "answer": "À 7 heures du matin", "type": "mc" },
+                            { "text": "როგორია საწოლი?", "options": ["Très confortable", "Vieux", "Pas confortable", "Petit"], "answer": "Très confortable", "type": "mc" },
+                            { "text": "რამდენი ბალიშია საწოლზე?", "options": ["Un oreiller", "Deux oreillers", "Trois oreillers", "Pas d'oreiller"], "answer": "Deux oreillers", "type": "mc" },
+                            { "text": "რა ფერისაა საწოლი?", "options": ["Noir", "Blanc", "Gris", "Marron"], "answer": "Gris", "type": "mc" },
+                            { "text": "სად მდებარეობს კარადა?", "options": ["À côté du lit", "En face de la fenêtre", "À côté du bureau", "En face du bureau"], "answer": "À côté du lit", "type": "mc" },
+                            { "text": "როგორია სამუშაო მაგიდა?", "options": ["Très grand", "Très petit", "Confortable", "Ancien"], "answer": "Très petit", "type": "mc" },
+                            { "text": "როგორია სკამი?", "options": ["Très confortable", "Pas très confortable", "Neuf", "Grand"], "answer": "Pas très confortable", "type": "mc" }
+                        ]
+                    }
                 },
+                /*
                 kvira_4: {
                 },
                 kvira_5: {
@@ -1726,9 +1807,89 @@ async function loadHeaderScore(userEmail) {
                         ]
                     }
                 },
-                /*
                 kvira_3: {
+                    1: { 
+                        instruction: "Complétez les phrases avec l'article indéfini qui convient (un, une, des).", 
+                        questions: [
+                            { text: "Mon frère a acheté _________________ nouveau téléphone portable hier.", answer: "un" }, 
+                            { text: "Il y a _________________ très belle exposition de peinture au musée.", answer: "une" }, 
+                            { text: "Ce soir, nous allons commander _________________ pizzas pour nos amis.", answer: "des" }, 
+                            { text: "J'ai trouvé _________________ vieux livre de recettes dans le grenier.", answer: "un" }, 
+                            { text: "Elle porte _________________ magnifique écharpe rouge aujourd'hui.", answer: "une" }, 
+                            { text: "Tu as reçu _________________ lettres importantes ce matin.", answer: "des" }, 
+                            { text: "Ils ont adopté _________________ petit chat noir la semaine dernière.", answer: "un" }, 
+                            { text: "Nous avons visité _________________ monuments magnifiques pendant nos vacances.", answer: "des" }, 
+                            { text: "Vous cherchez _________________ appartement avec deux chambres ?", answer: "un" }, 
+                            { text: "Paul m'a raconté _________________ histoire drôle ce matin.", answer: "une" }
+                        ] 
+                    },
+                    2: { 
+                        instruction: "Complétez les phrases avec l'article défini qui convient (le, la, l', les).", 
+                        questions: [
+                            { text: "J'aime beaucoup _________________ soleil en été.", answer: "le" }, 
+                            { text: "_________________ étudiants écoutent attentivement l'explication de la professeure.", answer: "Les" }, 
+                            { text: "Elle ferme _________________ fenêtre parce qu'il fait froid.", answer: "la" }, 
+                            { text: "Où sont _________________ clés de la maison ?", answer: "les" }, 
+                            { text: "_________________ capitale de la France est Paris.", answer: "La" }, 
+                            { text: "Tu préfères _________________ musique classique ou le rock ?", answer: "la" }, 
+                            { text: "_________________ enfants jouent calmement dans la chambre.", answer: "Les" }, 
+                            { text: "Nous regardons _________________ arbre magnifique qui est dans le jardin.", answer: "l'" }, 
+                            { text: "Est-ce que vous connaissez _________________ adresse de cet hôtel ?", answer: "l'" }, 
+                            { text: "Il regarde _________________ étoiles dans le ciel ce soir.", answer: "les" }
+                        ] 
+                    },
+                    3: { 
+                        instruction: "Complétez les phrases avec le bon article indéfini (un, une, des) ou défini (le, la, l', les).", 
+                        questions: [
+                            { text: "J'ai vu un film magnifique hier ; _________________ film était intéressant.", answer: "Le" }, 
+                            { text: "Regarde ! C'est _________________ chien de notre voisin.", answer: "le" },
+                            { text: "Je cherche _________________ clé pour ouvrir la porte.", answer: "la" }, 
+                            { text: "Nous avons rencontré _________________ étudiants très sympathiques.", answer: "des" }, 
+                            { text: "Nous avons rencontré _________________ gens dont tu nous as parlé hier.", answer: "les" }, 
+                            { text: "Elle porte _________________ robe noire qu'elle a achetée la semaine dernière.", answer: "la" }, 
+                            { text: "Est-ce que vous avez _________________ ordinateur portable chez vous ?", answer: "un" }, 
+                            { text: "Je ne trouve pas _________________ télécommande de la télévision.", answer: "la" }, 
+                            { text: "Je voudrais _________________ thé s'il vous plaît.", answer: "un" }, 
+                            { text: "Ils ont acheté _________________ maison dans ce village.", answer: "une" }
+                        ] 
+                    },
+                    4: {
+                        instruction: "Traduisez les phrases suivantes du géorgien vers le français en utilisant le bon article.",
+                        questions: [
+                            { text: "ის (ქალი) ეძებს ახალ სამუშაოს.<br>_________________", answer: "", type: "open" },
+                            { text: "ბავშვები პარკში თამაშობენ.<br>_________________", answer: "", type: "open" },
+                            { text: "ის (კაცი) ყოველდღე ყიდულობს გაზეთს.<br>_________________", answer: "", type: "open" },
+                            { text: "მას (ქალს) აქვს პრობლემა.<br>_________________", answer: "", type: "open" },
+                            { text: "ეზოში ლამაზი ყვავილებია.<br>_________________", answer: "", type: "open" },
+                            { text: "მე ვყიდულობ საჩუქარს.<br>_________________", answer: "", type: "open" },
+                            { text: "მასწავლებელი განმარტავს გაკვეთილს.<br>_________________", answer: "", type: "open" },
+                            { text: "ის (ქალი) ეძებს გასაღებს.<br>_________________", answer: "", type: "open" },
+                            { text: "ჩვენ ვუყურებთ საინტერესო ფილმს.<br>_________________", answer: "", type: "open" },
+                            { text: "მარიამი ხედავს დიდ სახლს.<br>_________________", answer: "", type: "open" }
+                        ]
+                    }
                 },
+                5: {
+                    instruction: "rédigez un texte d'au moins 50 mots pour décrire ce que vous faites pendant vos jours de repos (week-end ou jours libres), en précisant vos différentes activités du matin, du soir ou du dimanche. Portez une attention particulière à la grammaire, notamment à l'emploi correct des articles définis (le, la, l', les) et des articles indéfinis (un, une, des), et n'hésitez pas à réutiliser des expressions utiles du texte comme « se changer les idées » ou « avoir la flemme de... ne copiez pas les phrases du texte qu'on a lu lors de notre leçon!!! (50 mots minimum) »",
+                    type: "essay"
+                },
+                6: {
+                    instruction: "უყურეთ ვიდეორგოლს და უპასუხეთ კითხვებს",
+                    video: "videos/a2_video1.mp4",
+                    questions: [
+                        { text: "Quel plat la famille de Caillou est-elle en train de manger ?", options: ["De la soupe", "Des spaghettis", "Une pizza", "Des hamburgers"], answer: "Des spaghettis", type: "mc" },
+                        { text: "Quel problème arrive à Caillou pendant qu'il mange ?", options: ["Il a un hoquet", "Il renverse son assiette", "Il s'endort", "Il a mal au ventre"], answer: "Il a un hoquet", type: "mc" },
+                        { text: "Que fait Caillou pour essayer d'arrêter son hoquet après le repas ?", options: ["Il boit un grand verre de jus", "Il construit une tour avec des blocs", "Il va courir dehors", "Il chante"], answer: "Il construit une tour avec des blocs", type: "mc" },
+                        { text: "Que suggère maman pour essayer de guérir le hoquet de Caillou la première fois ?", options: ["Boire rapidement de l'eau", "Lui faire peur", "Manger un bonbon", "Se mettre la tête à l'envers"], answer: "Lui faire peur", type: "mc" },
+                        { text: "Comment maman fait-elle pour surprendre Caillou en faisant semblant d'être un fantôme ?", options: ["Elle saute en criant", "Elle écarte les bras, flotte comme un fantôme et saute vers lui", "Elle se cache sous un drap", "Elle éteint la lumière"], answer: "Elle écarte les bras, flotte comme un fantôme et saute vers lui", type: "mc" },
+                        { text: "Que propose papa pour faire partir le hoquet de Caillou après maman ?", options: ["Boire l'eau très vite d'un tuyau d'arrosage", "Manger de la glace", "Faire du vélo", "Chanter une chanson"], answer: "Boire l'eau très vite d'un tuyau d'arrosage", type: "mc" },
+                        { text: "Quelle est la solution finale que propose papa pour guérir le hoquet ?", options: ["Se tenir en équilibre sur les mains avec l'aide de papa", "Sauter sur place dix fois", "Fermer les yeux très fort", "Boire du lait chaud"], answer: "Se tenir en équilibre sur les mains avec l'aide de papa", type: "mc" },
+                        { text: "Quel mouvement bizarre papa demande-t-il de faire à la toute fin dans la salle de jeux ?", options: ["Sautiller sur le pied gauche et se frotter la tête avec la main droite", "Tourner sur soi-même en levant les mains", "Toucher ses pieds sans plier les genoux", "Faire le tour de la pièce en rampant"], answer: "Sautiller sur le pied gauche et se frotter la tête avec la main droite", type: "mc" },
+                        { text: "Comment réagit Caillou lorsque sa famille commence à faire et imiter le remède rigolo ?", options: ["Il pleure", "Il trouve que papa a l'air ridicule et ils se mettent à rire", "Il se met en colère", "Il s'en va dans sa chambre"], answer: "Il trouve que papa a l'air ridicule et ils se mettent à rire", type: "mc" },
+                        { text: "Qu'est-ce qui s'est finalement passé avec le hoquet de Caillou à la fin ?", options: ["Il est resté toute la journée", "Il est parti tout seul", "Il s'est transformé en toux", "Il a empiré"], answer: "Il est parti tout seul", type: "mc" }
+                    ]
+                }
+                /*
                 kvira_4: {
                 },
                 kvira_5: {
@@ -2150,9 +2311,101 @@ async function loadHeaderScore(userEmail) {
                         ]
                     }
                 },
-                /*
                 kvira_3: {
+                    1: { 
+                        instruction: "Complétez les phrases avec l'article indéfini qui convient (un, une, des).", 
+                        questions: [
+                            { text: "Mon frère a acheté _________________ nouveau téléphone portable hier.", answer: "un" }, 
+                            { text: "Il y a _________________ très belle exposition de peinture au musée.", answer: "une" }, 
+                            { text: "Ce soir, nous allons commander _________________ pizzas pour nos amis.", answer: "des" }, 
+                            { text: "J'ai trouvé _________________ vieux livre de recettes dans le grenier.", answer: "un" }, 
+                            { text: "Elle porte _________________ magnifique écharpe rouge aujourd'hui.", answer: "une" }, 
+                            { text: "Tu as reçu _________________ lettres importantes ce matin.", answer: "des" }, 
+                            { text: "Ils ont adopté _________________ petit chat noir la semaine dernière.", answer: "un" }, 
+                            { text: "Nous avons visité _________________ monuments magnifiques pendant nos vacances.", answer: "des" }, 
+                            { text: "Vous cherchez _________________ appartement avec deux chambres ?", answer: "un" }, 
+                            { text: "Paul m'a raconté _________________ histoire drôle ce matin.", answer: "une" }
+                        ] 
+                    },
+                    2: { 
+                        instruction: "Complétez les phrases avec l'article défini qui convient (le, la, l', les).", 
+                        questions: [
+                            { text: "J'aime beaucoup _________________ soleil en été.", answer: "le" }, 
+                            { text: "_________________ étudiants écoutent attentivement l'explication de la professeure.", answer: "Les" }, 
+                            { text: "Elle ferme _________________ fenêtre parce qu'il fait froid.", answer: "la" }, 
+                            { text: "Où sont _________________ clés de la maison ?", answer: "les" }, 
+                            { text: "_________________ capitale de la France est Paris.", answer: "La" }, 
+                            { text: "Tu préfères _________________ musique classique ou le rock ?", answer: "la" }, 
+                            { text: "_________________ enfants jouent calmement dans la chambre.", answer: "Les" }, 
+                            { text: "Nous regardons _________________ arbre magnifique qui est dans le jardin.", answer: "l'" }, 
+                            { text: "Est-ce que vous connaissez _________________ adresse de cet hôtel ?", answer: "l'" }, 
+                            { text: "Il regarde _________________ étoiles dans le ciel ce soir.", answer: "les" }
+                        ] 
+                    },
+                    3: { 
+                        instruction: "Complétez les phrases avec le bon article indéfini (un, une, des) ou défini (le, la, l', les).", 
+                        questions: [
+                            { text: "J'ai vu un film magnifique hier ; _________________ film était intéressant.", answer: "Le" }, 
+                            { text: "Regarde ! C'est _________________ chien de notre voisin.", answer: "le" },
+                            { text: "Je cherche _________________ clé pour ouvrir la porte.", answer: "la" }, 
+                            { text: "Nous avons rencontré _________________ étudiants très sympathiques.", answer: "des" }, 
+                            { text: "Nous avons rencontré _________________ gens dont tu nous as parlé hier.", answer: "les" }, 
+                            { text: "Elle porte _________________ robe noire qu'elle a achetée la semaine dernière.", answer: "la" }, 
+                            { text: "Est-ce que vous avez _________________ ordinateur portable chez vous ?", answer: "un" }, 
+                            { text: "Je ne trouve pas _________________ télécommande de la télévision.", answer: "la" }, 
+                            { text: "Je voudrais _________________ thé s'il vous plaît.", answer: "un" }, 
+                            { text: "Ils ont acheté _________________ maison dans ce village.", answer: "une" }
+                        ] 
+                    },
+                    4: {
+                        instruction: "Traduisez les phrases suivantes du géorgien vers le français en utilisant le bon article.",
+                        questions: [
+                            { text: "ის (ქალი) ეძებს ახალ სამუშაოს.<br>_________________", answer: "", type: "open" },
+                            { text: "ბავშვები პარკში თამაშობენ.<br>_________________", answer: "", type: "open" },
+                            { text: "ის (კაცი) ყოველდღე ყიდულობს გაზეთს.<br>_________________", answer: "", type: "open" },
+                            { text: "მას (ქალს) აქვს პრობლემა.<br>_________________", answer: "", type: "open" },
+                            { text: "ეზოში ლამაზი ყვავილებია.<br>_________________", answer: "", type: "open" },
+                            { text: "მე ვყიდულობ საჩუქარს.<br>_________________", answer: "", type: "open" },
+                            { text: "მასწავლებელი განმარტავს გაკვეთილს.<br>_________________", answer: "", type: "open" },
+                            { text: "ის (ქალი) ეძებს გასაღებს.<br>_________________", answer: "", type: "open" },
+                            { text: "ჩვენ ვუყურებთ საინტერესო ფილმს.<br>_________________", answer: "", type: "open" },
+                            { text: "მარიამი ხედავს დიდ სახლს.<br>_________________", answer: "", type: "open" }
+                        ]
+                    }
                 },
+                5: {
+                    instruction: "Vous lisez cet article dans un magazine francophone sur l'immobilier. Lisez le texte suivant et répondez aux questions",
+                    textFile: "texts/a2_delf_text_3.txt",
+                    questions: [
+                        { text: "Où peut-on lire cet article ?", options: ["Dans un magazine sur la technologie", "Dans un magazine sur l'immobilier", "Dans un journal de sport", "Dans un livre d'histoire"], answer: "Dans un magazine sur l'immobilier", type: "mc" },
+                        { text: "Quel est le sujet principal de ce texte ?", options: ["Acheter une voiture", "Choisir son nouvel appartement", "Partir en vacances", "Trouver un travail"], answer: "Choisir son nouvel appartement", type: "mc" },
+                        { text: "Que faut-il comparer avant de signer un contrat ?", options: ["La couleur des murs et des meubles", "La localisation, la luminosité et le budget", "La marque de la télévision", "Le nombre de voisins dans l'immeuble"], answer: "La localisation, la luminosité et le budget", type: "mc" },
+                        { text: "À quoi faut-il réfléchir en priorité selon le texte ?", options: ["Uniquement au prix", "À ses besoins de tous les jours", "Seulement à la vue sur le parc", "À l'avis des amis"], answer: "À ses besoins de tous les jours", type: "mc" },
+                        { text: "Quel logement convient le mieux aux personnes qui veulent vivre près des commerces ?", options: ["L'Apt-Centre", "Le Studio-Pratique", "L'Éco-Logis", "Le Grand-Espace"], answer: "L'Apt-Centre", type: "mc" },
+                        { text: "Quelle est la caractéristique principale du 'Studio-Pratique' ?", options: ["Il est construit en bois", "Il est petit, économique et facile à entretenir", "Il possède un grand jardin", "Il a trois balcons"], answer: "Il est petit, économique et facile à entretenir", type: "mc" },
+                        { text: "Pourquoi l'appartement 'L'Éco-Logis' est-il idéal pour la planète ?", options: ["Il est au bord de la mer", "Il consomme très peu d'énergie et utilise des matériaux écologiques", "Il a un grand garage", "Il est situé à la campagne"], answer: "Il consomme très peu d'énergie et utilise des matériaux écologiques", type: "mc" },
+                        { text: "Quelle superficie propose l'appartement 'Le Grand-Espace' ?", options: ["25 m²", "50 m²", "90 m²", "120 m²"], answer: "90 m²", type: "mc" },
+                        { text: "Combien de temps les locataires gardent-ils leur appartement en général ?", options: ["Moins d'un an", "Entre 3 et 5 ans", "Plus de 10 ans", "Toute leur vie"], answer: "Entre 3 et 5 ans", type: "mc" },
+                        { text: "Quelle est la source de cet article ?", options: ["www.technomagazine.fr", "www.immobilier-magazine.fr", "www.logement-facile.com", "www.actualites-ville.fr"], answer: "www.immobilier-magazine.fr", type: "mc" }
+                        ]
+                },
+                6: {
+                    instruction: "უყურეთ ვიდეორგოლს და უპასუხეთ კითხვებს",
+                    video: "videos/a2_video1.mp4",
+                    questions: [
+                        { text: "Quel plat la famille de Caillou est-elle en train de manger ?", options: ["De la soupe", "Des spaghettis", "Une pizza", "Des hamburgers"], answer: "Des spaghettis", type: "mc" },
+                        { text: "Quel problème arrive à Caillou pendant qu'il mange ?", options: ["Il a un hoquet", "Il renverse son assiette", "Il s'endort", "Il a mal au ventre"], answer: "Il a un hoquet", type: "mc" },
+                        { text: "Que fait Caillou pour essayer d'arrêter son hoquet après le repas ?", options: ["Il boit un grand verre de jus", "Il construit une tour avec des blocs", "Il va courir dehors", "Il chante"], answer: "Il construit une tour avec des blocs", type: "mc" },
+                        { text: "Que suggère maman pour essayer de guérir le hoquet de Caillou la première fois ?", options: ["Boire rapidement de l'eau", "Lui faire peur", "Manger un bonbon", "Se mettre la tête à l'envers"], answer: "Lui faire peur", type: "mc" },
+                        { text: "Comment maman fait-elle pour surprendre Caillou en faisant semblant d'être un fantôme ?", options: ["Elle saute en criant", "Elle écarte les bras, flotte comme un fantôme et saute vers lui", "Elle se cache sous un drap", "Elle éteint la lumière"], answer: "Elle écarte les bras, flotte comme un fantôme et saute vers lui", type: "mc" },
+                        { text: "Que propose papa pour faire partir le hoquet de Caillou après maman ?", options: ["Boire l'eau très vite d'un tuyau d'arrosage", "Manger de la glace", "Faire du vélo", "Chanter une chanson"], answer: "Boire l'eau très vite d'un tuyau d'arrosage", type: "mc" },
+                        { text: "Quelle est la solution finale que propose papa pour guérir le hoquet ?", options: ["Se tenir en équilibre sur les mains avec l'aide de papa", "Sauter sur place dix fois", "Fermer les yeux très fort", "Boire du lait chaud"], answer: "Se tenir en équilibre sur les mains avec l'aide de papa", type: "mc" },
+                        { text: "Quel mouvement bizarre papa demande-t-il de faire à la toute fin dans la salle de jeux ?", options: ["Sautiller sur le pied gauche et se frotter la tête avec la main droite", "Tourner sur soi-même en levant les mains", "Toucher ses pieds sans plier les genoux", "Faire le tour de la pièce en rampant"], answer: "Sautiller sur le pied gauche et se frotter la tête avec la main droite", type: "mc" },
+                        { text: "Comment réagit Caillou lorsque sa famille commence à faire et imiter le remède rigolo ?", options: ["Il pleure", "Il trouve que papa a l'air ridicule et ils se mettent à rire", "Il se met en colère", "Il s'en va dans sa chambre"], answer: "Il trouve que papa a l'air ridicule et ils se mettent à rire", type: "mc" },
+                        { text: "Qu'est-ce qui s'est finalement passé avec le hoquet de Caillou à la fin ?", options: ["Il est resté toute la journée", "Il est parti tout seul", "Il s'est transformé en toux", "Il a empiré"], answer: "Il est parti tout seul", type: "mc" }
+                    ]
+                },
+                /*
                 kvira_4: {
                 },
                 kvira_5: {
@@ -2444,9 +2697,94 @@ async function loadHeaderScore(userEmail) {
                         ]
                     },
                 },
-                /*
                 kvira_3: {
+                    1: {
+                        instruction: "Choisissez la bonne réponse selon les règles de l'imparfait.",
+                        questions: [
+                            { text: "Quand j'___________ petit, je jouais au football tous les jours.", options: ["ai été", "étais", "suis", "serai"], answer: "étais", type: "mc" },
+                            { text: "Je lisais un livre quand tu ___________ .", options: ["es venu", "venais", "viens", "seras venu"], answer: "es venu", type: "mc" },
+                            { text: "Il faisait beau, le soleil ___________ et les oiseaux chantaient.", options: ["brillait", "a brillé", "brille", "brillera"], answer: "brillait", type: "mc" },
+                            { text: "Pendant que nous ___________ le dîner, le téléphone a sonné.", options: ["préparons", "préparions", "avons préparé", "préparerons"], answer: "préparions", type: "mc" },
+                            { text: "Tous les étés, ma famille et moi ___________ en vacances à la mer.", options: ["allons", "sommes allés", "allions", "irons"], answer: "allions", type: "mc" },
+                            { text: "Elle dormait profondément quand le réveil ___________ .", options: ["a sonné", "sonnait", "sonne", "sonnera"], answer: "a sonné", type: "mc" },
+                            { text: "Autrefois, il n'___________ pas autant de voitures en ville.", options: ["a eu", "avait", "a", "aura"], answer: "avait", type: "mc" },
+                            { text: "Tu regardais la télévision pendant que je ___________ mes devoirs.", options: ["faisais", "ai fait", "fais", "ferai"], answer: "faisais", type: "mc" },
+                            { text: "La maison ___________ grande et les murs étaient peints en bleu.", options: ["a été", "était", "est", "sera"], answer: "était", type: "mc" },
+                            { text: "Quand nous étions étudiants, nous ___________ souvent au cinéma le jeudi.", options: ["allions", "sommes allés", "allions", "irons"], answer: "allions", type: "mc" }
+                        ]
+                    },
+                    2: {
+                        instruction: "Mettez le verbe entre parenthèses à l'imparfait.",
+                        questions: [
+                            { text: "Quand j'étais jeune, je _________________ (habiter) à Tbilisi.", answer: "habitais" },
+                            { text: "Nous _________________ (regarder) un film quand la lumière s'est éteinte.", answer: "regardions" },
+                            { text: "Il _________________ (faire) un temps magnifique pour notre randonnée.", answer: "faisait" },
+                            { text: "Tu _________________ (finir) toujours tes exercices en avance.", answer: "finissais" },
+                            { text: "Les oiseaux _________________ (chanter) dans les arbres du jardin.", answer: "chantaient" },
+                            { text: "Vous _________________ (avoir) l'habitude de vous promener le soir.", answer: "aviez" },
+                            { text: "Elle _________________ (porter) une belle robe rouge ce jour-là.", answer: "portait" },
+                            { text: "Je _________________ (vouloir) devenir médecin quand j'étais enfant.", answer: "voulais" },
+                            { text: "Nous _________________ (être) très fatigués après notre voyage.", answer: "étions" },
+                            { text: "Ils _________________ (prendre) le bus pour aller à l'école tous les matins.", answer: "prenaient" }
+                        ]
+                    },
+                    3: {
+                        instruction: "Traduisez les phrases suivantes du français vers le géorgien",
+                        questions: [
+                            { text: "Quand j'étais petit, je jouais au football tous les jours.<br>_________________", answer: "", type: "open" },
+                            { text: "Je lisais un livre quand tu es venu.<br>_________________", answer: "", type: "open" },
+                            { text: "Il faisait beau, le soleil brillait et les oiseaux chantaient.<br>_________________", answer: "", type: "open" },
+                            { text: "Nous finissions nos études à cette époque-là.<br>_________________", answer: "", type: "open" },
+                            { text: "Tu parlais très bien français quand tu habitais en France.<br>_________________", answer: "", type: "open" },
+                            { text: "Elle préparait le dîner pendant que les enfants jouaient.<br>_________________", answer: "", type: "open" },
+                            { text: "Il y avait beaucoup de monde dans la rue principale.<br>_________________", answer: "", type: "open" },
+                            { text: "Je ne savais pas la réponse à cette question.<br>_________________", answer: "", type: "open" },
+                            { text: "Ils voulaient acheter une nouvelle maison l'année dernière.<br>_________________", answer: "", type: "open" },
+                            { text: "Il faisait très froid et la neige tombait doucement.<br>_________________", answer: "", type: "open" },
+                            { text: "Vous étiez fatigués après une longue journée de travail.<br>_________________", answer: "", type: "open" },
+                            { text: "Nous habitions dans un petit village près de la montagne.<br>_________________", answer: "", type: "open" },
+                            { text: "Mon frère écoutait de la musique dans sa chambre.<br>_________________", answer: "", type: "open" },
+                            { text: "Les étudiants écoutaient attentivement le professeur.<br>_________________", answer: "", type: "open" },
+                            { text: "Autrefois, je n'aimais pas le café.<br>_________________", answer: "", type: "open" }
+                        ]
+                    },
+                    4: {
+                        instruction: "Traduisez les phrases suivantes du géorgien vers le français",
+                        questions: [
+                            { text: "როცა პატარა ვიყავი, ყოველდღე ფეხბურთს ვთამაშობდი.<br>_________________", answer: "", type: "open" },
+                            { text: "მე წიგნს ვკითხულობდი, როდესაც შენ მოხვედი.<br>_________________", answer: "", type: "open" },
+                            { text: "ჩვენ ვცხოვრობდით ძველ სახლში.<br>_________________", answer: "", type: "open" },
+                            { text: "ის მუშაობდა ბანკში, როცა მე ის გავაცანი.<br>_________________", answer: "", type: "open" },
+                            { text: "ქუჩაში ბევრი ხალხი იყო და ყველა ჩქარობდა.<br>_________________", answer: "", type: "open" },
+                            { text: "ბავშვები ეზოში თამაშობდნენ.<br>_________________", answer: "", type: "open" },
+                            { text: "ძალიან ციოდა და წვიმდა.<br>_________________", answer: "", type: "open" },
+                            { text: "ის ყოველ დილით სვამდა ყავას.<br>_________________", answer: "", type: "open" },
+                            { text: "გოგონა კითხულობდა ჟურნალს.<br>_________________", answer: "", type: "open" },
+                            { text: "მეგობრები პარკში სეირნობდნენ.<br>_________________", answer: "", type: "open" }
+                        ]
+                    }
                 },
+                5: {
+                    instruction: "მოიფიქრეთ 10 წინადადება სადაც გამოიყენებთ Imparfait დროს.",
+                    type: "essay"
+                },
+                6: {
+                    instruction: "LE TRAVAIL À DISTANCE : AVANTAGES ET DANGERS POUR LES SALARIÉS. Lisez le texte suivant et répondez aux questions",
+                    textFile: "texts/b1_delf_text_3.txt",
+                    questions: [
+                        { text: "D'après le premier paragraphe, le travail à distance en France...", options: ["est devenu une pratique courante pour de nombreux salariés.", "est interdit par la majorité des entreprises.", "nécessite de changer d'ordinateur toutes les semaines.", "concerne uniquement les grandes entreprises de technologie."], answer: "est devenu une pratique courante pour de nombreux salariés.", type: "mc" },
+                        { text: "Quel est l'un des principaux avantages du travail chez soi selon le deuxième paragraphe ?", options: ["Il permet d'obtenir un salaire plus élevé.", "Il évite les transports et fait gagner du temps le matin.", "Il oblige les employés à travailler plus vite.", "Il donne droit à plus de jours de vacances."], answer: "Il évite les transports et fait gagner du temps le matin.", type: "mc" },
+                        { text: "Quelle règle Thomas a-t-il décidément adoptée pour sa vie professionnelle ?", options: ["Travailler tous les week-ends pour finir plus tôt.", "Éteindre son ordinateur à 18 heures et stopper les e-mails le week-end.", "Supprimer complètement son compte de messagerie.", "Travailler uniquement dans les cafés."], answer: "Éteindre son ordinateur à 18 heures et stopper les e-mails le week-end.", type: "mc" },
+                        { text: "Selon Nathalie, quel est l'avantage du travail à distance pour certains employés ?", options: ["Ils peuvent travailler au calme sans le bruit du bureau.", "Ils n'ont plus besoin d'utiliser leur ordinateur.", "Ils ont plus de liberté pour voyager à l'étranger.", "Ils dorment plus longtemps le soir."], answer: "Ils peuvent travailler au calme sans le bruit du bureau.", type: "mc" },
+                        { text: "D'après Nathalie, quel est le risque majeur lié au travail à la maison ?", options: ["La surcharge de travail physique", "La fatigue liée aux transports", "La solitude et le sentiment d'isolement", "La baisse de la qualité du matériel informatique"], answer: "La solitude et le sentiment d'isolement", type: "mc" },
+                        { text: "Selon Pierre Martin, que doivent faire les entreprises en plus de fournir un ordinateur ?", options: ["Interdire l'accès à Internet après la pause midi", "Apprendre aux salariés à faire des pauses et à se déconnecter", "Demander aux employés de travailler uniquement le week-end", "Organiser des réunions obligatoires chaque soir"], answer: "Apprendre aux salariés à faire des pauses et à se déconnecter", type: "mc" },
+                        { text: "Quel élément le psychologue Pierre Martin conseille-t-il de protéger en priorité ?", options: ["Le matériel de l'entreprise", "La santé mentale des salariés", "Le temps de trajet des employés", "Le chiffre d'affaires annuel"], answer: "La santé mentale des salariés", type: "mc" },
+                        { text: "Comment Thomas qualifie-t-il sa principale difficulté au quotidien ?", options: ["Réussir à se réveiller le matin", "Réussir à séparer sa vie personnelle et son travail", "Comprendre les nouveaux logiciels de l'entreprise", "Supporter le bruit de ses voisins"], answer: "Réussir à séparer sa vie personnelle et son travail", type: "mc" },
+                        { text: "D'après le texte, l'utilisation du travail à distance dépend principalement de...", options: ["la chance", "la météo", "la façon dont on l'organise", "la taille du bureau"], answer: "la façon dont on l'organise", type: "mc" },
+                        { text: "Où cet article a-t-il été trouvé à l'origine ?", options: ["www.actualites-travail.fr", "www.lemonde-informatique.com", "www.gestion-entreprise.net", "www.magazine-emploi.fr"], answer: "www.actualites-travail.fr", type: "mc" }
+                        ]
+                },
+                /*
                 kvira_4: {
                 },
                 kvira_5: {

@@ -1867,28 +1867,28 @@ async function loadHeaderScore(userEmail) {
                             { text: "ჩვენ ვუყურებთ საინტერესო ფილმს.<br>_________________", answer: "", type: "open" },
                             { text: "მარიამი ხედავს დიდ სახლს.<br>_________________", answer: "", type: "open" }
                         ]
+                    },
+                    5: {
+                        instruction: "rédigez un texte d'au moins 50 mots pour décrire ce que vous faites pendant vos jours de repos (week-end ou jours libres), en précisant vos différentes activités du matin, du soir ou du dimanche. Portez une attention particulière à la grammaire, notamment à l'emploi correct des articles définis (le, la, l', les) et des articles indéfinis (un, une, des), et n'hésitez pas à réutiliser des expressions utiles du texte comme « se changer les idées » ou « avoir la flemme de... ne copiez pas les phrases du texte qu'on a lu lors de notre leçon!!! (50 mots minimum) »",
+                        type: "essay"
+                    },
+                    6: {
+                        instruction: "უყურეთ ვიდეორგოლს და უპასუხეთ კითხვებს",
+                        video: "videos/a2_video1.mp4",
+                        questions: [
+                            { text: "Quel plat la famille de Caillou est-elle en train de manger ?", options: ["De la soupe", "Des spaghettis", "Une pizza", "Des hamburgers"], answer: "Des spaghettis", type: "mc" },
+                            { text: "Quel problème arrive à Caillou pendant qu'il mange ?", options: ["Il a un hoquet", "Il renverse son assiette", "Il s'endort", "Il a mal au ventre"], answer: "Il a un hoquet", type: "mc" },
+                            { text: "Que fait Caillou pour essayer d'arrêter son hoquet après le repas ?", options: ["Il boit un grand verre de jus", "Il construit une tour avec des blocs", "Il va courir dehors", "Il chante"], answer: "Il construit une tour avec des blocs", type: "mc" },
+                            { text: "Que suggère maman pour essayer de guérir le hoquet de Caillou la première fois ?", options: ["Boire rapidement de l'eau", "Lui faire peur", "Manger un bonbon", "Se mettre la tête à l'envers"], answer: "Lui faire peur", type: "mc" },
+                            { text: "Comment maman fait-elle pour surprendre Caillou en faisant semblant d'être un fantôme ?", options: ["Elle saute en criant", "Elle écarte les bras, flotte comme un fantôme et saute vers lui", "Elle se cache sous un drap", "Elle éteint la lumière"], answer: "Elle écarte les bras, flotte comme un fantôme et saute vers lui", type: "mc" },
+                            { text: "Que propose papa pour faire partir le hoquet de Caillou après maman ?", options: ["Boire l'eau très vite d'un tuyau d'arrosage", "Manger de la glace", "Faire du vélo", "Chanter une chanson"], answer: "Boire l'eau très vite d'un tuyau d'arrosage", type: "mc" },
+                            { text: "Quelle est la solution finale que propose papa pour guérir le hoquet ?", options: ["Se tenir en équilibre sur les mains avec l'aide de papa", "Sauter sur place dix fois", "Fermer les yeux très fort", "Boire du lait chaud"], answer: "Se tenir en équilibre sur les mains avec l'aide de papa", type: "mc" },
+                            { text: "Quel mouvement bizarre papa demande-t-il de faire à la toute fin dans la salle de jeux ?", options: ["Sautiller sur le pied gauche et se frotter la tête avec la main droite", "Tourner sur soi-même en levant les mains", "Toucher ses pieds sans plier les genoux", "Faire le tour de la pièce en rampant"], answer: "Sautiller sur le pied gauche et se frotter la tête avec la main droite", type: "mc" },
+                            { text: "Comment réagit Caillou lorsque sa famille commence à faire et imiter le remède rigolo ?", options: ["Il pleure", "Il trouve que papa a l'air ridicule et ils se mettent à rire", "Il se met en colère", "Il s'en va dans sa chambre"], answer: "Il trouve que papa a l'air ridicule et ils se mettent à rire", type: "mc" },
+                            { text: "Qu'est-ce qui s'est finalement passé avec le hoquet de Caillou à la fin ?", options: ["Il est resté toute la journée", "Il est parti tout seul", "Il s'est transformé en toux", "Il a empiré"], answer: "Il est parti tout seul", type: "mc" }
+                        ]
                     }
                 },
-                5: {
-                    instruction: "rédigez un texte d'au moins 50 mots pour décrire ce que vous faites pendant vos jours de repos (week-end ou jours libres), en précisant vos différentes activités du matin, du soir ou du dimanche. Portez une attention particulière à la grammaire, notamment à l'emploi correct des articles définis (le, la, l', les) et des articles indéfinis (un, une, des), et n'hésitez pas à réutiliser des expressions utiles du texte comme « se changer les idées » ou « avoir la flemme de... ne copiez pas les phrases du texte qu'on a lu lors de notre leçon!!! (50 mots minimum) »",
-                    type: "essay"
-                },
-                6: {
-                    instruction: "უყურეთ ვიდეორგოლს და უპასუხეთ კითხვებს",
-                    video: "videos/a2_video1.mp4",
-                    questions: [
-                        { text: "Quel plat la famille de Caillou est-elle en train de manger ?", options: ["De la soupe", "Des spaghettis", "Une pizza", "Des hamburgers"], answer: "Des spaghettis", type: "mc" },
-                        { text: "Quel problème arrive à Caillou pendant qu'il mange ?", options: ["Il a un hoquet", "Il renverse son assiette", "Il s'endort", "Il a mal au ventre"], answer: "Il a un hoquet", type: "mc" },
-                        { text: "Que fait Caillou pour essayer d'arrêter son hoquet après le repas ?", options: ["Il boit un grand verre de jus", "Il construit une tour avec des blocs", "Il va courir dehors", "Il chante"], answer: "Il construit une tour avec des blocs", type: "mc" },
-                        { text: "Que suggère maman pour essayer de guérir le hoquet de Caillou la première fois ?", options: ["Boire rapidement de l'eau", "Lui faire peur", "Manger un bonbon", "Se mettre la tête à l'envers"], answer: "Lui faire peur", type: "mc" },
-                        { text: "Comment maman fait-elle pour surprendre Caillou en faisant semblant d'être un fantôme ?", options: ["Elle saute en criant", "Elle écarte les bras, flotte comme un fantôme et saute vers lui", "Elle se cache sous un drap", "Elle éteint la lumière"], answer: "Elle écarte les bras, flotte comme un fantôme et saute vers lui", type: "mc" },
-                        { text: "Que propose papa pour faire partir le hoquet de Caillou après maman ?", options: ["Boire l'eau très vite d'un tuyau d'arrosage", "Manger de la glace", "Faire du vélo", "Chanter une chanson"], answer: "Boire l'eau très vite d'un tuyau d'arrosage", type: "mc" },
-                        { text: "Quelle est la solution finale que propose papa pour guérir le hoquet ?", options: ["Se tenir en équilibre sur les mains avec l'aide de papa", "Sauter sur place dix fois", "Fermer les yeux très fort", "Boire du lait chaud"], answer: "Se tenir en équilibre sur les mains avec l'aide de papa", type: "mc" },
-                        { text: "Quel mouvement bizarre papa demande-t-il de faire à la toute fin dans la salle de jeux ?", options: ["Sautiller sur le pied gauche et se frotter la tête avec la main droite", "Tourner sur soi-même en levant les mains", "Toucher ses pieds sans plier les genoux", "Faire le tour de la pièce en rampant"], answer: "Sautiller sur le pied gauche et se frotter la tête avec la main droite", type: "mc" },
-                        { text: "Comment réagit Caillou lorsque sa famille commence à faire et imiter le remède rigolo ?", options: ["Il pleure", "Il trouve que papa a l'air ridicule et ils se mettent à rire", "Il se met en colère", "Il s'en va dans sa chambre"], answer: "Il trouve que papa a l'air ridicule et ils se mettent à rire", type: "mc" },
-                        { text: "Qu'est-ce qui s'est finalement passé avec le hoquet de Caillou à la fin ?", options: ["Il est resté toute la journée", "Il est parti tout seul", "Il s'est transformé en toux", "Il a empiré"], answer: "Il est parti tout seul", type: "mc" }
-                    ]
-                }
                 /*
                 kvira_4: {
                 },
@@ -2293,7 +2293,6 @@ async function loadHeaderScore(userEmail) {
                             { text: "Les bénévoles doivent s'inscrire avant vendredi _________________.", answer: "midi" }
                         ]
                     },
-
                     6: {
                         instruction: "Lisez le texte suivant et répondez aux questions",
                         textFile: "texts/a2_delf_text_2_2.txt",
@@ -2371,39 +2370,39 @@ async function loadHeaderScore(userEmail) {
                             { text: "ჩვენ ვუყურებთ საინტერესო ფილმს.<br>_________________", answer: "", type: "open" },
                             { text: "მარიამი ხედავს დიდ სახლს.<br>_________________", answer: "", type: "open" }
                         ]
-                    }
-                },
-                5: {
+                    },
+                    5: {
                     instruction: "Vous lisez cet article dans un magazine francophone sur l'immobilier. Lisez le texte suivant et répondez aux questions",
                     textFile: "texts/a2_delf_text_3.txt",
                     questions: [
-                        { text: "Où peut-on lire cet article ?", options: ["Dans un magazine sur la technologie", "Dans un magazine sur l'immobilier", "Dans un journal de sport", "Dans un livre d'histoire"], answer: "Dans un magazine sur l'immobilier", type: "mc" },
-                        { text: "Quel est le sujet principal de ce texte ?", options: ["Acheter une voiture", "Choisir son nouvel appartement", "Partir en vacances", "Trouver un travail"], answer: "Choisir son nouvel appartement", type: "mc" },
-                        { text: "Que faut-il comparer avant de signer un contrat ?", options: ["La couleur des murs et des meubles", "La localisation, la luminosité et le budget", "La marque de la télévision", "Le nombre de voisins dans l'immeuble"], answer: "La localisation, la luminosité et le budget", type: "mc" },
-                        { text: "À quoi faut-il réfléchir en priorité selon le texte ?", options: ["Uniquement au prix", "À ses besoins de tous les jours", "Seulement à la vue sur le parc", "À l'avis des amis"], answer: "À ses besoins de tous les jours", type: "mc" },
-                        { text: "Quel logement convient le mieux aux personnes qui veulent vivre près des commerces ?", options: ["L'Apt-Centre", "Le Studio-Pratique", "L'Éco-Logis", "Le Grand-Espace"], answer: "L'Apt-Centre", type: "mc" },
-                        { text: "Quelle est la caractéristique principale du 'Studio-Pratique' ?", options: ["Il est construit en bois", "Il est petit, économique et facile à entretenir", "Il possède un grand jardin", "Il a trois balcons"], answer: "Il est petit, économique et facile à entretenir", type: "mc" },
-                        { text: "Pourquoi l'appartement 'L'Éco-Logis' est-il idéal pour la planète ?", options: ["Il est au bord de la mer", "Il consomme très peu d'énergie et utilise des matériaux écologiques", "Il a un grand garage", "Il est situé à la campagne"], answer: "Il consomme très peu d'énergie et utilise des matériaux écologiques", type: "mc" },
-                        { text: "Quelle superficie propose l'appartement 'Le Grand-Espace' ?", options: ["25 m²", "50 m²", "90 m²", "120 m²"], answer: "90 m²", type: "mc" },
-                        { text: "Combien de temps les locataires gardent-ils leur appartement en général ?", options: ["Moins d'un an", "Entre 3 et 5 ans", "Plus de 10 ans", "Toute leur vie"], answer: "Entre 3 et 5 ans", type: "mc" },
-                        { text: "Quelle est la source de cet article ?", options: ["www.technomagazine.fr", "www.immobilier-magazine.fr", "www.logement-facile.com", "www.actualites-ville.fr"], answer: "www.immobilier-magazine.fr", type: "mc" }
+                            { text: "Où peut-on lire cet article ?", options: ["Dans un magazine sur la technologie", "Dans un magazine sur l'immobilier", "Dans un journal de sport", "Dans un livre d'histoire"], answer: "Dans un magazine sur l'immobilier", type: "mc" },
+                            { text: "Quel est le sujet principal de ce texte ?", options: ["Acheter une voiture", "Choisir son nouvel appartement", "Partir en vacances", "Trouver un travail"], answer: "Choisir son nouvel appartement", type: "mc" },
+                            { text: "Que faut-il comparer avant de signer un contrat ?", options: ["La couleur des murs et des meubles", "La localisation, la luminosité et le budget", "La marque de la télévision", "Le nombre de voisins dans l'immeuble"], answer: "La localisation, la luminosité et le budget", type: "mc" },
+                            { text: "À quoi faut-il réfléchir en priorité selon le texte ?", options: ["Uniquement au prix", "À ses besoins de tous les jours", "Seulement à la vue sur le parc", "À l'avis des amis"], answer: "À ses besoins de tous les jours", type: "mc" },
+                            { text: "Quel logement convient le mieux aux personnes qui veulent vivre près des commerces ?", options: ["L'Apt-Centre", "Le Studio-Pratique", "L'Éco-Logis", "Le Grand-Espace"], answer: "L'Apt-Centre", type: "mc" },
+                            { text: "Quelle est la caractéristique principale du 'Studio-Pratique' ?", options: ["Il est construit en bois", "Il est petit, économique et facile à entretenir", "Il possède un grand jardin", "Il a trois balcons"], answer: "Il est petit, économique et facile à entretenir", type: "mc" },
+                            { text: "Pourquoi l'appartement 'L'Éco-Logis' est-il idéal pour la planète ?", options: ["Il est au bord de la mer", "Il consomme très peu d'énergie et utilise des matériaux écologiques", "Il a un grand garage", "Il est situé à la campagne"], answer: "Il consomme très peu d'énergie et utilise des matériaux écologiques", type: "mc" },
+                            { text: "Quelle superficie propose l'appartement 'Le Grand-Espace' ?", options: ["25 m²", "50 m²", "90 m²", "120 m²"], answer: "90 m²", type: "mc" },
+                            { text: "Combien de temps les locataires gardent-ils leur appartement en général ?", options: ["Moins d'un an", "Entre 3 et 5 ans", "Plus de 10 ans", "Toute leur vie"], answer: "Entre 3 et 5 ans", type: "mc" },
+                            { text: "Quelle est la source de cet article ?", options: ["www.technomagazine.fr", "www.immobilier-magazine.fr", "www.logement-facile.com", "www.actualites-ville.fr"], answer: "www.immobilier-magazine.fr", type: "mc" }
                         ]
                 },
                 6: {
                     instruction: "უყურეთ ვიდეორგოლს და უპასუხეთ კითხვებს",
                     video: "videos/a2_video1.mp4",
                     questions: [
-                        { text: "Quel plat la famille de Caillou est-elle en train de manger ?", options: ["De la soupe", "Des spaghettis", "Une pizza", "Des hamburgers"], answer: "Des spaghettis", type: "mc" },
-                        { text: "Quel problème arrive à Caillou pendant qu'il mange ?", options: ["Il a un hoquet", "Il renverse son assiette", "Il s'endort", "Il a mal au ventre"], answer: "Il a un hoquet", type: "mc" },
-                        { text: "Que fait Caillou pour essayer d'arrêter son hoquet après le repas ?", options: ["Il boit un grand verre de jus", "Il construit une tour avec des blocs", "Il va courir dehors", "Il chante"], answer: "Il construit une tour avec des blocs", type: "mc" },
-                        { text: "Que suggère maman pour essayer de guérir le hoquet de Caillou la première fois ?", options: ["Boire rapidement de l'eau", "Lui faire peur", "Manger un bonbon", "Se mettre la tête à l'envers"], answer: "Lui faire peur", type: "mc" },
-                        { text: "Comment maman fait-elle pour surprendre Caillou en faisant semblant d'être un fantôme ?", options: ["Elle saute en criant", "Elle écarte les bras, flotte comme un fantôme et saute vers lui", "Elle se cache sous un drap", "Elle éteint la lumière"], answer: "Elle écarte les bras, flotte comme un fantôme et saute vers lui", type: "mc" },
-                        { text: "Que propose papa pour faire partir le hoquet de Caillou après maman ?", options: ["Boire l'eau très vite d'un tuyau d'arrosage", "Manger de la glace", "Faire du vélo", "Chanter une chanson"], answer: "Boire l'eau très vite d'un tuyau d'arrosage", type: "mc" },
-                        { text: "Quelle est la solution finale que propose papa pour guérir le hoquet ?", options: ["Se tenir en équilibre sur les mains avec l'aide de papa", "Sauter sur place dix fois", "Fermer les yeux très fort", "Boire du lait chaud"], answer: "Se tenir en équilibre sur les mains avec l'aide de papa", type: "mc" },
-                        { text: "Quel mouvement bizarre papa demande-t-il de faire à la toute fin dans la salle de jeux ?", options: ["Sautiller sur le pied gauche et se frotter la tête avec la main droite", "Tourner sur soi-même en levant les mains", "Toucher ses pieds sans plier les genoux", "Faire le tour de la pièce en rampant"], answer: "Sautiller sur le pied gauche et se frotter la tête avec la main droite", type: "mc" },
-                        { text: "Comment réagit Caillou lorsque sa famille commence à faire et imiter le remède rigolo ?", options: ["Il pleure", "Il trouve que papa a l'air ridicule et ils se mettent à rire", "Il se met en colère", "Il s'en va dans sa chambre"], answer: "Il trouve que papa a l'air ridicule et ils se mettent à rire", type: "mc" },
-                        { text: "Qu'est-ce qui s'est finalement passé avec le hoquet de Caillou à la fin ?", options: ["Il est resté toute la journée", "Il est parti tout seul", "Il s'est transformé en toux", "Il a empiré"], answer: "Il est parti tout seul", type: "mc" }
-                    ]
+                            { text: "Quel plat la famille de Caillou est-elle en train de manger ?", options: ["De la soupe", "Des spaghettis", "Une pizza", "Des hamburgers"], answer: "Des spaghettis", type: "mc" },
+                            { text: "Quel problème arrive à Caillou pendant qu'il mange ?", options: ["Il a un hoquet", "Il renverse son assiette", "Il s'endort", "Il a mal au ventre"], answer: "Il a un hoquet", type: "mc" },
+                            { text: "Que fait Caillou pour essayer d'arrêter son hoquet après le repas ?", options: ["Il boit un grand verre de jus", "Il construit une tour avec des blocs", "Il va courir dehors", "Il chante"], answer: "Il construit une tour avec des blocs", type: "mc" },
+                            { text: "Que suggère maman pour essayer de guérir le hoquet de Caillou la première fois ?", options: ["Boire rapidement de l'eau", "Lui faire peur", "Manger un bonbon", "Se mettre la tête à l'envers"], answer: "Lui faire peur", type: "mc" },
+                            { text: "Comment maman fait-elle pour surprendre Caillou en faisant semblant d'être un fantôme ?", options: ["Elle saute en criant", "Elle écarte les bras, flotte comme un fantôme et saute vers lui", "Elle se cache sous un drap", "Elle éteint la lumière"], answer: "Elle écarte les bras, flotte comme un fantôme et saute vers lui", type: "mc" },
+                            { text: "Que propose papa pour faire partir le hoquet de Caillou après maman ?", options: ["Boire l'eau très vite d'un tuyau d'arrosage", "Manger de la glace", "Faire du vélo", "Chanter une chanson"], answer: "Boire l'eau très vite d'un tuyau d'arrosage", type: "mc" },
+                            { text: "Quelle est la solution finale que propose papa pour guérir le hoquet ?", options: ["Se tenir en équilibre sur les mains avec l'aide de papa", "Sauter sur place dix fois", "Fermer les yeux très fort", "Boire du lait chaud"], answer: "Se tenir en équilibre sur les mains avec l'aide de papa", type: "mc" },
+                            { text: "Quel mouvement bizarre papa demande-t-il de faire à la toute fin dans la salle de jeux ?", options: ["Sautiller sur le pied gauche et se frotter la tête avec la main droite", "Tourner sur soi-même en levant les mains", "Toucher ses pieds sans plier les genoux", "Faire le tour de la pièce en rampant"], answer: "Sautiller sur le pied gauche et se frotter la tête avec la main droite", type: "mc" },
+                            { text: "Comment réagit Caillou lorsque sa famille commence à faire et imiter le remède rigolo ?", options: ["Il pleure", "Il trouve que papa a l'air ridicule et ils se mettent à rire", "Il se met en colère", "Il s'en va dans sa chambre"], answer: "Il trouve que papa a l'air ridicule et ils se mettent à rire", type: "mc" },
+                            { text: "Qu'est-ce qui s'est finalement passé avec le hoquet de Caillou à la fin ?", options: ["Il est resté toute la journée", "Il est parti tout seul", "Il s'est transformé en toux", "Il a empiré"], answer: "Il est parti tout seul", type: "mc" }
+                        ]
+                    },
                 },
                 /*
                 kvira_4: {

@@ -6,10 +6,11 @@
     <title>OuiSpeak - სავარჯიშოები</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Georgian:wght@400;500;600;700;800&display=swap');
 
         th:first-child, td:first-child {
             width: 40px;
@@ -34,7 +35,7 @@
         }
 
         body {
-            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', 'Noto Sans Georgian', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-main);
             color: var(--text-main);
             margin: 0;
@@ -982,6 +983,446 @@
                 animation: none;
             }
         }
+
+        /* =========================================================
+           EXERCISES PAGE REDESIGN (styles only, same design as index.html)
+           Everything below only ADDS styles; nothing above was removed.
+           ========================================================= */
+
+        /* Header: name and score are hidden from the menu */
+        #headerStudentName,
+        #headerStudentScoreBox { display: none !important; }
+        #scoresNavLink::after { content: "შეფასებები"; }
+
+        /* ---------- Login box ---------- */
+        #authSection {
+            position: relative;
+            overflow: hidden;
+            border-radius: 22px;
+        }
+
+        #authSection::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary) 0 33.33%, #ffffff 33.33% 66.66%, var(--secondary) 66.66% 100%);
+        }
+
+        .auth-btn { background-color: var(--primary); }
+        .auth-btn:hover { background-color: #003f7d; }
+
+        /* ---------- Title banner (centered, like the recordings page) ---------- */
+        .intro-section {
+            max-width: 1140px;
+            width: calc(100% - 3rem);
+            margin: 2rem auto 0 auto;
+            padding: 2.75rem 2rem 4rem 2rem;
+            box-sizing: border-box;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            background: #082c55;
+            border-radius: 22px;
+        }
+
+        /* Tricolore band on the left edge */
+        .intro-section::before {
+            content: '';
+            display: block;
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 10px; height: auto;
+            transform: none;
+            margin: 0;
+            border-radius: 0;
+            background: linear-gradient(180deg, var(--primary) 0 33.33%, #ffffff 33.33% 66.66%, var(--secondary) 66.66% 100%);
+        }
+
+        .intro-section::after {
+            content: '';
+            position: absolute;
+            right: -140px; top: -180px;
+            width: 440px; height: 440px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 85, 165, 0.6) 0%, rgba(0, 85, 165, 0) 70%);
+            pointer-events: none;
+        }
+
+        .intro-section h1 {
+            position: relative;
+            z-index: 1;
+            font-size: clamp(1.6rem, 3vw, 2.3rem);
+            line-height: 1.25;
+            letter-spacing: -0.02em;
+            margin: 0;
+            background: none;
+            -webkit-text-fill-color: #ffffff;
+            color: #ffffff;
+        }
+
+        .intro-section h1::before {
+            content: "\f303";
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            display: block;
+            width: 56px; height: 56px;
+            line-height: 56px;
+            margin: 0 auto 1rem auto;
+            border-radius: 50%;
+            background: #ffffff;
+            color: var(--secondary);
+            -webkit-text-fill-color: var(--secondary);
+            font-size: 1.3rem;
+            box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.15);
+        }
+
+        /* ---------- Week picker, sitting on the banner's bottom edge ---------- */
+        .subject-selector-wrapper {
+            position: relative;
+            z-index: 2;
+            max-width: 420px;
+            margin: -1.9rem auto 2rem auto;
+        }
+
+        .subject-select {
+            height: 3.8rem;
+            padding: 0 3rem 0 3.4rem;
+            border-radius: 16px;
+            border: 2px solid #ffffff;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--primary);
+            box-shadow: 0 18px 36px -16px rgba(8, 44, 85, 0.55);
+            background-image:
+                url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230055a5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3crect x='3' y='4' width='18' height='18' rx='2'/%3e%3cline x1='16' y1='2' x2='16' y2='6'/%3e%3cline x1='8' y1='2' x2='8' y2='6'/%3e%3cline x1='3' y1='10' x2='21' y2='10'/%3e%3c/svg%3e"),
+                url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230055a5' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat, no-repeat;
+            background-position: left 1.2rem center, right 1.25rem center;
+            background-size: 1.25rem, 1rem;
+        }
+
+        .subject-select:hover { border-color: #eaf2fb; }
+
+        .subject-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 18px 36px -16px rgba(8, 44, 85, 0.55), 0 0 0 4px rgba(0, 85, 165, 0.15);
+        }
+
+        /* ---------- Exercise window ---------- */
+        .exercise-window {
+            border-radius: 22px;
+            box-shadow: 0 24px 48px -30px rgba(8, 44, 85, 0.45);
+        }
+
+        /* When no week is chosen yet (sidebar hidden), let the content use the full width */
+        .exercise-layout-body:has(> .exercise-sidebar[style*="none"]) {
+            grid-template-columns: 1fr;
+        }
+
+        /* Sidebar: numbered exercise list */
+        .exercise-sidebar {
+            background: #f4f8fd;
+            counter-reset: exo;
+            padding: 1.5rem 1rem;
+            gap: 0.6rem;
+        }
+
+        .sidebar-item {
+            counter-increment: exo;
+            justify-content: flex-start;
+            gap: 0.85rem;
+            padding: 0.6rem 0.85rem 0.6rem 0.6rem;
+            border-radius: 14px;
+            background: #ffffff;
+            border: 1px solid #dde8f4;
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .sidebar-item::before {
+            content: counter(exo);
+            flex: 0 0 auto;
+            width: 34px; height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: #eaf2fb;
+            color: var(--primary);
+            font-size: 1rem;
+            font-weight: 800;
+            transition: var(--transition);
+        }
+
+        .sidebar-item:hover {
+            background: #ffffff;
+            border-color: var(--primary);
+            color: var(--primary);
+            padding-left: 0.6rem;
+            transform: translateX(3px);
+        }
+
+        .sidebar-item.active {
+            background: linear-gradient(135deg, #0055a5 0%, #082c55 100%);
+            border-color: transparent;
+            color: #ffffff;
+            box-shadow: 0 14px 28px -16px rgba(8, 44, 85, 0.7);
+        }
+
+        .sidebar-item.active::before {
+            background: #ffffff;
+            color: var(--secondary);
+        }
+
+        .sidebar-item:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+
+        /* ---------- Task instruction ---------- */
+        .instruction-box {
+            background: #eaf2fb;
+            color: #082c55;
+            border: none;
+            border-left: 5px solid var(--primary);
+            border-radius: 14px;
+            box-shadow: none;
+            font-size: 1.1rem;
+            font-weight: 700;
+            padding: 1.15rem 1.5rem;
+        }
+
+        .instruction-box::after { display: none; }
+
+        /* ---------- Questions ---------- */
+        .exercise-sentence-item {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 1rem 1.4rem;
+            margin-bottom: 1rem;
+            transition: var(--transition);
+        }
+
+        .exercise-sentence-item:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(0, 85, 165, 0.08);
+        }
+
+        .blank-input {
+            background: #f4f8fd;
+            border-radius: 6px 6px 0 0;
+            border-bottom-color: #9fb6d3;
+        }
+
+        .blank-input:focus {
+            background: #eaf2fb;
+            border-bottom-style: solid;
+        }
+
+        .option-label {
+            padding: 0.7rem 1rem;
+            border-radius: 12px;
+            gap: 0.65rem;
+        }
+
+        .option-label:hover { background: #f4f8fd; }
+
+        .option-label:has(input:checked) {
+            background: #eaf2fb;
+            border-color: var(--primary);
+            color: #082c55;
+            font-weight: 600;
+        }
+
+        .option-label input[type="radio"] {
+            accent-color: var(--primary);
+            width: 1.05rem;
+            height: 1.05rem;
+            margin: 0;
+        }
+
+        /* Audio, video and reading text */
+        .audio-player-container,
+        .video-player-container {
+            background: #f4f8fd;
+            border: 1px solid #d6e4f3;
+            border-radius: 16px;
+        }
+
+        .text-file-container {
+            border-radius: 16px;
+            border-left: 5px solid var(--secondary);
+        }
+
+        .essay-textarea-input { border-radius: 16px; }
+
+        /* ---------- Action buttons ---------- */
+        .action-buttons-wrapper {
+            align-items: center;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .save-progress-btn {
+            background: #ffffff;
+            color: var(--primary);
+            border: 1.5px solid var(--primary);
+            border-radius: 12px;
+            padding: 0.75rem 1.4rem;
+        }
+
+        .save-progress-btn:hover {
+            background: #eaf2fb;
+            color: var(--primary);
+        }
+
+        .send-answers-btn {
+            background: var(--secondary);
+            border-radius: 12px;
+            padding: 0.85rem 1.75rem;
+            font-size: 1rem;
+            box-shadow: 0 14px 28px -14px rgba(239, 65, 53, 0.7);
+        }
+
+        .send-answers-btn:hover {
+            background: #c9302a;
+            box-shadow: 0 16px 30px -14px rgba(201, 48, 42, 0.8);
+        }
+
+        .exercise-clear-btn { border-radius: 12px; }
+
+        @media (max-width: 768px) {
+            .intro-section {
+                width: calc(100% - 1rem);
+                margin: 1.25rem auto 0 auto;
+                padding: 2rem 1.25rem 3.5rem 1.5rem;
+            }
+            .intro-section h1 { font-size: 1.4rem; }
+            .intro-section h1::before { width: 46px; height: 46px; line-height: 46px; font-size: 1.05rem; }
+            main { padding: 0 0.5rem; }
+            .subject-selector-wrapper { margin: -1.9rem 1rem 1.5rem 1rem; }
+            .exercise-sidebar { gap: 0.5rem; padding: 0.85rem; }
+            .sidebar-item {
+                flex: 1 1 30%;
+                justify-content: center;
+                padding: 0.45rem 0.5rem;
+                font-size: 0.85rem;
+                gap: 0.5rem;
+            }
+            .sidebar-item::before { width: 26px; height: 26px; font-size: 0.85rem; border-radius: 8px; }
+            .sidebar-item:hover { transform: none; padding-left: 0.5rem; }
+            .exercise-sentence-item { padding: 0.85rem 1rem; }
+            .send-answers-btn, .save-progress-btn { flex: 1 1 auto; justify-content: center; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .sidebar-item:hover { transform: none; }
+        }
+
+        /* ---------- PDF download button (between შენახვა and პასუხების გაგზავნა) ---------- */
+        .download-btn.download-pdf-btn {
+            background: #082c55;
+            color: #ffffff;
+            border-radius: 12px;
+            padding: 0.75rem 1.4rem;
+        }
+
+        .download-btn.download-pdf-btn:hover {
+            background: #0055a5;
+            box-shadow: 0 12px 24px -12px rgba(8, 44, 85, 0.7);
+        }
+
+        @media (max-width: 768px) {
+            .download-btn.download-pdf-btn { width: auto; flex: 1 1 auto; }
+        }
+
+        /* ---------- "Please wait" checking screen, matched to the dark blue banners ---------- */
+        .ai-overlay {
+            background: rgba(8, 44, 85, 0.35);
+        }
+
+        .ai-overlay-card {
+            background: #082c55;
+            color: #ffffff;
+            border-radius: 22px;
+            padding: 2.6rem 2rem 2.2rem 2.4rem;
+            box-shadow: 0 30px 60px -20px rgba(8, 44, 85, 0.75);
+        }
+
+        /* Tricolore band on the left edge (replaces the rotating edge) */
+        .ai-overlay-card::before {
+            inset: 0 auto 0 0;
+            width: 10px;
+            border-radius: 0;
+            background: linear-gradient(180deg, var(--primary) 0 33.33%, #ffffff 33.33% 66.66%, var(--secondary) 66.66% 100%);
+            animation: none;
+            z-index: 1;
+        }
+
+        /* Soft blue glow in the corner */
+        .ai-overlay-card::after {
+            inset: auto;
+            right: -140px;
+            top: -180px;
+            width: 440px;
+            height: 440px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 85, 165, 0.6) 0%, rgba(0, 85, 165, 0) 70%);
+            z-index: -1;
+        }
+
+        .ai-orb span:nth-child(1) {
+            border-top-color: #ffffff;
+            border-right-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .ai-orb::after {
+            background: radial-gradient(circle, #ffffff 0%, #93c5fd 45%, var(--primary) 100%);
+            box-shadow: 0 0 22px 6px rgba(147, 197, 253, 0.45);
+        }
+
+        .ai-overlay-title {
+            background: none;
+            -webkit-text-fill-color: #ffffff;
+            color: #ffffff;
+        }
+
+        .ai-overlay-text { color: rgba(255, 255, 255, 0.78); }
+
+        .ai-overlay-progress-track { background: rgba(255, 255, 255, 0.15); }
+
+        .ai-overlay-progress-fill { background: linear-gradient(90deg, #3b82f6, var(--secondary)); }
+
+        .ai-overlay-count { color: rgba(255, 255, 255, 0.85); }
+
+        .ai-overlay-note { color: rgba(255, 255, 255, 0.55); }
+
+        /* X button to stop the check and go back to the exercises */
+        .ai-overlay-close {
+            position: absolute;
+            top: 0.9rem;
+            right: 0.9rem;
+            z-index: 2;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            background: rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+            font-size: 1.5rem;
+            line-height: 1;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .ai-overlay-close:hover {
+            background: #ffffff;
+            color: #082c55;
+        }
+
+        .ai-overlay-close:focus-visible { outline: 3px solid #ffffff; outline-offset: 3px; }
     </style>
 </head>
 <body>
@@ -1087,6 +1528,9 @@
                                     <i class="fa-solid fa-floppy-disk"></i> შენახვა
                                 </button>
                                 <span id="saveProgressStatus" style="font-size: 0.9rem; font-weight: 600; color: #10b981;"></span>
+                                <button id="downloadWordBtn" class="download-btn download-pdf-btn" onclick="downloadAnswersPdf()" style="display: none;">
+                                    <i class="fa-solid fa-file-pdf"></i> პასუხების გადმოწერა
+                                </button>
                                 <button class="send-answers-btn" onclick="sendAnswersToEmail()" style="display: none;">
                                     <i class="fa-solid fa-paper-plane"></i> პასუხების გაგზავნა
                                 </button>
@@ -3803,6 +4247,212 @@ Reply ONLY with JSON in this exact shape:
             }
             return _originalSendAnswersToEmail.apply(this, arguments);
         };
+
+        // ===== PDF download of the completed and corrected exercises (same content as the email) =====
+        // New code only. It reuses the same steps as sending: AI check -> evaluateAllExercisesLive() -> payload.
+        // The button uses id="downloadWordBtn", so the existing code already shows it only at Exercice 6.
+        let pdfDownloadInProgress = false;
+
+        function pdfEscape(str) {
+            return String(str ?? "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+        }
+
+        function pdfFormatLine(line) {
+            // Split "sentence -> [status] -> [AI ...]" into the sentence and its status chips
+            const parts = line.split(" -> [");
+            let main = pdfEscape(parts[0]).replace(/\[ ([^\]]*?) \]/g, '<b style="color:#0055a5;background:#eaf2fb;padding:1px 6px;border-radius:5px;">$1</b>');
+            const chips = parts.slice(1).map(p => {
+                const text = p.replace(/\]\s*$/, "");
+                const bad = text.includes("❌");
+                const color = bad ? "#c9302a" : "#047857";
+                const bg = bad ? "#fdeeed" : "#ecfdf5";
+                return `<div style="margin-top:4px;padding:4px 10px;border-radius:8px;background:${bg};color:${color};font-size:11px;font-weight:600;">${pdfEscape(text)}</div>`;
+            }).join("");
+            return main + chips;
+        }
+
+        function buildAnswersPdfElement(info, payload) {
+            let rightCount = 0;
+            let wrongCount = 0;
+
+            // Cut the payload into its "Exercice N: ..." sections
+            const sectionRegex = /\n=+\nExercice (\d+): ([^\n]*)\n=+\n/g;
+            const sections = [];
+            let match;
+            let lastIndex = null;
+            let lastHead = null;
+            while ((match = sectionRegex.exec(payload)) !== null) {
+                if (lastHead) sections.push({ ...lastHead, body: payload.slice(lastIndex, match.index) });
+                lastHead = { number: match[1], title: match[2] };
+                lastIndex = sectionRegex.lastIndex;
+            }
+            if (lastHead) sections.push({ ...lastHead, body: payload.slice(lastIndex) });
+
+            const sectionsHtml = sections.map(sec => {
+                const rows = sec.body.split("\n").map(line => {
+                    if (!line.trim()) return "";
+                    const bad = line.includes("❌");
+                    const good = !bad && line.includes("✅");
+                    if (bad) wrongCount++;
+                    if (good) rightCount++;
+                    const border = bad ? "#ef4135" : (good ? "#10b981" : "#e2e8f0");
+                    return `<div class="pdf-row" style="page-break-inside:avoid;break-inside:avoid;margin:0 0 6px 0;padding:8px 12px;border:1px solid #e2e8f0;border-left:4px solid ${border};border-radius:8px;font-size:12.5px;line-height:1.6;white-space:pre-wrap;word-wrap:break-word;">${pdfFormatLine(line)}</div>`;
+                }).join("");
+                return `
+                    <div class="pdf-head" style="page-break-inside:avoid;break-inside:avoid;margin:18px 0 8px 0;padding:10px 14px;background:#eaf2fb;border-left:5px solid #0055a5;border-radius:10px;">
+                        <div style="font-size:11px;font-weight:700;color:#0055a5;">Exercice ${pdfEscape(sec.number)}</div>
+                        <div style="font-size:14px;font-weight:800;color:#082c55;">${pdfEscape(sec.title)}</div>
+                    </div>
+                    ${rows || '<div style="font-size:12px;color:#64748b;">—</div>'}
+                `;
+            }).join("");
+
+            const today = new Date().toLocaleDateString("ka-GE");
+            const infoRows = [
+                ["ელ-ფოსტა", info.from_email],
+                ["სტუდენტის ID", info.student_id],
+                ["კურსი", info.course],
+                ["კვირა", info.week],
+                ["სავარჯიშოები", info.exercise_block],
+                ["თარიღი", today]
+            ].map(([k, v]) => `
+                <div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);border-radius:8px;padding:6px 10px;">
+                    <div style="font-size:9.5px;color:rgba(255,255,255,0.7);">${pdfEscape(k)}</div>
+                    <div style="font-size:12px;font-weight:700;color:#ffffff;word-break:break-all;">${pdfEscape(v || "N/A")}</div>
+                </div>`).join("");
+
+            const el = document.createElement("div");
+            el.style.cssText = "width:700px;padding:0;background:#ffffff;color:#0f172a;font-family:'Inter','Noto Sans Georgian','Segoe UI',sans-serif;";
+            el.innerHTML = `
+                <div style="position:relative;overflow:hidden;background:#082c55;border-radius:14px;padding:22px 24px 20px 32px;color:#ffffff;">
+                    <div style="position:absolute;left:0;top:0;bottom:0;width:8px;background:linear-gradient(180deg,#0055a5 0 33.33%,#ffffff 33.33% 66.66%,#ef4135 66.66% 100%);"></div>
+                    <div style="font-size:12px;color:rgba(255,255,255,0.7);">OuiSpeak</div>
+                    <div style="font-size:22px;font-weight:800;margin:2px 0 14px 0;">სავარჯიშოების პასუხები</div>
+                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">${infoRows}</div>
+                </div>
+                <div style="display:flex;gap:10px;margin:14px 0 4px 0;">
+                    <div style="flex:1;padding:10px 14px;border-radius:10px;background:#ecfdf5;color:#047857;font-weight:700;font-size:13px;">✅ სწორი: ${rightCount}</div>
+                    <div style="flex:1;padding:10px 14px;border-radius:10px;background:#fdeeed;color:#c9302a;font-weight:700;font-size:13px;">❌ არასწორი: ${wrongCount}</div>
+                </div>
+                ${sectionsHtml}
+                <div style="margin-top:24px;padding-top:10px;border-top:1px solid #e2e8f0;font-size:10px;color:#94a3b8;text-align:center;">© 2026 OuiSpeak</div>
+            `;
+            return el;
+        }
+
+        async function downloadAnswersPdf() {
+            if (pdfDownloadInProgress || aiCheckInProgress) return;
+            const feedback = document.getElementById('resultFeedback');
+            if (typeof html2pdf === "undefined") {
+                feedback.innerHTML = `<span style="color: var(--secondary);"><i class="fa-solid fa-circle-xmark"></i> PDF-ის შექმნა ვერ მოხერხდა. სცადეთ თავიდან.</span>`;
+                return;
+            }
+
+            pdfDownloadInProgress = true;
+            aiCheckInProgress = true;
+            try {
+                // 1. Same AI check as before sending (already checked answers are not sent again)
+                saveCurrentBlockAnswersToCache();
+                try {
+                    await aiCheckAllAnswers();
+                } catch (e) {
+                    console.error("AI correction failed:", e);
+                } finally {
+                    aiHideOverlay();
+                }
+
+                // 2. Same corrected text that goes into the email
+                const subjectSelect = document.getElementById('subjectSelect');
+                const selectedWeek = subjectSelect.options[subjectSelect.selectedIndex].text;
+                const resultsData = evaluateAllExercisesLive();
+                const info = {
+                    from_email: authenticatedUserEmail,
+                    student_id: document.getElementById('studentIdInput').value || "N/A",
+                    course: studentCourse,
+                    week: selectedWeek,
+                    exercise_block: "ყველა ბლოკი (1-6)"
+                };
+
+                document.getElementById('resultFeedback').innerHTML = `<span style="color: var(--text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> PDF მზადდება...</span>`;
+
+                // 3. Build and save the PDF
+                const element = buildAnswersPdfElement(info, resultsData.payload);
+                const safeName = `${studentCourse || "OuiSpeak"}_${selectedWeek}_პასუხები`.replace(/[\\/:*?"<>|]+/g, "").replace(/\s+/g, "_");
+                await html2pdf().set({
+                    margin: [10, 10, 12, 10],
+                    filename: `${safeName}.pdf`,
+                    image: { type: "jpeg", quality: 0.98 },
+                    html2canvas: { scale: 2, useCORS: true, scrollX: 0, scrollY: 0 },
+                    jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+                    pagebreak: { mode: ["css", "legacy"], avoid: [".pdf-row", ".pdf-head"] }
+                }).from(element).save();
+
+                document.getElementById('resultFeedback').innerHTML = `<span style="color: #10b981;"><i class="fa-solid fa-circle-check"></i> PDF ფაილი გადმოწერილია!</span>`;
+            } catch (e) {
+                console.error("PDF download failed:", e);
+                document.getElementById('resultFeedback').innerHTML = `<span style="color: var(--secondary);"><i class="fa-solid fa-circle-xmark"></i> PDF-ის შექმნა ვერ მოხერხდა. სცადეთ თავიდან.</span>`;
+            } finally {
+                pdfDownloadInProgress = false;
+                aiCheckInProgress = false;
+            }
+        }
+
+
+        // ===== X button on the "please wait" checking screen =====
+        // New code only. The original functions stay as they are; aiCheckAllAnswers is wrapped the same way
+        // the existing hooks above wrap renderExercise / sendAnswersToEmail.
+        // When the student presses X, the waiting send / PDF step is dropped (nothing is sent or downloaded),
+        // the screen closes and the student is back on the exercises. Answers stay exactly as they were.
+        let aiCancelCurrentCheck = null;
+
+        const _aiCheckAllAnswersBeforeCancel = aiCheckAllAnswers;
+        aiCheckAllAnswers = function () {
+            const self = this;
+            const args = arguments;
+            return new Promise((resolve, reject) => {
+                let cancelled = false;
+                aiCancelCurrentCheck = () => { cancelled = true; };
+                _aiCheckAllAnswersBeforeCancel.apply(self, args).then(
+                    (value) => { if (!cancelled) { aiCancelCurrentCheck = null; resolve(value); } },
+                    (error) => { if (!cancelled) { aiCancelCurrentCheck = null; reject(error); } }
+                );
+            });
+        };
+
+        function aiCancelCheck() {
+            if (aiCancelCurrentCheck) aiCancelCurrentCheck();
+            aiCancelCurrentCheck = null;
+            aiHideOverlay();
+            aiCheckInProgress = false;
+            pdfDownloadInProgress = false;
+            const feedback = document.getElementById('resultFeedback');
+            if (feedback) {
+                feedback.innerHTML = `<span style="color: var(--secondary);"><i class="fa-solid fa-circle-xmark"></i> შემოწმება შეწყდა. პასუხები არ გაიგზავნა.</span>`;
+            }
+        }
+
+        // Adds the X button whenever the checking screen appears
+        new MutationObserver(() => {
+            const card = document.querySelector('#aiOverlay .ai-overlay-card');
+            if (!card || card.querySelector('.ai-overlay-close')) return;
+            const closeBtn = document.createElement('button');
+            closeBtn.type = "button";
+            closeBtn.className = "ai-overlay-close";
+            closeBtn.title = "შეწყვეტა";
+            closeBtn.setAttribute('aria-label', "შეწყვეტა და სავარჯიშოებზე დაბრუნება");
+            closeBtn.innerHTML = '&times;';
+            closeBtn.addEventListener('click', aiCancelCheck);
+            card.appendChild(closeBtn);
+        }).observe(document.body, { childList: true });
+
+        // Esc key does the same as the X button
+        document.addEventListener('keydown', (e) => {
+            if (e.key === "Escape" && document.getElementById('aiOverlay')) aiCancelCheck();
+        });
+
 
         checkUserSession();
          _supabase.auth.getSession().then(({ data }) => {

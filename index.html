@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Georgian:wght@400;500;600;700;800&display=swap');
 
         th:first-child, td:first-child {
             width: 40px;
@@ -34,7 +34,7 @@
         }
 
         body {
-            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', 'Noto Sans Georgian', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-main);
             color: var(--text-main);
             margin: 0;
@@ -718,6 +718,367 @@
     font-weight: 700;
     font-size: 0.85rem;
 }
+
+        /* =========================================================
+           STUDENT PAGE REDESIGN (styles only)
+           ========================================================= */
+
+        /* Header: name and score are hidden from the menu (shown in the student card instead) */
+        #headerStudentName,
+        #headerStudentScoreBox { display: none !important; }
+        #scoresNavLink::after { content: "შეფასებები"; }
+
+        /* ---------- Student card ---------- */
+        .student-panel {
+            max-width: 1140px;
+            margin: 2rem auto 0 auto;
+            padding: 0 1.5rem;
+            box-sizing: border-box;
+        }
+
+        .student-card {
+            position: relative;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 2rem;
+            background: #082c55;
+            color: #ffffff;
+            border-radius: 22px;
+            padding: 2rem 2rem 2rem 2.75rem;
+            overflow: hidden;
+        }
+
+        /* Tricolore band on the left edge */
+        .student-card::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 10px;
+            background: linear-gradient(180deg, var(--primary) 0 33.33%, #ffffff 33.33% 66.66%, var(--secondary) 66.66% 100%);
+        }
+
+        /* Large soft circle in the background, for depth */
+        .student-card::after {
+            content: '';
+            position: absolute;
+            right: -120px; top: -160px;
+            width: 420px; height: 420px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 85, 165, 0.55) 0%, rgba(0, 85, 165, 0) 70%);
+            pointer-events: none;
+        }
+
+        .student-identity {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            min-width: 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .student-avatar {
+            flex: 0 0 auto;
+            width: 76px; height: 76px;
+            border-radius: 50%;
+            background: #ffffff;
+            color: var(--primary);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.15);
+        }
+
+        .student-kicker {
+            margin: 0 0 0.15rem 0;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .student-name {
+            margin: 0 0 1rem 0;
+            font-size: clamp(1.6rem, 3vw, 2.3rem);
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: -0.02em;
+            overflow-wrap: anywhere;
+        }
+
+        .student-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin: 0;
+        }
+
+        .student-meta div {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 12px;
+            padding: 0.5rem 0.9rem;
+        }
+
+        .student-meta dt {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.65);
+            margin: 0;
+        }
+
+        .student-meta dd {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* ---------- Score tile ---------- */
+        .student-score {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            background: #ffffff;
+            color: var(--text-main);
+            text-decoration: none;
+            border-radius: 20px;
+            padding: 1.1rem 1.6rem 1.1rem 1.1rem;
+            transition: var(--transition);
+        }
+
+        .student-score:hover { transform: translateY(-2px); box-shadow: 0 16px 34px -14px rgba(0, 0, 0, 0.45); }
+        .student-score:focus-visible { outline: 3px solid #ffffff; outline-offset: 4px; }
+
+        .score-ring {
+            position: relative;
+            width: 128px; height: 128px;
+            flex: 0 0 auto;
+        }
+
+        .score-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+
+        .score-ring .ring-track { fill: none; stroke: #e8eef6; stroke-width: 11; }
+
+        .score-ring .ring-fill {
+            fill: none;
+            stroke: url(#scoreGradient);
+            stroke-width: 11;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1.4s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .score-value {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        .score-value strong {
+            font-size: 2.4rem;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            color: var(--primary);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .score-value span {
+            margin-top: 0.3rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .score-text { display: flex; flex-direction: column; gap: 0.2rem; }
+        .score-text b { font-size: 1.1rem; font-weight: 800; }
+        .score-text small { font-size: 0.85rem; color: var(--text-muted); max-width: 13rem; }
+        .score-text em { font-style: normal; font-size: 0.85rem; font-weight: 600; color: var(--primary); text-decoration: underline; text-underline-offset: 3px; }
+
+        /* One-time glow when the score arrives */
+        .student-score.score-arrived { animation: scoreGlow 1.8s ease-out 1; }
+        @keyframes scoreGlow {
+            0%   { box-shadow: 0 0 0 0 rgba(239, 65, 53, 0.55); }
+            60%  { box-shadow: 0 0 0 14px rgba(239, 65, 53, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 65, 53, 0); }
+        }
+
+        /* ---------- Section heading above the syllabuses ---------- */
+        .intro-section {
+            max-width: 1140px;
+            margin: 3rem auto 1.5rem auto;
+            text-align: left;
+            box-sizing: border-box;
+        }
+
+        .intro-section::before { display: none; }
+
+        .intro-section h1 {
+            font-size: clamp(1.35rem, 2vw, 1.75rem);
+            line-height: 1.35;
+            margin: 0 0 0.5rem 0;
+            letter-spacing: -0.01em;
+            background: none;
+            -webkit-text-fill-color: currentColor;
+            color: var(--text-main);
+        }
+
+        .intro-section p {
+            display: block;
+            background: none;
+            border: none;
+            box-shadow: none;
+            padding: 0;
+            margin: 0;
+            max-width: 46rem;
+            margin: 0 auto;
+            text-align: center;
+            font-size: 0.95rem;
+        }
+
+        /* ---------- Syllabus cards ---------- */
+        main .grid {
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .grid .card {
+            --accent: var(--primary);
+            --accent-dark: #003f7d;
+            --accent-soft: #eaf2fb;
+            padding: 1.25rem 1.25rem 1.5rem 1.25rem;
+            border-radius: 18px;
+            border: 1px solid var(--border-color);
+            box-shadow: none;
+        }
+
+        .grid .card[id^="card_DELF"] {
+            --accent: var(--secondary);
+            --accent-dark: #c9302a;
+            --accent-soft: #fdeeed;
+        }
+
+        .grid .card::before { display: none; }
+
+        .grid .card:hover {
+            transform: translateY(-3px);
+            border-color: var(--accent);
+            box-shadow: 0 18px 36px -22px rgba(8, 44, 85, 0.45);
+        }
+
+        .level-mark {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 1rem;
+            background: var(--accent-soft);
+            color: var(--accent);
+            border-radius: 12px;
+            padding: 1rem 1.1rem;
+            margin-bottom: 1.25rem;
+            font-size: 2.75rem;
+            font-weight: 800;
+            letter-spacing: -0.05em;
+            line-height: 0.9;
+        }
+
+        .level-mark small {
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0;
+            line-height: 1.2;
+        }
+
+        .grid .card h2 { font-size: 1.15rem; margin-bottom: 0.4rem; padding: 0 0.25rem; }
+        .grid .card p  { font-size: 0.92rem; margin-bottom: 1.5rem; padding: 0 0.25rem; }
+
+        .grid .card .btn {
+            background: transparent;
+            color: var(--accent);
+            border: 1.5px solid var(--accent);
+            padding: 0.7rem 1rem;
+        }
+
+        main .grid .card .btn:hover {
+            background-color: var(--accent);
+            border-color: var(--accent);
+            color: #ffffff;
+        }
+
+        main .grid .card .btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+        /* The student's own course: highlighted and moved first */
+        .grid .card.my-course {
+            order: -1;
+            border: 2px solid var(--accent);
+            box-shadow: 0 18px 36px -24px rgba(8, 44, 85, 0.5);
+        }
+
+        .grid .card.my-course .level-mark { background: var(--accent); color: #ffffff; }
+        .grid .card.my-course .btn { background: var(--accent); color: #ffffff; }
+        main .grid .card.my-course .btn:hover { background: var(--accent-dark); border-color: var(--accent-dark); }
+
+        .grid .card.my-course::after {
+            content: "თქვენი კურსი";
+            position: absolute;
+            top: 2.1rem;
+            right: 2.2rem;
+            background: #ffffff;
+            color: var(--accent);
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 30px;
+        }
+
+        .grid .card.my-course .level-mark small { visibility: hidden; }
+
+        /* Blocked cards keep their lock badge, placed inside the level strip */
+        .grid .card.blocked-course { opacity: 0.7; }
+        .grid .card.blocked-course .level-mark { background: #eef1f5; color: #94a3b8; }
+        .grid .card.blocked-course .level-mark small { visibility: hidden; }
+        .grid .card.blocked-course .btn { border-color: #e2e8f0; }
+        .grid .card.blocked-course::after { top: 2.1rem; right: 2.2rem; }
+
+        @media (max-width: 768px) {
+            .student-panel { padding: 0 0.5rem; margin-top: 1.25rem; }
+            .student-card { grid-template-columns: 1fr; gap: 1.5rem; padding: 1.5rem 1.25rem 1.5rem 1.75rem; }
+            .student-avatar { display: none; }
+            .student-identity { width: 100%; }
+            .student-identity > div:not(.student-avatar) {
+                width: 100%;
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto auto;
+                align-items: center;
+                gap: 0.25rem 0.4rem;
+            }
+            .student-kicker { grid-column: 1 / -1; }
+            .student-name {
+                margin: 0;
+                font-size: 1.15rem;
+                line-height: 1.2;
+                overflow-wrap: break-word;
+            }
+            .student-meta { display: contents; }
+            .student-meta div { padding: 0.3rem 0.45rem; border-radius: 10px; }
+            .student-meta dt { font-size: 0.6rem; white-space: nowrap; }
+            .student-meta dd { font-size: 0.76rem; white-space: nowrap; }
+            .student-score { width: 100%; box-sizing: border-box; }
+            .score-ring { width: 104px; height: 104px; }
+            .score-value strong { font-size: 2rem; }
+            .intro-section { margin-top: 2.25rem; padding: 0 0.5rem; }
+            main { padding: 0 0.5rem; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .score-ring .ring-fill { transition: none; }
+            .student-score.score-arrived { animation: none; }
+            .grid .card:hover, .student-score:hover { transform: none; }
+        }
     </style>
 </head>
 <body>
@@ -803,6 +1164,47 @@
 
         <div id="protectedContent">
             <section id="coursesSection">
+                <!-- Student info card (display only, filled by the script at the bottom) -->
+                <div class="student-panel" id="studentPanel">
+                    <div class="student-card">
+                        <div class="student-identity">
+                            <div class="student-avatar" id="spAvatar" aria-hidden="true">–</div>
+                            <div>
+                                <p class="student-kicker">მოგესალმებით 👋</p>
+                                <h2 class="student-name" id="spName">იტვირთება…</h2>
+                                <dl class="student-meta">
+                                    <div><dt>სტუდენტის ID</dt><dd id="spId">—</dd></div>
+                                    <div><dt>კურსი</dt><dd id="spCourse">—</dd></div>
+                                </dl>
+                            </div>
+                        </div>
+
+                        <a class="student-score" id="spScoreTile" href="scores.html" aria-label="ჯამური ქულა, დეტალურად ნახვა">
+                            <div class="score-ring">
+                                <svg viewBox="0 0 128 128" aria-hidden="true">
+                                    <defs>
+                                        <linearGradient id="scoreGradient" x1="0" y1="0" x2="1" y2="1">
+                                            <stop offset="0%" stop-color="#0055a5"/>
+                                            <stop offset="100%" stop-color="#ef4135"/>
+                                        </linearGradient>
+                                    </defs>
+                                    <circle class="ring-track" cx="64" cy="64" r="52"/>
+                                    <circle class="ring-fill" id="spRing" cx="64" cy="64" r="52"/>
+                                </svg>
+                                <div class="score-value">
+                                    <strong id="spScore">—</strong>
+                                    <span>100-დან</span>
+                                </div>
+                            </div>
+                            <div class="score-text">
+                                <b>ჯამური ქულა</b>
+                                <small id="spScoreNote">შეფასება ჯერ არ არის</small>
+                                <em>დეტალურად ნახვა</em>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
                 <div class="intro-section">
                     <h1>OuiSpeak სკოლის 2026 წლის სასწავლო პროგრამების ჩამონათვალი</h1>
                     <p>ამ გვერდზე თქვენ შეგიძლიათ გაეცნოთ კურსების სასწავლო პროგრამებს დეტალურად. დავალებების, ლექსიკისა
@@ -813,7 +1215,7 @@
                     <div class="grid">
                         <div class="card success-card" id="card_A1_-_სასაუბრო_კურსი">
                             <div>
-                                <div class="card-icon">🇫🇷</div>
+                                <div class="level-mark" aria-hidden="true">A1<small>სასაუბრო</small></div>
                                 <h2>A1 - სასაუბრო კურსი</h2>
                                 <p>კურსის განმავლობაში თქვენ ძალიან სწრაფად ისწავლით ფრანგულად კითხვას...</p>
                             </div>
@@ -822,7 +1224,7 @@
 
                         <div class="card" id="card_A2_-_სასაუბრო_კურსი">
                             <div>
-                                <div class="card-icon">🇫🇷</div>
+                                <div class="level-mark" aria-hidden="true">A2<small>სასაუბრო</small></div>
                                 <h2>A2 - სასაუბრო კურსი</h2>
                                 <p>სასაუბრო პრაქტიკა და ენობრივი უნარების გაუმჯობესება A2 დონეზე...</p>
                             </div>
@@ -831,7 +1233,7 @@
 
                         <div class="card" id="card_B1_-_სასაუბრო_კურსი">
                             <div>
-                                <div class="card-icon">🇫🇷</div>
+                                <div class="level-mark" aria-hidden="true">B1<small>სასაუბრო</small></div>
                                 <h2>B1 - სასაუბრო კურსი</h2>
                                 <p>სასაუბრო პრაქტიკა და ენობრივი უნარების გაუმჯობესება B1 დონეზე...</p>
                             </div>
@@ -840,7 +1242,7 @@
 
                         <div class="card" id="card_DELF_A2_-_კურსი">
                             <div>
-                                <div class="card-icon">🇫🇷</div>
+                                <div class="level-mark" aria-hidden="true">A2<small>DELF</small></div>
                                 <h2>DELF A2 - კურსი</h2>
                                 <p>ინტენსიური 26-კვირიანი მოსამზადებელი კურსი, DELF-ის გამოცდისთვის A2 დონეზე...</p>
                             </div>
@@ -849,7 +1251,7 @@
 
                         <div class="card" id="card_DELF_B1_-_კურსი">
                             <div>
-                                <div class="card-icon">🇫🇷</div>
+                                <div class="level-mark" aria-hidden="true">B1<small>DELF</small></div>
                                 <h2>DELF B1 - კურსი</h2>
                                 <p>ინტენსიური 26-კვირიანი მოსამზადებელი კურსი, DELF-ის გამოცდისთვის B1 დონეზე...</p>
                             </div>
@@ -1537,6 +1939,111 @@
         if (resetLinkError) {
             showError(resetLinkError);
         }
+    </script>
+
+    <script>
+        /* =========================================================
+           STUDENT INFO CARD (display only)
+           This block only READS data and fills the new card.
+           The original script above is unchanged.
+           ========================================================= */
+        (function () {
+            const RING_LENGTH = 2 * Math.PI * 52;
+            const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            const $ = (id) => document.getElementById(id);
+
+            const ring = $('spRing');
+            ring.style.strokeDasharray = RING_LENGTH;
+            ring.style.strokeDashoffset = RING_LENGTH;
+
+            let shownScore = null;
+
+            function showScore(value) {
+                const tile = $('spScoreTile');
+                if (value === null) {
+                    $('spScore').textContent = '—';
+                    $('spScoreNote').textContent = 'შეფასება ჯერ არ არის';
+                    ring.style.strokeDashoffset = RING_LENGTH;
+                    shownScore = null;
+                    return;
+                }
+                if (value === shownScore) return;
+                shownScore = value;
+
+                const pct = Math.max(0, Math.min(value, 100)) / 100;
+                ring.style.strokeDashoffset = RING_LENGTH * (1 - pct);
+                $('spScoreNote').textContent = 'თქვენი მიმდინარე შეფასება';
+
+                if (reduceMotion) {
+                    $('spScore').textContent = value;
+                } else {
+                    const start = performance.now();
+                    const step = (now) => {
+                        const t = Math.min((now - start) / 1400, 1);
+                        const eased = 1 - Math.pow(1 - t, 3);
+                        $('spScore').textContent = Math.round(value * eased);
+                        if (t < 1) requestAnimationFrame(step);
+                    };
+                    requestAnimationFrame(step);
+                }
+
+                tile.classList.remove('score-arrived');
+                void tile.offsetWidth;
+                tile.classList.add('score-arrived');
+            }
+
+            /* The score comes from the existing loadHeaderScore() via the header pill */
+            function mirrorHeaderScore() {
+                const box = $('headerStudentScoreBox');
+                if (box.style.display === 'inline-block') {
+                    showScore(parseInt($('headerStudentScore').innerText, 10) || 0);
+                } else {
+                    showScore(null);
+                }
+            }
+
+            new MutationObserver(mirrorHeaderScore).observe($('headerStudentScoreBox'), {
+                attributes: true, childList: true, subtree: true, characterData: true
+            });
+
+            async function loadStudentCard(email) {
+                try {
+                    const { data: student } = await _supabase
+                        .from('Students')
+                        .select('id, firstName, lastName, course')
+                        .eq('email', email)
+                        .maybeSingle();
+                    if (!student) return;
+
+                    const first = student.firstName || '';
+                    const last = student.lastName || '';
+                    $('spName').textContent = `${first} ${last}`.trim() || '—';
+                    $('spAvatar').textContent = ((first[0] || '') + (last[0] || '')).toUpperCase() || '–';
+                    $('spId').textContent = student.id ?? '—';
+                    $('spCourse').textContent = student.course || '—';
+
+                    document.querySelectorAll('.grid .card.my-course').forEach(c => c.classList.remove('my-course'));
+                    if (student.course) {
+                        const myCard = document.getElementById('card_' + student.course.trim().replace(/^delf/i, 'DELF').replace(/ /g, '_'));
+                        if (myCard) myCard.classList.add('my-course');
+                    }
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+
+            _supabase.auth.onAuthStateChange((event, session) => {
+                if (session && session.user) {
+                    setTimeout(() => loadStudentCard(session.user.email), 0);
+                } else {
+                    $('spName').textContent = 'იტვირთება…';
+                    $('spAvatar').textContent = '–';
+                    $('spId').textContent = '—';
+                    $('spCourse').textContent = '—';
+                    document.querySelectorAll('.grid .card.my-course').forEach(c => c.classList.remove('my-course'));
+                }
+            });
+        })();
     </script>
 </body>
 </html>

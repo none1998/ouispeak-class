@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Georgian:wght@400;500;600;700;800&display=swap');
 
         :root {
             --primary: #0055a5;
@@ -28,7 +28,7 @@
         }
 
         body {
-            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', 'Noto Sans Georgian', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-main);
             color: var(--text-main);
             margin: 0;
@@ -463,6 +463,355 @@
     font-weight: 700;
     font-size: 0.85rem;
 }
+
+        /* =========================================================
+           SCORES PAGE REDESIGN (styles only, same design as index.html)
+           ========================================================= */
+
+        /* Header: name and score are hidden from the menu */
+        #headerStudentName,
+        #headerStudentScoreBox { display: none !important; }
+        #scoresNavLink::after { content: "შეფასებები"; }
+
+        /* ---------- Student card ---------- */
+        .student-panel {
+            max-width: 1140px;
+            margin: 2rem auto 0 auto;
+            padding: 0 1.5rem;
+            box-sizing: border-box;
+        }
+
+        .student-card {
+            position: relative;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 2rem;
+            background: #082c55;
+            color: #ffffff;
+            border-radius: 22px;
+            padding: 2rem 2rem 2rem 2.75rem;
+            overflow: hidden;
+        }
+
+        /* Tricolore band on the left edge */
+        .student-card::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 10px;
+            background: linear-gradient(180deg, var(--primary) 0 33.33%, #ffffff 33.33% 66.66%, var(--secondary) 66.66% 100%);
+        }
+
+        /* Large soft circle in the background, for depth */
+        .student-card::after {
+            content: '';
+            position: absolute;
+            right: -120px; top: -160px;
+            width: 420px; height: 420px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 85, 165, 0.55) 0%, rgba(0, 85, 165, 0) 70%);
+            pointer-events: none;
+        }
+
+        .student-identity {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            min-width: 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .student-avatar {
+            flex: 0 0 auto;
+            width: 76px; height: 76px;
+            border-radius: 50%;
+            background: #ffffff;
+            color: var(--primary);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.15);
+        }
+
+        .student-kicker {
+            margin: 0 0 0.15rem 0;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .student-name {
+            margin: 0 0 1rem 0;
+            font-size: clamp(1.6rem, 3vw, 2.3rem);
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: -0.02em;
+            overflow-wrap: anywhere;
+        }
+
+        .student-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin: 0;
+        }
+
+        .student-meta div {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 12px;
+            padding: 0.5rem 0.9rem;
+        }
+
+        .student-meta dt {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.65);
+            margin: 0;
+        }
+
+        .student-meta dd {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* ---------- Score tile ---------- */
+        .student-score {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            background: #ffffff;
+            color: var(--text-main);
+            text-decoration: none;
+            border-radius: 20px;
+            padding: 1.1rem 1.6rem 1.1rem 1.1rem;
+            transition: var(--transition);
+        }
+
+
+        .score-ring {
+            position: relative;
+            width: 128px; height: 128px;
+            flex: 0 0 auto;
+        }
+
+        .score-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+
+        .score-ring .ring-track { fill: none; stroke: #e8eef6; stroke-width: 11; }
+
+        .score-ring .ring-fill {
+            fill: none;
+            stroke: url(#scoreGradient);
+            stroke-width: 11;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1.4s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .score-value {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        .score-value strong {
+            font-size: 2.4rem;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            color: var(--primary);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .score-value span {
+            margin-top: 0.3rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .score-text { display: flex; flex-direction: column; gap: 0.2rem; }
+        .score-text b { font-size: 1.1rem; font-weight: 800; }
+        .score-text small { font-size: 0.85rem; color: var(--text-muted); max-width: 13rem; }
+        .score-text em { font-style: normal; font-size: 0.85rem; font-weight: 600; color: var(--primary); text-decoration: underline; text-underline-offset: 3px; }
+
+        /* One-time glow when the score arrives */
+        .student-score.score-arrived { animation: scoreGlow 1.8s ease-out 1; }
+        @keyframes scoreGlow {
+            0%   { box-shadow: 0 0 0 0 rgba(239, 65, 53, 0.55); }
+            60%  { box-shadow: 0 0 0 14px rgba(239, 65, 53, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 65, 53, 0); }
+        }
+
+        /* ---------- Section heading ---------- */
+        .intro-section {
+            max-width: 1140px;
+            margin: 3rem auto 1.5rem auto;
+            text-align: left;
+            box-sizing: border-box;
+        }
+
+        .intro-section::before { display: none; }
+
+        .intro-section h1 {
+            font-size: clamp(1.35rem, 2vw, 1.75rem);
+            line-height: 1.35;
+            margin: 0;
+            letter-spacing: -0.01em;
+            background: none;
+            -webkit-text-fill-color: currentColor;
+            color: var(--text-main);
+        }
+
+        /* ---------- Score breakdown cards ---------- */
+        main { box-sizing: border-box; }
+
+        main .scores-grid {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 1.25rem;
+            padding: 0;
+            background: none;
+        }
+
+        main .scores-grid .score-card {
+            --pct: 0;
+            text-align: left;
+            padding: 1.25rem 1.25rem 1.4rem 1.25rem;
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            box-shadow: none;
+        }
+
+        main .scores-grid .score-card::after { display: none; }
+
+        main .scores-grid .score-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary);
+            box-shadow: 0 18px 36px -22px rgba(8, 44, 85, 0.45);
+        }
+
+        .score-strip {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 0.5rem;
+            background: #eaf2fb;
+            border-radius: 12px;
+            padding: 1rem 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        main .scores-grid .score-points {
+            justify-content: flex-start;
+            font-size: 2.6rem;
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: -0.05em;
+            color: var(--primary);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .score-max {
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 0;
+            margin-left: 0.15rem;
+            color: var(--primary);
+            opacity: 0.6;
+        }
+
+        main .scores-grid .score-icon,
+        main .scores-grid .score-card:hover .score-icon {
+            flex: 0 0 auto;
+            margin: 0;
+            width: 38px;
+            height: 38px;
+            font-size: 1rem;
+            background: #ffffff;
+            color: var(--primary);
+        }
+
+        main .scores-grid .score-name {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin: 0 0.25rem 0.75rem 0.25rem;
+        }
+
+        .score-bar {
+            height: 8px;
+            margin: 0 0.25rem;
+            background: #e8eef6;
+            border-radius: 99px;
+            overflow: hidden;
+        }
+
+        .score-bar span {
+            display: block;
+            height: 100%;
+            width: calc(var(--pct) * 1%);
+            background: linear-gradient(90deg, #0055a5, #ef4135);
+            border-radius: inherit;
+            transition: width 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        @media (max-width: 1000px) {
+            main .scores-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        }
+
+        @media (max-width: 768px) {
+            .student-panel { padding: 0 0.5rem; margin-top: 1.25rem; }
+            .student-card { grid-template-columns: 1fr; gap: 1.5rem; padding: 1.5rem 1.25rem 1.5rem 1.75rem; }
+            .student-avatar { display: none; }
+            .student-identity { width: 100%; }
+            .student-identity > div:not(.student-avatar) {
+                width: 100%;
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto auto;
+                align-items: center;
+                gap: 0.25rem 0.4rem;
+            }
+            .student-kicker { grid-column: 1 / -1; }
+            .student-name {
+                margin: 0;
+                font-size: 1.15rem;
+                line-height: 1.2;
+                overflow-wrap: break-word;
+            }
+            .student-meta { display: contents; }
+            .student-meta div { padding: 0.3rem 0.45rem; border-radius: 10px; }
+            .student-meta dt { font-size: 0.6rem; white-space: nowrap; }
+            .student-meta dd { font-size: 0.76rem; white-space: nowrap; }
+            .student-score { width: 100%; box-sizing: border-box; }
+            .score-ring { width: 104px; height: 104px; }
+            .score-value strong { font-size: 2rem; }
+
+            .intro-section { margin-top: 2.25rem; padding: 0 0.5rem; }
+            .intro-section h1 { font-size: 1.35rem; }
+            main { padding: 0 0.5rem; }
+            main .scores-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+            main .scores-grid .score-card { padding: 0.75rem 0.75rem 1rem 0.75rem; }
+            main .scores-grid .score-card:last-child { grid-column: 1 / -1; }
+            .score-strip { padding: 0.75rem; }
+            main .scores-grid .score-points { font-size: 2rem; }
+            main .scores-grid .score-icon,
+            main .scores-grid .score-card:hover .score-icon { width: 32px; height: 32px; font-size: 0.85rem; }
+            main .scores-grid .score-name { font-size: 0.9rem; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .score-ring .ring-fill, .score-bar span { transition: none; }
+            .student-score.score-arrived { animation: none; }
+            main .scores-grid .score-card:hover { transform: none; }
+        }
     </style>
 </head>
 <body>
@@ -494,50 +843,97 @@
         </section>
 
         <div id="protectedContent">
+            <!-- Student info card (same design as the main page) -->
+            <div class="student-panel" id="scoreDashboard">
+                <div class="student-card">
+                    <div class="student-identity">
+                        <div class="student-avatar" id="spAvatar" aria-hidden="true">–</div>
+                        <div>
+                            <p class="student-kicker">მოგესალმებით 👋</p>
+                            <h2 class="student-name" id="studentName">სტუდენტი</h2>
+                            <dl class="student-meta">
+                                <div><dt>სტუდენტის ID</dt><dd id="spId">—</dd></div>
+                                <div><dt>კურსი</dt><dd id="spCourse">—</dd></div>
+                            </dl>
+                            <!-- The original elements the page logic writes into; shown above through spId / spCourse -->
+                            <div hidden>
+                                <p id="studentCourse"><i class="fas fa-graduation-cap"></i> კურსი: იტვირთება...</p>
+                                <p id="studentIdDisplay"><i class="fas fa-id-card"></i> ID: --</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="student-score" id="spScoreTile">
+                        <div class="score-ring">
+                            <svg viewBox="0 0 128 128" aria-hidden="true">
+                                <defs>
+                                    <linearGradient id="scoreGradient" x1="0" y1="0" x2="1" y2="1">
+                                        <stop offset="0%" stop-color="#0055a5"/>
+                                        <stop offset="100%" stop-color="#ef4135"/>
+                                    </linearGradient>
+                                </defs>
+                                <circle class="ring-track" cx="64" cy="64" r="52"/>
+                                <circle class="ring-fill" id="spRing" cx="64" cy="64" r="52"/>
+                            </svg>
+                            <div class="score-value">
+                                <strong id="spScore">—</strong>
+                                <span>100-დან</span>
+                            </div>
+                        </div>
+                        <div class="score-text">
+                            <b>ჯამური ქულა</b>
+                            <small id="spScoreNote">შეფასება ჯერ არ არის</small>
+                        </div>
+                        <span id="totalScore" hidden>0</span>
+                    </div>
+                </div>
+            </div>
+
             <section class="intro-section">
                 <h1>შეფასებები კურსის განმავლობაში</h1>
             </section>
 
             <main>
-                <div class="score-dashboard" id="scoreDashboard">
-                    <div class="dashboard-header">
-                        <div class="student-info">
-                            <h2 id="studentName">სტუდენტი</h2>
-                            <p id="studentCourse"><i class="fas fa-graduation-cap"></i> კურსი: იტვირთება...</p>
-                            <p id="studentIdDisplay" style="margin-top: 0.25rem; font-size: 0.85rem; color: #94a3b8;"><i class="fas fa-id-card"></i> ID: --</p>
-                        </div>
-                        <div class="total-score-box">
-                            <span class="label">Total Score</span>
-                            <div class="value"><span id="totalScore">0</span><span style="font-size: 1.2rem; color: #cbd5e1; font-weight: 400;">/100</span></div>
-                        </div>
-                    </div>
-
-                    <div class="scores-grid" id="scoresGrid">
-                        <div class="score-card">
+                <div class="scores-grid" id="scoresGrid">
+                    <div class="score-card" data-max="25">
+                        <div class="score-strip">
+                            <div class="score-points"><span id="score_homework">0</span><span class="score-max">/25</span></div>
                             <div class="score-icon"><i class="fas fa-book-open"></i></div>
-                            <div class="score-name">დავალებები</div>
-                            <div class="score-points"><span id="score_homework">0</span><span style="font-size: 1.1rem; color: var(--text-muted); font-weight: 500;">/25</span></div>
                         </div>
-                        <div class="score-card">
+                        <div class="score-name">დავალებები</div>
+                        <div class="score-bar"><span></span></div>
+                    </div>
+                    <div class="score-card" data-max="15">
+                        <div class="score-strip">
+                            <div class="score-points"><span id="score_vocab1">0</span><span class="score-max">/15</span></div>
                             <div class="score-icon"><i class="fas fa-spell-check"></i></div>
-                            <div class="score-name">ლექსიკა 1</div>
-                            <div class="score-points"><span id="score_vocab1">0</span><span style="font-size: 1.1rem; color: var(--text-muted); font-weight: 500;">/15</span></div>
                         </div>
-                        <div class="score-card">
+                        <div class="score-name">ლექსიკა 1</div>
+                        <div class="score-bar"><span></span></div>
+                    </div>
+                    <div class="score-card" data-max="15">
+                        <div class="score-strip">
+                            <div class="score-points"><span id="score_vocab2">0</span><span class="score-max">/15</span></div>
                             <div class="score-icon"><i class="fas fa-language"></i></div>
-                            <div class="score-name">ლექსიკა 2</div>
-                            <div class="score-points"><span id="score_vocab2">0</span><span style="font-size: 1.1rem; color: var(--text-muted); font-weight: 500;">/15</span></div>
                         </div>
-                        <div class="score-card">
+                        <div class="score-name">ლექსიკა 2</div>
+                        <div class="score-bar"><span></span></div>
+                    </div>
+                    <div class="score-card" data-max="25">
+                        <div class="score-strip">
+                            <div class="score-points"><span id="score_writing">0</span><span class="score-max">/25</span></div>
                             <div class="score-icon"><i class="fas fa-pen-fancy"></i></div>
-                            <div class="score-name">წერა</div>
-                            <div class="score-points"><span id="score_writing">0</span><span style="font-size: 1.1rem; color: var(--text-muted); font-weight: 500;">/25</span></div>
                         </div>
-                        <div class="score-card">
+                        <div class="score-name">წერა</div>
+                        <div class="score-bar"><span></span></div>
+                    </div>
+                    <div class="score-card" data-max="20">
+                        <div class="score-strip">
+                            <div class="score-points"><span id="score_speaking">0</span><span class="score-max">/20</span></div>
                             <div class="score-icon"><i class="fas fa-comments"></i></div>
-                            <div class="score-name">საუბარი</div>
-                            <div class="score-points"><span id="score_speaking">0</span><span style="font-size: 1.1rem; color: var(--text-muted); font-weight: 500;">/20</span></div>
                         </div>
+                        <div class="score-name">საუბარი</div>
+                        <div class="score-bar"><span></span></div>
                     </div>
                 </div>
             </main>
@@ -709,6 +1105,78 @@
             window.location.href = "vocab.html";
         });
 
+    </script>
+    <script>
+        /* =========================================================
+           STUDENT CARD + SCORE CARDS (display only)
+           Reads what the original script writes into the page and
+           shows it in the new design. No database calls, no changes
+           to the original script above.
+           ========================================================= */
+        (function () {
+            const RING_LENGTH = 2 * Math.PI * 52;
+            const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            const $ = (id) => document.getElementById(id);
+            const watch = (el, fn) => {
+                new MutationObserver(fn).observe(el, { childList: true, subtree: true, characterData: true });
+                fn();
+            };
+            const afterColon = (el) => {
+                const text = el.innerText || el.textContent || '';
+                const i = text.indexOf(':');
+                return (i >= 0 ? text.slice(i + 1) : text).trim() || '—';
+            };
+
+            /* Name and initials */
+            watch($('studentName'), () => {
+                const parts = $('studentName').textContent.trim().split(/\s+/).filter(Boolean);
+                $('spAvatar').textContent = parts.map(p => p[0]).slice(0, 2).join('').toUpperCase() || '–';
+            });
+
+            /* ID and course */
+            watch($('studentIdDisplay'), () => { $('spId').textContent = afterColon($('studentIdDisplay')); });
+            watch($('studentCourse'), () => { $('spCourse').textContent = afterColon($('studentCourse')); });
+
+            /* Total score ring */
+            const ring = $('spRing');
+            ring.style.strokeDasharray = RING_LENGTH;
+            ring.style.strokeDashoffset = RING_LENGTH;
+            let firstTotal = true;
+
+            new MutationObserver(() => {
+                const value = parseInt($('totalScore').textContent, 10) || 0;
+                const pct = Math.max(0, Math.min(value, 100)) / 100;
+                ring.style.strokeDashoffset = RING_LENGTH * (1 - pct);
+                $('spScoreNote').textContent = 'თქვენი მიმდინარე შეფასება';
+
+                if (reduceMotion) {
+                    $('spScore').textContent = value;
+                } else {
+                    const start = performance.now();
+                    const step = (now) => {
+                        const t = Math.min((now - start) / 1400, 1);
+                        $('spScore').textContent = Math.round(value * (1 - Math.pow(1 - t, 3)));
+                        if (t < 1) requestAnimationFrame(step);
+                    };
+                    requestAnimationFrame(step);
+                }
+
+                if (firstTotal) {
+                    firstTotal = false;
+                    $('spScoreTile').classList.add('score-arrived');
+                }
+            }).observe($('totalScore'), { childList: true, subtree: true, characterData: true });
+
+            /* Progress bars on the five score cards */
+            document.querySelectorAll('#scoresGrid .score-card').forEach(card => {
+                const max = parseInt(card.dataset.max, 10) || 100;
+                const valueEl = card.querySelector('.score-points span[id^="score_"]');
+                watch(valueEl, () => {
+                    const value = parseInt(valueEl.textContent, 10) || 0;
+                    card.style.setProperty('--pct', Math.max(0, Math.min(value / max, 1)) * 100);
+                });
+            });
+        })();
     </script>
 </body>
 </html>

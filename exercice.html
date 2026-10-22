@@ -3205,28 +3205,29 @@ async function loadHeaderScore(userEmail) {
                             { text: "გოგონა კითხულობდა ჟურნალს.<br>_________________", answer: "", type: "open" },
                             { text: "მეგობრები პარკში სეირნობდნენ.<br>_________________", answer: "", type: "open" }
                         ]
-                    }
+                    },
+                    5: {
+                        instruction: "მოიფიქრეთ 10 წინადადება სადაც გამოიყენებთ Imparfait დროს.",
+                        type: "essay"
+                    },
+                    6: {
+                        instruction: "LE TRAVAIL À DISTANCE : AVANTAGES ET DANGERS POUR LES SALARIÉS. Lisez le texte suivant et répondez aux questions",
+                        textFile: "texts/b1_delf_text_3.txt",
+                        questions: [
+                            { text: "D'après le premier paragraphe, le travail à distance en France...", options: ["est devenu une pratique courante pour de nombreux salariés.", "est interdit par la majorité des entreprises.", "nécessite de changer d'ordinateur toutes les semaines.", "concerne uniquement les grandes entreprises de technologie."], answer: "est devenu une pratique courante pour de nombreux salariés.", type: "mc" },
+                            { text: "Quel est l'un des principaux avantages du travail chez soi selon le deuxième paragraphe ?", options: ["Il permet d'obtenir un salaire plus élevé.", "Il évite les transports et fait gagner du temps le matin.", "Il oblige les employés à travailler plus vite.", "Il donne droit à plus de jours de vacances."], answer: "Il évite les transports et fait gagner du temps le matin.", type: "mc" },
+                            { text: "Quelle règle Thomas a-t-il décidément adoptée pour sa vie professionnelle ?", options: ["Travailler tous les week-ends pour finir plus tôt.", "Éteindre son ordinateur à 18 heures et stopper les e-mails le week-end.", "Supprimer complètement son compte de messagerie.", "Travailler uniquement dans les cafés."], answer: "Éteindre son ordinateur à 18 heures et stopper les e-mails le week-end.", type: "mc" },
+                            { text: "Selon Nathalie, quel est l'avantage du travail à distance pour certains employés ?", options: ["Ils peuvent travailler au calme sans le bruit du bureau.", "Ils n'ont plus besoin d'utiliser leur ordinateur.", "Ils ont plus de liberté pour voyager à l'étranger.", "Ils dorment plus longtemps le soir."], answer: "Ils peuvent travailler au calme sans le bruit du bureau.", type: "mc" },
+                            { text: "D'après Nathalie, quel est le risque majeur lié au travail à la maison ?", options: ["La surcharge de travail physique", "La fatigue liée aux transports", "La solitude et le sentiment d'isolement", "La baisse de la qualité du matériel informatique"], answer: "La solitude et le sentiment d'isolement", type: "mc" },
+                            { text: "Selon Pierre Martin, que doivent faire les entreprises en plus de fournir un ordinateur ?", options: ["Interdire l'accès à Internet après la pause midi", "Apprendre aux salariés à faire des pauses et à se déconnecter", "Demander aux employés de travailler uniquement le week-end", "Organiser des réunions obligatoires chaque soir"], answer: "Apprendre aux salariés à faire des pauses et à se déconnecter", type: "mc" },
+                            { text: "Quel élément le psychologue Pierre Martin conseille-t-il de protéger en priorité ?", options: ["Le matériel de l'entreprise", "La santé mentale des salariés", "Le temps de trajet des employés", "Le chiffre d'affaires annuel"], answer: "La santé mentale des salariés", type: "mc" },
+                            { text: "Comment Thomas qualifie-t-il sa principale difficulté au quotidien ?", options: ["Réussir à se réveiller le matin", "Réussir à séparer sa vie personnelle et son travail", "Comprendre les nouveaux logiciels de l'entreprise", "Supporter le bruit de ses voisins"], answer: "Réussir à séparer sa vie personnelle et son travail", type: "mc" },
+                            { text: "D'après le texte, l'utilisation du travail à distance dépend principalement de...", options: ["la chance", "la météo", "la façon dont on l'organise", "la taille du bureau"], answer: "la façon dont on l'organise", type: "mc" },
+                            { text: "Où cet article a-t-il été trouvé à l'origine ?", options: ["www.actualites-travail.fr", "www.lemonde-informatique.com", "www.gestion-entreprise.net", "www.magazine-emploi.fr"], answer: "www.actualites-travail.fr", type: "mc" }
+                            ]
+                    },
                 },
-                5: {
-                    instruction: "მოიფიქრეთ 10 წინადადება სადაც გამოიყენებთ Imparfait დროს.",
-                    type: "essay"
-                },
-                6: {
-                    instruction: "LE TRAVAIL À DISTANCE : AVANTAGES ET DANGERS POUR LES SALARIÉS. Lisez le texte suivant et répondez aux questions",
-                    textFile: "texts/b1_delf_text_3.txt",
-                    questions: [
-                        { text: "D'après le premier paragraphe, le travail à distance en France...", options: ["est devenu une pratique courante pour de nombreux salariés.", "est interdit par la majorité des entreprises.", "nécessite de changer d'ordinateur toutes les semaines.", "concerne uniquement les grandes entreprises de technologie."], answer: "est devenu une pratique courante pour de nombreux salariés.", type: "mc" },
-                        { text: "Quel est l'un des principaux avantages du travail chez soi selon le deuxième paragraphe ?", options: ["Il permet d'obtenir un salaire plus élevé.", "Il évite les transports et fait gagner du temps le matin.", "Il oblige les employés à travailler plus vite.", "Il donne droit à plus de jours de vacances."], answer: "Il évite les transports et fait gagner du temps le matin.", type: "mc" },
-                        { text: "Quelle règle Thomas a-t-il décidément adoptée pour sa vie professionnelle ?", options: ["Travailler tous les week-ends pour finir plus tôt.", "Éteindre son ordinateur à 18 heures et stopper les e-mails le week-end.", "Supprimer complètement son compte de messagerie.", "Travailler uniquement dans les cafés."], answer: "Éteindre son ordinateur à 18 heures et stopper les e-mails le week-end.", type: "mc" },
-                        { text: "Selon Nathalie, quel est l'avantage du travail à distance pour certains employés ?", options: ["Ils peuvent travailler au calme sans le bruit du bureau.", "Ils n'ont plus besoin d'utiliser leur ordinateur.", "Ils ont plus de liberté pour voyager à l'étranger.", "Ils dorment plus longtemps le soir."], answer: "Ils peuvent travailler au calme sans le bruit du bureau.", type: "mc" },
-                        { text: "D'après Nathalie, quel est le risque majeur lié au travail à la maison ?", options: ["La surcharge de travail physique", "La fatigue liée aux transports", "La solitude et le sentiment d'isolement", "La baisse de la qualité du matériel informatique"], answer: "La solitude et le sentiment d'isolement", type: "mc" },
-                        { text: "Selon Pierre Martin, que doivent faire les entreprises en plus de fournir un ordinateur ?", options: ["Interdire l'accès à Internet après la pause midi", "Apprendre aux salariés à faire des pauses et à se déconnecter", "Demander aux employés de travailler uniquement le week-end", "Organiser des réunions obligatoires chaque soir"], answer: "Apprendre aux salariés à faire des pauses et à se déconnecter", type: "mc" },
-                        { text: "Quel élément le psychologue Pierre Martin conseille-t-il de protéger en priorité ?", options: ["Le matériel de l'entreprise", "La santé mentale des salariés", "Le temps de trajet des employés", "Le chiffre d'affaires annuel"], answer: "La santé mentale des salariés", type: "mc" },
-                        { text: "Comment Thomas qualifie-t-il sa principale difficulté au quotidien ?", options: ["Réussir à se réveiller le matin", "Réussir à séparer sa vie personnelle et son travail", "Comprendre les nouveaux logiciels de l'entreprise", "Supporter le bruit de ses voisins"], answer: "Réussir à séparer sa vie personnelle et son travail", type: "mc" },
-                        { text: "D'après le texte, l'utilisation du travail à distance dépend principalement de...", options: ["la chance", "la météo", "la façon dont on l'organise", "la taille du bureau"], answer: "la façon dont on l'organise", type: "mc" },
-                        { text: "Où cet article a-t-il été trouvé à l'origine ?", options: ["www.actualites-travail.fr", "www.lemonde-informatique.com", "www.gestion-entreprise.net", "www.magazine-emploi.fr"], answer: "www.actualites-travail.fr", type: "mc" }
-                        ]
-                },
+                
                 /*
                 kvira_4: {
                 },

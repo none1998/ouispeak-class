@@ -1080,6 +1080,556 @@
             .grid .card:hover, .student-score:hover { transform: none; }
         }
     </style>
+    <!-- =========================================================
+         OUIBOT – daily French robot friend (added block)
+         Opens as a window on top of this page. All names start
+         with "ob-", so no existing style or script is changed.
+         ========================================================= -->
+    <style>
+        html.ob-open, html.ob-open body { overflow: hidden; }
+
+        /* Dimmed, blurred page behind the window (same look as the site's .modal) */
+        .ob-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 100000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            background-color: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            font-family: 'Inter', 'Noto Sans Georgian', 'Segoe UI', Tahoma, sans-serif;
+            color: var(--text-main);
+            line-height: 1.5;
+            opacity: 1;
+            transition: opacity 0.25s ease;
+        }
+        .ob-overlay[hidden] { display: none; }
+        .ob-overlay.ob-leaving { opacity: 0; }
+        .ob-overlay *, .ob-overlay *::before, .ob-overlay *::after { box-sizing: border-box; }
+
+        /* The robot window */
+        .ob-window {
+            position: relative;
+            display: none;
+            flex-direction: column;
+            width: min(920px, 100%);
+            height: min(640px, 100%);
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg), 0 30px 80px -20px rgba(15, 23, 42, 0.35);
+            overflow: hidden;
+            animation: obPop 0.35s cubic-bezier(0.2, 1.2, 0.4, 1) both;
+        }
+        .ob-window.ob-active { display: flex; }
+        .ob-leaving .ob-window { transform: scale(0.96); transition: transform 0.25s ease; }
+        @keyframes obPop { from { opacity: 0; transform: translateY(16px) scale(0.95); } }
+
+        /* Window title bar */
+        .ob-titlebar {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            padding: 0.85rem 1rem 0.85rem 1.4rem;
+            border-bottom: 1px solid var(--border-color);
+            flex: none;
+        }
+        .ob-titlebar-text { flex: 1; min-width: 0; }
+        .ob-title {
+            margin: 0;
+            font-size: 1.05rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            line-height: 1.25;
+            color: var(--text-main);
+            overflow-wrap: anywhere;
+        }
+        .ob-subtitle { margin: 0; font-size: 0.82rem; color: var(--text-muted); }
+        .ob-status { display: inline-flex; align-items: center; gap: 0.4rem; }
+        .ob-status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2); }
+        .ob-close {
+            flex: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            background: #f1f5f9;
+            color: var(--text-muted);
+            font-size: 1.05rem;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .ob-close svg { width: 16px; height: 16px; }
+        .ob-close:hover { background-color: #fee2e2; color: var(--secondary); }
+
+        .ob-progress { display: flex; align-items: center; gap: 0.6rem; font-size: 0.82rem; color: var(--text-muted); white-space: nowrap; }
+        .ob-dots { display: flex; gap: 5px; }
+        .ob-dots span { width: 9px; height: 9px; border-radius: 50%; background: var(--border-color); transition: background 0.3s; }
+        .ob-dots span.ob-done { background: var(--primary); }
+        .ob-dots span.ob-now { background: var(--secondary); animation: obPulse 1.2s ease-in-out infinite; }
+        @keyframes obPulse { 50% { transform: scale(1.3); } }
+
+        /* Window body: robot on the left, content on the right */
+        .ob-body { flex: 1; min-height: 0; display: grid; grid-template-columns: 300px 1fr; }
+        .ob-stage {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            padding: 1.5rem 1.25rem;
+            background: #082c55;
+            color: #ffffff;
+            text-align: center;
+            overflow: hidden;
+        }
+        .ob-stage::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: radial-gradient(circle at 50% 42%, rgba(96, 165, 250, 0.35), transparent 60%);
+        }
+        .ob-stage > * { position: relative; }
+        .ob-robot { width: min(210px, 100%); }
+        .ob-robot svg { display: block; width: 100%; height: auto; overflow: visible; filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.35)); }
+        .ob-plate { margin: 0; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; overflow-wrap: anywhere; }
+        .ob-plate-sub { margin: 0; font-size: 0.85rem; color: rgba(255, 255, 255, 0.7); }
+
+        .ob-say {
+            position: relative;
+            width: 100%;
+            margin-bottom: 0.6rem;
+            background: #ffffff;
+            color: var(--text-main);
+            border-radius: var(--radius-md);
+            padding: 0.7rem 0.9rem;
+            text-align: left;
+        }
+        .ob-say::after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            bottom: -8px;
+            margin-left: -8px;
+            border: 8px solid transparent;
+            border-bottom: 0;
+            border-top-color: #ffffff;
+        }
+        .ob-say-fr { margin: 0; font-weight: 700; font-size: 0.95rem; line-height: 1.35; }
+        .ob-say-ka { margin: 0.2rem 0 0; font-size: 0.8rem; color: var(--text-muted); }
+
+        .ob-main { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+
+        /* ---------- setup ---------- */
+        .ob-scroll { flex: 1; overflow-y: auto; padding: 1.5rem 1.75rem 0.5rem; }
+        .ob-lead { margin: 0 0 1.1rem; color: var(--text-muted); font-size: 0.92rem; max-width: 60ch; }
+        .ob-steps { display: flex; gap: 0.4rem; margin: 0 0 1.3rem; padding: 0; list-style: none; }
+        .ob-steps li { height: 5px; flex: 1; border-radius: 99px; background: var(--border-color); transition: background 0.3s; }
+        .ob-steps li.ob-done { background: var(--primary); }
+        .ob-step { display: none; }
+        .ob-step.ob-active { display: block; }
+        .ob-field { border: 0; margin: 0 0 1.3rem; padding: 0; min-width: 0; }
+        .ob-field legend, .ob-label { display: block; margin: 0 0 0.55rem; padding: 0; font-weight: 700; font-size: 0.95rem; color: var(--text-main); }
+        .ob-options { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .ob-swatch {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 3px solid #ffffff;
+            box-shadow: 0 0 0 1px var(--border-color);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .ob-swatch[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--primary); transform: scale(1.08); }
+        .ob-chip {
+            font: inherit;
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 0.5rem 0.95rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+            background: #ffffff;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .ob-chip:hover { border-color: #b6c6dc; }
+        .ob-chip[aria-pressed="true"] { background: #eff6ff; border-color: var(--primary); color: var(--primary); }
+        .ob-chip i { margin-right: 0.4rem; }
+        .ob-input {
+            width: 100%;
+            max-width: 380px;
+            font: inherit;
+            font-size: 1rem;
+            padding: 0.8rem 1rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            background: #ffffff;
+            color: var(--text-main);
+            outline: none;
+            transition: var(--transition);
+        }
+        .ob-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0, 85, 165, 0.12); }
+        .ob-hint { margin: 0.4rem 0 0; font-size: 0.8rem; color: var(--text-muted); }
+        .ob-summary { display: flex; align-items: center; gap: 1rem; margin: 0 0 1.1rem; }
+        .ob-summary-bot { width: 86px; flex: none; }
+        .ob-summary-bot svg { width: 100%; height: auto; display: block; }
+        .ob-summary-name { margin: 0; font-weight: 800; font-size: 1.5rem; letter-spacing: -0.02em; line-height: 1.15; overflow-wrap: anywhere; }
+        .ob-summary-meta { margin: 0.15rem 0 0; color: var(--text-muted); font-size: 0.9rem; }
+        .ob-warn { display: flex; gap: 0.7rem; padding: 0.85rem 1rem; border-radius: var(--radius-md); background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; font-size: 0.9rem; }
+        .ob-warn i { margin-top: 0.2rem; color: var(--secondary); }
+        .ob-warn p { margin: 0; }
+        .ob-err { min-height: 1.3em; margin: 0.5rem 0 0; color: #dc2626; font-size: 0.85rem; font-weight: 600; }
+        .ob-actions { display: flex; justify-content: space-between; gap: 0.6rem; padding: 0.9rem 1.75rem 1.1rem; border-top: 1px solid var(--border-color); }
+        .ob-btn {
+            font: inherit;
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 0.75rem 1.4rem;
+            border-radius: var(--radius-md);
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .ob-btn-main { background: var(--text-main); color: #ffffff; margin-left: auto; }
+        .ob-btn-main:hover { background: var(--primary); }
+        .ob-btn-ghost { background: #f1f5f9; color: var(--text-main); }
+        .ob-btn-ghost:hover { background: #e2e8f0; }
+        .ob-btn[hidden] { display: none; }
+        .ob-btn:disabled { opacity: 0.6; cursor: default; }
+
+        /* ---------- chat ---------- */
+        .ob-log { flex: 1; overflow-y: auto; padding: 1.25rem 1.4rem; display: flex; flex-direction: column; gap: 0.8rem; background: var(--bg-main); }
+        .ob-msg { max-width: 82%; display: flex; flex-direction: column; gap: 0.3rem; animation: obIn 0.25s ease-out; }
+        @keyframes obIn { from { opacity: 0; transform: translateY(6px); } }
+        .ob-msg-bot { align-self: flex-start; }
+        .ob-msg-me { align-self: flex-end; align-items: flex-end; }
+        .ob-bubble { padding: 0.7rem 0.95rem; border-radius: var(--radius-md); font-size: 0.96rem; overflow-wrap: anywhere; }
+        .ob-msg-bot .ob-bubble { background: #ffffff; border: 1px solid var(--border-color); border-bottom-left-radius: 4px; box-shadow: var(--shadow-sm); }
+        .ob-msg-me .ob-bubble { background: var(--primary); color: #ffffff; border-bottom-right-radius: 4px; }
+        .ob-bubble p { margin: 0; }
+        .ob-ka { margin-top: 0.4rem !important; padding-top: 0.4rem; border-top: 1px dashed var(--border-color); color: var(--text-muted); font-size: 0.88rem; }
+        .ob-ka[hidden] { display: none; }
+        .ob-tools { display: flex; gap: 0.35rem; padding-left: 0.2rem; }
+        .ob-tool {
+            font: inherit;
+            font-size: 0.76rem;
+            font-weight: 600;
+            padding: 0.2rem 0.6rem;
+            border-radius: 999px;
+            border: 1px solid var(--border-color);
+            background: #ffffff;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .ob-tool:hover { color: var(--primary); border-color: #b6c6dc; }
+        .ob-tool i { margin-right: 0.3rem; }
+        .ob-tip { max-width: 100%; padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); background: #fffbeb; border: 1px solid #fde68a; color: #78350f; font-size: 0.84rem; text-align: left; }
+        .ob-tip i { margin-right: 0.35rem; color: #d97706; }
+        .ob-typing { display: inline-flex; gap: 5px; padding: 0.9rem 1rem !important; }
+        .ob-typing span { width: 7px; height: 7px; border-radius: 50%; background: #a8b6cc; animation: obDot 1s infinite ease-in-out; }
+        .ob-typing span:nth-child(2) { animation-delay: 0.15s; }
+        .ob-typing span:nth-child(3) { animation-delay: 0.3s; }
+        @keyframes obDot { 40% { transform: translateY(-4px); background: var(--primary); } }
+        .ob-compose { display: flex; gap: 0.5rem; padding: 0.8rem 1rem; border-top: 1px solid var(--border-color); background: #ffffff; }
+        .ob-compose[hidden] { display: none; }
+        .ob-compose .ob-input { max-width: none; flex: 1; min-width: 0; font-size: 0.96rem; }
+        .ob-round {
+            flex: none;
+            width: 46px;
+            height: 46px;
+            border-radius: var(--radius-md);
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            display: grid;
+            place-items: center;
+            transition: var(--transition);
+        }
+        .ob-round[hidden] { display: none; }
+        .ob-send { background: var(--primary); color: #ffffff; }
+        .ob-send:hover { background: #003f7d; }
+        .ob-send:disabled { background: #9db8d6; cursor: default; }
+        .ob-mic { background: #f1f5f9; color: var(--text-main); }
+        .ob-mic.ob-on { background: var(--secondary); color: #ffffff; animation: obPulse 1.2s ease-in-out infinite; }
+        .ob-finish { margin: 0.8rem 1rem; }
+
+        .ob-overlay button:focus-visible, .ob-overlay input:focus-visible { outline: 3px solid rgba(0, 85, 165, 0.45); outline-offset: 2px; }
+
+        /* ---------- robot animation ---------- */
+        .ob-float { animation: obFloat 4s ease-in-out infinite; }
+        @keyframes obFloat { 50% { transform: translateY(-7px); } }
+        .ob-eyes { transform-box: fill-box; transform-origin: center; animation: obBlink 5s infinite; }
+        @keyframes obBlink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
+        .ob-mouth { transform-box: fill-box; transform-origin: center; }
+        .ob-talking .ob-mouth { animation: obTalk 0.2s ease-in-out infinite alternate; }
+        @keyframes obTalk { to { transform: scaleY(2.6); } }
+        .ob-arm { transform-box: fill-box; transform-origin: 50% 10%; }
+        .ob-waving .ob-arm { animation: obWave 0.9s ease-in-out infinite; }
+        @keyframes obWave { 0%, 100% { transform: rotate(-150deg); } 50% { transform: rotate(-112deg); } }
+        .ob-bulb { animation: obBulb 1.6s ease-in-out infinite; }
+        @keyframes obBulb { 50% { opacity: 0.35; } }
+        .ob-scan { animation: obScan 2.4s ease-in-out infinite alternate; }
+        @keyframes obScan { to { transform: translateX(74px); } }
+        .ob-core { animation: obBulb 2.2s ease-in-out infinite; }
+
+        @media (max-width: 760px) {
+            .ob-overlay { padding: 0.75rem; align-items: flex-end; }
+            .ob-window { height: min(88vh, 100%); height: min(88dvh, 100%); }
+            .ob-body { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+            .ob-stage { flex-direction: row; flex-wrap: wrap; justify-content: center; padding: 0.7rem 1rem; gap: 0.3rem 0.8rem; }
+            .ob-robot { width: 70px; }
+            .ob-stage-text { text-align: left; }
+            .ob-plate { font-size: 1.2rem; }
+            .ob-say { order: 3; margin-bottom: 0; padding: 0.5rem 0.75rem; }
+            .ob-say::after { display: none; }
+            .ob-say-fr { font-size: 0.88rem; }
+            .ob-chat .ob-stage { display: none; }
+            .ob-chat .ob-body { grid-template-rows: 1fr; }
+            .ob-subtitle { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .ob-scroll { padding: 1.1rem 1.1rem 0.5rem; }
+            .ob-actions { padding: 0.75rem 1.1rem 0.9rem; }
+            .ob-titlebar { padding: 0.7rem 0.75rem 0.7rem 1rem; }
+            .ob-progress-text { display: none; }
+            .ob-log { padding: 0.9rem; }
+            .ob-msg { max-width: 90%; }
+            .ob-compose { padding: 0.65rem; }
+        }
+        .ob-mini { display: none; width: 38px; flex: none; }
+        .ob-mini svg { width: 100%; height: auto; display: block; }
+        @media (max-width: 760px) { .ob-chat .ob-mini { display: block; } }
+
+
+        /* ---------- mute button ---------- */
+        .ob-mute svg { width: 18px; height: 18px; }
+        .ob-mute .ob-ico-off { display: none; }
+        .ob-mute[aria-pressed="true"] .ob-ico-on { display: none; }
+        .ob-mute[aria-pressed="true"] .ob-ico-off { display: block; }
+        .ob-mute:hover { background: #eff6ff; color: var(--primary); }
+        .ob-mute[aria-pressed="true"] { color: var(--secondary); }
+
+        /* ---------- "stay or go?" quick replies ---------- */
+        .ob-quick { display: flex; flex-wrap: wrap; gap: 0.5rem; align-self: flex-end; justify-content: flex-end; animation: obIn 0.25s ease-out; }
+        .ob-quick-btn {
+            font: inherit;
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 0.55rem 1rem;
+            border-radius: 999px;
+            border: 1px solid var(--primary);
+            background: #ffffff;
+            color: var(--primary);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .ob-quick-btn:hover { background: #eff6ff; }
+        .ob-quick-main { background: var(--primary); color: #ffffff; }
+        .ob-quick-main:hover { background: #003f7d; }
+
+        /* ---------- launcher: call the robot (bottom-right corner) ---------- */
+        .ob-launcher {
+            position: fixed;
+            right: 1.5rem;
+            bottom: 1.5rem;
+            z-index: 9990;
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            padding: 0.4rem 1.2rem 0.4rem 0.4rem;
+            border: none;
+            border-radius: 999px;
+            background: #082c55;
+            color: #ffffff;
+            font-family: 'Inter', 'Noto Sans Georgian', 'Segoe UI', Tahoma, sans-serif;
+            text-align: left;
+            cursor: pointer;
+            box-shadow: 0 12px 30px -8px rgba(8, 44, 85, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            animation: obLauncherIn 0.5s cubic-bezier(0.2, 1.3, 0.4, 1) both;
+        }
+        .ob-launcher[hidden] { display: none; }
+        .ob-launcher:hover { transform: translateY(-3px); box-shadow: 0 18px 36px -10px rgba(8, 44, 85, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.12) inset; }
+        .ob-launcher:focus-visible { outline: 3px solid rgba(0, 85, 165, 0.45); outline-offset: 3px; }
+        @keyframes obLauncherIn { from { opacity: 0; transform: translateY(20px) scale(0.9); } }
+        .ob-launcher-bot {
+            width: 48px;
+            height: 48px;
+            flex: none;
+            display: grid;
+            place-items: center;
+            border-radius: 50%;
+            background: radial-gradient(circle at 50% 45%, rgba(96, 165, 250, 0.45), rgba(255, 255, 255, 0.06) 70%);
+        }
+        .ob-launcher-bot svg { width: 40px; height: auto; display: block; filter: none; }
+        .ob-launcher:hover .ob-launcher-bot svg { animation: obWiggle 0.6s ease-in-out; }
+        @keyframes obWiggle { 25% { transform: rotate(-8deg); } 75% { transform: rotate(8deg); } }
+        .ob-launcher-text { display: flex; flex-direction: column; line-height: 1.2; }
+        .ob-launcher-name { font-weight: 800; font-size: 0.95rem; letter-spacing: -0.01em; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .ob-launcher-sub { font-size: 0.75rem; color: rgba(255, 255, 255, 0.7); }
+        .ob-launcher-dot {
+            position: absolute;
+            top: 2px;
+            left: 38px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--secondary);
+            border: 2px solid #082c55;
+            animation: obPulse 1.6s ease-in-out infinite;
+        }
+        .ob-launcher-dot[hidden] { display: none; }
+        @media (max-width: 760px) {
+            .ob-launcher { right: 1rem; bottom: 1rem; padding: 0.4rem; }
+            .ob-launcher-text { display: none; }
+            .ob-launcher-bot { width: 52px; height: 52px; }
+            .ob-launcher-bot svg { width: 44px; }
+        }
+
+
+        /* ---------- introduction: robot in the middle of the screen ---------- */
+        .ob-window.ob-behind { animation: none; opacity: 0; pointer-events: none; }
+        .ob-hero {
+            position: fixed;
+            inset: 0;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1.4rem;
+            padding: 1.5rem;
+        }
+        .ob-hero[hidden] { display: none; }
+        .ob-hero-bot {
+            position: relative;
+            width: min(260px, 52vw);
+            animation: obHeroIn 0.9s cubic-bezier(0.2, 1.3, 0.4, 1) both;
+        }
+        .ob-hero-bot::before {
+            content: "";
+            position: absolute;
+            inset: -18% -25%;
+            z-index: -1;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(96, 165, 250, 0.55), rgba(96, 165, 250, 0) 65%);
+        }
+        .ob-hero-bot svg { display: block; width: 100%; height: auto; overflow: visible; filter: drop-shadow(0 20px 26px rgba(15, 23, 42, 0.35)); }
+        @keyframes obHeroIn { from { opacity: 0; transform: translateY(60px) scale(0.5); } }
+        .ob-hero-caption {
+            width: min(560px, 100%);
+            min-height: 6.5rem;
+            padding: 1.1rem 1.4rem;
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg), 0 24px 60px -20px rgba(15, 23, 42, 0.4);
+            text-align: center;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .ob-hero-caption.ob-swap p { animation: obIn 0.35s ease-out; }
+        .ob-hero-caption.ob-hidden { opacity: 0; transform: translateY(10px); }
+        .ob-hero-fr { margin: 0; font-size: 1.15rem; font-weight: 600; line-height: 1.45; color: var(--text-main); }
+        .ob-hero-ka { margin: 0.45rem 0 0; font-size: 0.9rem; color: var(--text-muted); }
+        .ob-hero-skip {
+            font: inherit;
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 0.5rem 1.1rem;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.75);
+            color: var(--text-main);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .ob-hero-skip:hover { background: #ffffff; }
+        .ob-hero-leaving .ob-hero-skip { opacity: 0; pointer-events: none; }
+        @media (max-width: 760px) {
+            .ob-hero-fr { font-size: 1rem; }
+            .ob-hero-caption { padding: 0.9rem 1rem; }
+        }
+
+
+        /* ---------- voice speed button ---------- */
+        .ob-speed { width: auto; min-width: 36px; padding: 0 0.6rem; border-radius: 999px; display: inline-flex; align-items: center; gap: 0.3rem; font: inherit; font-size: 0.78rem; font-weight: 700; }
+        .ob-speed svg { width: 16px; height: 16px; }
+        .ob-speed:hover { background: #eff6ff; color: var(--primary); }
+        .ob-speed.ob-slow { background: #eff6ff; color: var(--primary); }
+        @media (max-width: 760px) { .ob-speed svg { display: none; } .ob-speed { padding: 0 0.5rem; } }
+
+
+        /* ---------- step-by-step robot creation ---------- */
+        .ob-step.ob-active { animation: obStepIn 0.4s cubic-bezier(0.2, 0.9, 0.3, 1) both; }
+        .ob-step.ob-active.ob-from-left { animation-name: obStepInLeft; }
+        @keyframes obStepIn { from { opacity: 0; transform: translateX(28px); } }
+        @keyframes obStepInLeft { from { opacity: 0; transform: translateX(-28px); } }
+        .ob-say.ob-swap { animation: obSayIn 0.35s ease-out; }
+        @keyframes obSayIn { from { opacity: 0; transform: translateY(6px) scale(0.97); } }
+        .ob-robot { position: relative; }
+        .ob-robot.ob-hop svg { animation: obHop 0.6s cubic-bezier(0.3, 1.5, 0.5, 1); }
+        @keyframes obHop { 30% { transform: translateY(-18px) rotate(-4deg); } 60% { transform: translateY(0) rotate(3deg); } }
+        .ob-robot.ob-pop svg { animation: obPopBot 0.45s cubic-bezier(0.3, 1.6, 0.5, 1); }
+        @keyframes obPopBot { 40% { transform: scale(1.1); } }
+        .ob-spark {
+            position: absolute;
+            left: 50%;
+            top: 45%;
+            width: 9px;
+            height: 9px;
+            margin: -4.5px 0 0 -4.5px;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: obSpark 0.7s ease-out forwards;
+        }
+        @keyframes obSpark { from { opacity: 1; transform: translate(0, 0) scale(1); } to { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.3); } }
+        .ob-chip-big { font-size: 1.05rem; padding: 0.85rem 1.5rem; }
+        .ob-swatch { width: 48px; height: 48px; }
+        .ob-tiles { gap: 0.6rem; }
+        .ob-tile {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+            width: 92px;
+            padding: 0.5rem 0.4rem 0.45rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            background: #ffffff;
+            font: inherit;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .ob-tile:hover { border-color: #b6c6dc; transform: translateY(-2px); }
+        .ob-tile[aria-pressed="true"] { border-color: var(--primary); background: #eff6ff; box-shadow: 0 0 0 2px rgba(0, 85, 165, 0.15); }
+        .ob-tile-img { width: 100%; height: 62px; display: grid; place-items: center; border-radius: 10px; background: #082c55; overflow: hidden; }
+        .ob-tile-img svg { width: 100%; height: 100%; display: block; }
+        .ob-tile-img svg * { animation: none !important; }
+        .ob-tile-label { font-size: 0.78rem; font-weight: 600; line-height: 1.2; text-align: center; }
+        .ob-tile[aria-pressed="true"] .ob-tile-label { color: var(--primary); }
+        .ob-tip-learn { background: #eff6ff; border-color: #bfdbfe; color: #1e3a8a; }
+        .ob-tip-learn i { color: var(--primary); }
+        @media (max-width: 760px) {
+            .ob-tile { width: calc(33.33% - 0.4rem); }
+            .ob-tile-img { height: 54px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .ob-window, .ob-float, .ob-eyes, .ob-bulb, .ob-scan, .ob-core, .ob-msg,
+            .ob-talking .ob-mouth, .ob-waving .ob-arm, .ob-dots span.ob-now, .ob-mic.ob-on,
+            .ob-quick, .ob-launcher, .ob-launcher-dot, .ob-launcher:hover .ob-launcher-bot svg,
+            .ob-hero-bot, .ob-hero-caption.ob-swap p,
+            .ob-step.ob-active, .ob-say.ob-swap, .ob-robot.ob-hop svg, .ob-robot.ob-pop svg { animation: none; }
+            .ob-waving .ob-arm { transform: rotate(-135deg); }
+            .ob-overlay, .ob-leaving .ob-window { transition: none; }
+        }
+    </style>
 </head>
 <body>
 
@@ -2043,6 +2593,1778 @@
                     document.querySelectorAll('.grid .card.my-course').forEach(c => c.classList.remove('my-course'));
                 }
             });
+        })();
+    </script>
+    <!-- =========================================================
+         OUIBOT – robot friend window (added block)
+         ========================================================= -->
+    <!-- Button to call the robot friend (bottom-right corner, visible only for logged-in students) -->
+    <button type="button" class="ob-launcher" id="obLauncher" hidden>
+        <span class="ob-launcher-bot" id="obLauncherBot" aria-hidden="true"></span>
+        <span class="ob-launcher-text">
+            <span class="ob-launcher-name" id="obLauncherName"></span>
+            <span class="ob-launcher-sub" id="obLauncherSub">დაუძახე მეგობარს</span>
+        </span>
+        <span class="ob-launcher-dot" id="obLauncherDot" hidden></span>
+    </button>
+
+    <div class="ob-overlay" id="obOverlay" hidden>
+
+        <!-- First visit: create the robot -->
+        <div class="ob-window ob-setup" id="obSetup" role="dialog" aria-modal="true" aria-labelledby="obSetupTitle">
+            <div class="ob-titlebar">
+                <div class="ob-titlebar-text">
+                    <h2 class="ob-title" id="obSetupTitle">შექმენი შენი ფრანგი მეგობარი</h2>
+                    <p class="ob-subtitle">ნაბიჯი <span id="obStepNum">1</span> / 7</p>
+                </div>
+                <button type="button" class="ob-close ob-speed" data-ob-speed aria-label="ხმის სიჩქარე" title="ხმის სიჩქარე"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20a8 8 0 1 1 8-8" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M12 12l3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="ob-speed-label">1×</span></button>
+                <button type="button" class="ob-close ob-mute" data-ob-mute aria-pressed="false" aria-label="ხმა"><svg class="ob-ico-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg><svg class="ob-ico-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16.5 9.5l5 5M21.5 9.5l-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+                <button type="button" class="ob-close" data-ob-close aria-label="დახურვა"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></button>
+            </div>
+            <div class="ob-body">
+                <div class="ob-stage">
+                    <div class="ob-say" aria-live="polite">
+                        <p class="ob-say-fr" id="obSetupSayFr"></p>
+                        <p class="ob-say-ka" id="obSetupSayKa"></p>
+                    </div>
+                    <div class="ob-robot" id="obSetupRobot"></div>
+                    <div class="ob-stage-text">
+                        <p class="ob-plate" id="obSetupPlate">???</p>
+                        <p class="ob-plate-sub">შენი ფრანგი მეგობარი</p>
+                    </div>
+                </div>
+                <div class="ob-main">
+                    <div class="ob-scroll">
+                        <p class="ob-lead">ეს რობოტი ყოველდღე გესაუბრება ფრანგულად, შენი დონის მიხედვით, როგორც ნამდვილი მეგობარი.</p>
+                        <ol class="ob-steps" aria-hidden="true"><li></li><li></li><li></li><li></li><li></li><li></li><li></li></ol>
+
+                        <div class="ob-step" data-step="1">
+                            <div class="ob-field">
+                                <label class="ob-label" for="obNameInput">რა დავარქვათ რობოტს?</label>
+                                <input class="ob-input" id="obNameInput" type="text" maxlength="20" autocomplete="off" placeholder="მაგ. Léo, Camille, Robi…">
+                                <p class="ob-hint">მაქსიმუმ 20 სიმბოლო.</p>
+                            </div>
+                        </div>
+
+                        <div class="ob-step" data-step="2">
+                            <fieldset class="ob-field">
+                                <legend>რობოტი გოგოა თუ ბიჭი?</legend>
+                                <div class="ob-options" id="obGenderOpts">
+                                    <button type="button" class="ob-chip ob-chip-big" data-gender="f" aria-pressed="false"><i class="fa-solid fa-venus"></i>გოგო</button>
+                                    <button type="button" class="ob-chip ob-chip-big" data-gender="m" aria-pressed="false"><i class="fa-solid fa-mars"></i>ბიჭი</button>
+                                </div>
+                                <p class="ob-hint">ამის მიხედვით რობოტი ფრანგულად სწორ ფორმებს გამოიყენებს (content / contente) და ხმაც შეეცვლება.</p>
+                            </fieldset>
+                        </div>
+
+                        <div class="ob-step" data-step="3">
+                            <fieldset class="ob-field">
+                                <legend>აირჩიე ფერი</legend>
+                                <div class="ob-options" id="obColorOpts"></div>
+                            </fieldset>
+                        </div>
+
+                        <div class="ob-step" data-step="4">
+                            <fieldset class="ob-field">
+                                <legend>აირჩიე თვალები</legend>
+                                <div class="ob-options ob-tiles" id="obEyesOpts"></div>
+                            </fieldset>
+                        </div>
+
+                        <div class="ob-step" data-step="5">
+                            <fieldset class="ob-field">
+                                <legend>აირჩიე ტანსაცმელი</legend>
+                                <div class="ob-options ob-tiles" id="obOutfitOpts"></div>
+                            </fieldset>
+                        </div>
+
+                        <div class="ob-step" data-step="6">
+                            <fieldset class="ob-field">
+                                <legend>ქუდი / თავზე</legend>
+                                <div class="ob-options ob-tiles" id="obAccOpts"></div>
+                            </fieldset>
+                            <fieldset class="ob-field">
+                                <legend>სათვალე</legend>
+                                <div class="ob-options ob-tiles" id="obGlassesOpts"></div>
+                            </fieldset>
+                        </div>
+
+                        <div class="ob-step" data-step="7">
+                            <div class="ob-summary">
+                                <div class="ob-summary-bot" id="obSummaryBot"></div>
+                                <div>
+                                    <p class="ob-summary-name" id="obSummaryName"></p>
+                                    <p class="ob-summary-meta" id="obSummaryMeta"></p>
+                                </div>
+                            </div>
+                            <div class="ob-warn">
+                                <i class="fa-solid fa-lock"></i>
+                                <p><strong>ყურადღება:</strong> სახელს, გარეგნობას და სქესს მერე ვეღარ შეცვლი. ეს შენი მეგობარია სამუდამოდ.</p>
+                            </div>
+                        </div>
+
+                        <p class="ob-err" id="obSetupErr" role="alert"></p>
+                    </div>
+                    <div class="ob-actions">
+                        <button type="button" class="ob-btn ob-btn-ghost" id="obBackBtn" hidden>უკან</button>
+                        <button type="button" class="ob-btn ob-btn-main" id="obNextBtn">შემდეგი</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Daily chat -->
+        <div class="ob-window ob-chat" id="obChat" role="dialog" aria-modal="true" aria-labelledby="obChatName">
+            <div class="ob-titlebar">
+                <div class="ob-mini" id="obChatMini" aria-hidden="true"></div>
+                <div class="ob-titlebar-text">
+                    <h2 class="ob-title" id="obChatName"></h2>
+                    <p class="ob-subtitle ob-status">ონლაინ · უპასუხე ფრანგულად</p>
+                </div>
+                <div class="ob-progress">
+                    <span class="ob-progress-text" id="obProgressText">კითხვა 1 / 5</span>
+                    <div class="ob-dots" id="obDots" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+                </div>
+                <button type="button" class="ob-close ob-speed" data-ob-speed aria-label="ხმის სიჩქარე" title="ხმის სიჩქარე"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20a8 8 0 1 1 8-8" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M12 12l3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="ob-speed-label">1×</span></button>
+                <button type="button" class="ob-close ob-mute" data-ob-mute aria-pressed="false" aria-label="ხმა"><svg class="ob-ico-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg><svg class="ob-ico-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16.5 9.5l5 5M21.5 9.5l-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+                <button type="button" class="ob-close" data-ob-close aria-label="დახურვა"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></button>
+            </div>
+            <div class="ob-body">
+                <div class="ob-stage">
+                    <div class="ob-robot" id="obChatRobot"></div>
+                    <div class="ob-stage-text">
+                        <p class="ob-plate" id="obChatPlate"></p>
+                        <p class="ob-plate-sub">შენი ფრანგი მეგობარი</p>
+                    </div>
+                </div>
+                <div class="ob-main">
+                    <div class="ob-log" id="obLog" aria-live="polite"></div>
+                    <form class="ob-compose" id="obCompose" autocomplete="off">
+                        <button type="button" class="ob-round ob-mic" id="obMicBtn" aria-label="ხმით პასუხი" hidden><i class="fa-solid fa-microphone"></i></button>
+                        <input class="ob-input" id="obAnswer" type="text" maxlength="300" placeholder="დაწერე პასუხი ფრანგულად…" aria-label="შენი პასუხი">
+                        <button type="submit" class="ob-round ob-send" id="obSendBtn" aria-label="გაგზავნა"><i class="fa-solid fa-paper-plane"></i></button>
+                    </form>
+                    <button type="button" class="ob-btn ob-btn-main ob-finish" id="obFinishBtn" hidden>კურსებზე გადასვლა</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Introduction: the robot comes to the middle of the screen and introduces itself -->
+        <div class="ob-hero" id="obHero" hidden>
+            <div class="ob-hero-bot" id="obHeroBot"></div>
+            <div class="ob-hero-caption" id="obHeroCaption" aria-live="polite">
+                <p class="ob-hero-fr" id="obHeroFr" lang="fr"></p>
+                <p class="ob-hero-ka" id="obHeroKa" lang="ka"></p>
+            </div>
+            <button type="button" class="ob-hero-skip" id="obHeroSkip">გამოტოვება <span aria-hidden="true">→</span></button>
+        </div>
+    </div>
+
+    <script>
+        /* =========================================================
+           OUIBOT LOGIC (added block – reads the existing _supabase,
+           SUPABASE_URL and SUPABASE_ANON_KEY, changes nothing above)
+           - first visit: student builds the robot (look, name, gender) – saved forever
+           - then once a day: 5 questions in French, a different "mood" every day
+           - X button closes the window (it comes back the next day)
+           - after 5 questions he says he must go but offers to stay; the chat can then go on until X
+           - a button in the bottom-right corner calls the robot at any time
+           - he speaks out loud (French voice); the speaker button mutes him
+           - Gemini is called through the same Supabase Edge Function as exercice.html
+           ========================================================= */
+        (function () {
+            const $ = (id) => document.getElementById(id);
+            const root = document.documentElement;
+            const OB_ENDPOINT = `${SUPABASE_URL}/functions/v1/gemini-correct`;
+            const OB_MODELS = ["gemini-flash-latest", "gemini-flash-lite-latest"];
+            const TOTAL_Q = 5;
+
+            const COLORS = {
+                bleu:    { base: '#3b82f6', dark: '#1d4ed8', ka: 'ლურჯი', en: 'blue' },
+                rouge:   { base: '#f43f5e', dark: '#be123c', ka: 'წითელი', en: 'red' },
+                menthe:  { base: '#2dd4bf', dark: '#0f766e', ka: 'პიტნისფერი', en: 'mint green' },
+                lavande: { base: '#a78bfa', dark: '#6d28d9', ka: 'იასამნისფერი', en: 'lavender' },
+                soleil:  { base: '#fbbf24', dark: '#b45309', ka: 'მზისფერი', en: 'sunny yellow' },
+                orange:  { base: '#fb923c', dark: '#c2410c', ka: 'ნარინჯისფერი', en: 'orange' },
+                rose:    { base: '#f472b6', dark: '#be185d', ka: 'ვარდისფერი', en: 'pink' },
+                argent:  { base: '#cbd5e1', dark: '#64748b', ka: 'ვერცხლისფერი', en: 'silver' }
+            };
+            const EYES = {
+                rondes:  { ka: 'მრგვალი', en: 'round glowing eyes' },
+                visiere: { ka: 'ვიზორი', en: 'a glowing visor' },
+                pixels:  { ka: 'პიქსელი', en: 'square pixel eyes' },
+                joyeux:  { ka: 'მხიარული', en: 'happy smiling eyes' },
+                coeurs:  { ka: 'გულები', en: 'heart-shaped eyes' }
+            };
+            const OUTFITS = {
+                aucun:      { ka: 'არაფერი', en: 'no clothes (a small French flag on the chest)' },
+                tshirt:     { ka: 'მაისური', en: 'a red T-shirt with a star' },
+                mariniere:  { ka: 'ზოლიანი მაისური', en: 'a blue and white striped shirt' },
+                sweat:      { ka: 'ჰუდი', en: 'a grey hoodie' },
+                costume:    { ka: 'კოსტიუმი', en: 'a smart suit with a red tie' },
+                salopette:  { ka: 'კომბინეზონი', en: 'denim overalls' },
+                robe:       { ka: 'კაბა', en: 'a pink dress' },
+                veste:      { ka: 'ჯინსის ქურთუკი', en: 'a denim jacket' },
+                echarpe:    { ka: 'შარფი', en: 'a cosy red scarf' }
+            };
+            const ACCS = {
+                aucun:     { ka: 'არაფერი', en: 'nothing on the head' },
+                antenne:   { ka: 'ანტენა', en: 'an antenna with a red light' },
+                casquette: { ka: 'კეპი', en: 'a blue cap' },
+                bonnet:    { ka: 'შალის ქუდი', en: 'a warm beanie with a pompom' },
+                beret:     { ka: 'ბერეტი', en: 'a black beret' },
+                haut:      { ka: 'ცილინდრი', en: 'a top hat' },
+                couronne:  { ka: 'გვირგვინი', en: 'a golden crown' },
+                casque:    { ka: 'ყურსასმენი', en: 'big headphones' },
+                noeud:     { ka: 'ბაფთა', en: 'a red bow' },
+                fleur:     { ka: 'ყვავილი', en: 'a flower' }
+            };
+            const GLASSES = {
+                aucune:  { ka: 'არაფერი', en: '' },
+                rondes:  { ka: 'მრგვალი', en: 'round golden glasses' },
+                carrees: { ka: 'კვადრატული', en: 'square glasses' },
+                soleil:  { ka: 'მზის სათვალე', en: 'cool sunglasses' }
+            };
+
+            /* Each day the robot is in a different mood, so the conversation never feels the same twice.
+               The mood is only background colour – it is NOT a joke to repeat. */
+            const VIBES = [
+                { id: 'energy',    en: "You are in a great mood today, full of energy and very happy to see the student." },
+                { id: 'tired',     en: "You are a little tired today, but chatting with the student cheers you up." },
+                { id: 'series',    en: "You just started a new series and you are curious what the student likes to watch." },
+                { id: 'music',     en: "You have been listening to music all day and you are curious about the student's taste." },
+                { id: 'curious',   en: "You are very curious today and want to know everything about the student's week." },
+                { id: 'weekend',   en: "You are thinking about the weekend and looking for good ideas." },
+                { id: 'memories',  en: "You feel a bit nostalgic today and like talking about good memories." },
+                { id: 'georgian',  en: "You have been trying to learn a few Georgian words and would love some help." },
+                { id: 'travel',    en: "You have been reading about beautiful places (in France and in Georgia) and dream of travelling." },
+                { id: 'mishap',    en: "A small, believable funny thing happened to you today (invent it, tell it once only if it fits)." },
+                { id: 'gossip',    en: "You are in a chatty, gossipy mood: you want the student's news (school, friends, plans) – kindly." },
+                { id: 'coach',     en: "You are in a motivating mood and really want to help the student make progress in French today." }
+            ];
+            /* Special "moves" – each day only one or two are allowed, never all of them */
+            const MOVES = [
+                { id: 'funny',    en: "Teaser: 'Il m'est arrivé un truc drôle aujourd'hui… tu veux savoir ?' and then tell a short, believable funny story." },
+                { id: 'france',   en: "Talk about something real in France at this time of year (holidays, school breaks, music, sport, festivals, traditions) and ask what it is like in Georgia. NEVER invent news." },
+                { id: 'rather',   en: "A fun 'Tu préfères… ou… ?' question about everyday life (sea or mountains, morning or evening, etc.)." },
+                { id: 'riddle',   en: "A tiny riddle or guessing game in easy French (devinette)." },
+                { id: 'teach',    en: "Ask the student to teach you one Georgian word." },
+                { id: 'personal', en: "A personal question you never asked before (family, friends, dream job, favourite place, best memory)." },
+                { id: 'opinion',  en: "Ask the student's opinion on something everyday or fun and share your own." },
+                { id: 'gossip',   en: "Invite the student to share their news or gossip: 'Alors, quoi de neuf ? Raconte-moi tout !' (school, friends, series) – stay kind." },
+                { id: 'help',     en: "Offer help with French naturally: ask if there is a word or something from class they did not understand." }
+            ];
+
+            /* Surprises: the robot takes the initiative. Three families that rotate day after day
+               (never the same family two days in a row), each with many variants. */
+            const STORY_GENRES = [
+                { id: 'funny',     en: 'a FUNNY story with a surprising ending' },
+                { id: 'mystery',   en: 'a little MYSTERY story (who did it? what happened?)' },
+                { id: 'adventure', en: 'an ADVENTURE story (a trip, a challenge, a discovery)' },
+                { id: 'scary',     en: 'a mildly SCARY story (no violence, no gore, suitable for teenagers) with a twist ending' },
+                { id: 'drama',     en: 'an over-the-top DRAMATIC story (friendship, a big secret, a misunderstanding) that ends in a funny way' },
+                { id: 'love',      en: 'a sweet, light LOVE story (age-appropriate)' },
+                { id: 'scifi',     en: 'a short SCIENCE-FICTION story (robots, space, the future)' },
+                { id: 'animals',   en: 'a cute or funny story about ANIMALS' },
+                { id: 'school',    en: 'a funny story that happens at SCHOOL' }
+            ];
+            const TEACH_KINDS = [
+                { id: 'word',     en: 'a fun everyday word or exclamation (A1: Miam ! Oups ! Coucou, Bisous, Bof ; A2/B1: Ouf, Chut, Bref, Grave)' },
+                { id: 'expr',     en: 'a useful everyday expression (A1: Ça va ? / Pas mal ; A2: Ça marche, Pas de souci ; B1: J\'en ai marre, Ça me saoule, Avoir la flemme)' },
+                { id: 'texting',  en: 'how French people write text messages (slt, stp, bcp, mdr, jsp, dsl) – explain and let the student write a mini text' },
+                { id: 'idiom',    en: 'a funny image idiom adapted to the level (A1/A2: Il pleut des cordes, Avoir la pêche ; B1: Poser un lapin, Avoir un chat dans la gorge, Coûter les yeux de la tête)' },
+                { id: 'false',    en: 'a "false friend" or a word that looks like English/Georgian but means something else (A2/B1), or for A1 a word that is EASY because it looks like English' },
+                { id: 'twister',  en: 'a French tongue twister (A1: Un chasseur sachant chasser… very short part only ; B1: Les chaussettes de l\'archiduchesse…) – challenge the student to say it fast' },
+                { id: 'culture',  en: 'a fun thing about how French people really live or speak (la bise, the gesture "bof", "le goûter", saying "euh…") with a mini example' }
+            ];
+            const GAMES = [
+                { id: 'quisuis',  en: 'QUI SUIS-JE ? You think of a famous character or person (cartoon, film, sport, history – something teenagers know). The student asks yes/no questions in French to find who it is; you answer and give small hints. For A1/A2 also give 3-4 possible answers in "choices" when it helps.' },
+                { id: 'devine',   en: 'DEVINE L\'OBJET: you describe an object, an animal or a food in 3 easy clues, one clue at a time; the student guesses in French. Give 3-4 options in "choices" for A1.' },
+                { id: 'robotdevine', en: 'LE ROBOT DEVINE: the student thinks of an animal (or a food); YOU ask yes/no questions in French to find it (max 6 questions). Offer "Oui" / "Non" / "Je ne sais pas" in "choices".' },
+                { id: 'vraifaux', en: 'VRAI OU FAUX: you say a surprising sentence about France, Georgia, animals or the world (REAL facts only); the student answers vrai ou faux. 3 rounds. Put "Vrai" / "Faux" in "choices".' },
+                { id: 'emoji',    en: 'DEVINETTE EMOJI: you write 2-3 emojis that represent a French word, a place or a famous film/story; the student finds it in French. Give options in "choices" for A1/A2.' },
+                { id: 'chaine',   en: 'LA CHAÎNE DE MOTS: you say a French word, the student says a word that starts with the last letter, and so on. Correct gently.' },
+                { id: 'categories', en: 'LE JEU DES CATÉGORIES: you give a category (fruits, animaux, couleurs, métiers, pays…) and a letter; the student names a word in French. 3 rounds, you play too.' },
+                { id: 'histoire', en: 'L\'HISTOIRE À DEUX: you start a short story with one sentence, the student adds the next sentence, you continue, etc. Keep it funny.' },
+                { id: 'traduction', en: 'TRADUCTION EXPRESS: you give a Georgian word (written in Georgian) and the student must find the French word, 3 rounds, with points. Give options in "choices" for A1.' },
+                { id: 'intrus',   en: 'CHERCHE L\'INTRUS: you give 4 French words, one does not belong (e.g. pomme, banane, chaise, fraise); the student finds it and says why. Put the 4 words in "choices".' }
+            ];
+            const SURPRISE_FAMILIES = ['story', 'teach', 'game'];
+
+            function makeSurprise(family, avoidIds) {
+                avoidIds = avoidIds || [];
+                if (family === 'story') {
+                    const pool = STORY_GENRES.filter(g => !avoidIds.includes('story-' + g.id));
+                    const g = pick(pool.length ? pool : STORY_GENRES);
+                    return { id: 'story-' + g.id, family, en: `Offer to tell ${g.en}. Phrase the offer in your own words, in a new way (do NOT always say "Tu veux que je te raconte une histoire…" – e.g. tease it, create suspense, say something happened to you…). If the student says yes, TELL THE STORY in your next message.` };
+                }
+                if (family === 'teach') {
+                    const pool = TEACH_KINDS.filter(t => !avoidIds.includes('teach-' + t.id));
+                    const t = pick(pool.length ? pool : TEACH_KINDS);
+                    return { id: 'teach-' + t.id, family, en: `Offer to teach the student something fun in French, for example "Tu veux que je t'apprenne un truc en français ? 🤓" (you can vary the words). If yes, teach ${t.en}. Keep it to the student's level, give a mini example, then ask the student to try to use it.` };
+                }
+                const pool = GAMES.filter(gm => !avoidIds.includes('game-' + gm.id));
+                const gm = pick(pool.length ? pool : GAMES);
+                return { id: 'game-' + gm.id, family: 'game', en: `Offer to play a game, in your own words (e.g. "On joue à un jeu ? 🎲"). The game: ${gm.en} If the student says yes, explain the rules in 1-2 very easy sentences and START the game right away.` };
+            }
+
+            /* ---------- helpers ---------- */
+            function todayStr(d) {
+                d = d || new Date();
+                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            }
+            function daysBetween(a, b) {
+                return Math.round((new Date(b + 'T00:00:00') - new Date(a + 'T00:00:00')) / 86400000);
+            }
+            function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+            function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+            function shuffle(arr) { return arr.map(v => [Math.random(), v]).sort((a, b) => a[0] - b[0]).map(x => x[1]); }
+
+            /* ---------- robot drawing ---------- */
+            let svgCounter = 0;
+            function heartPath(cx, cy) {
+                return `M${cx} ${cy + 10} C${cx - 18} ${cy - 2} ${cx - 9} ${cy - 15} ${cx} ${cy - 5} C${cx + 9} ${cy - 15} ${cx + 18} ${cy - 2} ${cx} ${cy + 10} Z`;
+            }
+
+            /* Clothes: returns { body, sleeveL, sleeveR, skirt, showFlag } */
+            function outfitParts(outfit, clip) {
+                const sleeve = (color, len) => ({
+                    l: `<rect x="34" y="182" width="26" height="${len}" rx="13" fill="${color}"/>`,
+                    r: `<rect x="180" y="182" width="26" height="${len}" rx="13" fill="${color}"/>`
+                });
+                const inClip = (svg) => `<g clip-path="url(#${clip})">${svg}</g>`;
+                let s;
+                switch (outfit) {
+                    case 'tshirt':
+                        s = sleeve('#ef4135', 30);
+                        return { body: inClip(`<rect x="60" y="164" width="120" height="74" fill="#ef4135"/><path d="M120 190 l5 11 12 1 -9 8 3 12 -11 -6 -11 6 3 -12 -9 -8 12 -1z" fill="#fff"/>`), sleeveL: s.l, sleeveR: s.r };
+                    case 'mariniere': {
+                        let stripes = '';
+                        for (let y = 172; y < 268; y += 14) stripes += `<rect x="60" y="${y}" width="120" height="6" fill="#1e3a8a"/>`;
+                        s = sleeve('#f8fafc', 34);
+                        return { body: inClip(`<rect x="60" y="164" width="120" height="104" fill="#f8fafc"/>${stripes}`), sleeveL: s.l + `<rect x="34" y="196" width="26" height="5" fill="#1e3a8a"/>`, sleeveR: s.r + `<rect x="180" y="196" width="26" height="5" fill="#1e3a8a"/>` };
+                    }
+                    case 'sweat':
+                        s = sleeve('#64748b', 62);
+                        return { body: `<path d="M92 166 Q120 186 148 166 L150 160 Q120 176 90 160 Z" fill="#475569"/>` + inClip(`<rect x="60" y="164" width="120" height="104" fill="#64748b"/><rect x="88" y="226" width="64" height="26" rx="8" fill="#475569"/><line x1="112" y1="176" x2="110" y2="206" stroke="#e2e8f0" stroke-width="3" stroke-linecap="round"/><line x1="128" y1="176" x2="130" y2="206" stroke="#e2e8f0" stroke-width="3" stroke-linecap="round"/>`), sleeveL: s.l, sleeveR: s.r };
+                    case 'costume':
+                        s = sleeve('#1e293b', 62);
+                        return { body: inClip(`<rect x="60" y="164" width="120" height="104" fill="#1e293b"/><path d="M100 166 L120 214 L140 166 Z" fill="#f8fafc"/><path d="M114 176 L126 176 L129 214 L120 226 L111 214 Z" fill="#ef4135"/><circle cx="120" cy="238" r="3.5" fill="#94a3b8"/><circle cx="120" cy="252" r="3.5" fill="#94a3b8"/>`), sleeveL: s.l + `<rect x="34" y="236" width="26" height="6" fill="#f8fafc"/>`, sleeveR: s.r + `<rect x="180" y="236" width="26" height="6" fill="#f8fafc"/>` };
+                    case 'salopette':
+                        return { body: inClip(`<rect x="60" y="214" width="120" height="56" fill="#2563eb"/><rect x="90" y="184" width="60" height="34" rx="6" fill="#2563eb"/><rect x="104" y="196" width="32" height="14" rx="3" fill="#1d4ed8"/>`) + `<path d="M92 186 L80 166 M148 186 L160 166" stroke="#2563eb" stroke-width="8" stroke-linecap="round"/><circle cx="95" cy="190" r="4" fill="#facc15"/><circle cx="145" cy="190" r="4" fill="#facc15"/>`, sleeveL: '', sleeveR: '' };
+                    case 'robe':
+                        return { body: inClip(`<rect x="60" y="164" width="120" height="104" fill="#ec4899"/><rect x="60" y="222" width="120" height="8" fill="#fbcfe8"/>`) + `<path d="M70 228 L52 282 Q120 296 188 282 L170 228 Z" fill="#ec4899"/><path d="M60 280 Q120 293 180 280" stroke="#fbcfe8" stroke-width="4" fill="none"/>`, sleeveL: '<rect x="34" y="182" width="26" height="20" rx="10" fill="#f9a8d4"/>', sleeveR: '<rect x="180" y="182" width="26" height="20" rx="10" fill="#f9a8d4"/>' };
+                    case 'veste':
+                        s = sleeve('#3b6fb6', 60);
+                        return { body: inClip(`<rect x="60" y="164" width="120" height="104" fill="#f8fafc"/><rect x="60" y="164" width="46" height="104" fill="#3b6fb6"/><rect x="134" y="164" width="46" height="104" fill="#3b6fb6"/><path d="M106 166 L94 196 L106 190 Z M134 166 L146 196 L134 190 Z" fill="#2c548c"/><rect x="72" y="214" width="20" height="14" rx="3" fill="#2c548c"/><rect x="148" y="214" width="20" height="14" rx="3" fill="#2c548c"/>`), sleeveL: s.l, sleeveR: s.r };
+                    case 'echarpe':
+                        return { body: `<rect x="88" y="160" width="64" height="18" rx="9" fill="#ef4135"/><rect x="126" y="170" width="18" height="50" rx="6" fill="#ef4135" transform="rotate(-8 135 170)"/><rect x="124" y="208" width="18" height="5" fill="#fff" transform="rotate(-8 135 170)"/><rect x="124" y="198" width="18" height="5" fill="#fff" transform="rotate(-8 135 170)"/>`, sleeveL: '', sleeveR: '', showFlag: true };
+                    default:
+                        return { body: '', sleeveL: '', sleeveR: '', showFlag: true };
+                }
+            }
+
+            function robotSVG(p, label, viewBox) {
+                const c = COLORS[p.color] || COLORS.bleu;
+                const glow = '#7df9ff';
+                const clip = 'obTorso' + (++svgCounter);
+                let eyes;
+                if (p.eyes === 'visiere') {
+                    eyes = `<rect x="70" y="84" width="100" height="22" rx="11" fill="${glow}"/><rect class="ob-scan" x="74" y="88" width="18" height="14" rx="7" fill="#fff" opacity=".85"/>`;
+                } else if (p.eyes === 'pixels') {
+                    eyes = `<rect x="82" y="84" width="22" height="22" rx="3" fill="${glow}"/><rect x="136" y="84" width="22" height="22" rx="3" fill="${glow}"/><rect x="86" y="88" width="7" height="7" fill="#fff"/><rect x="140" y="88" width="7" height="7" fill="#fff"/>`;
+                } else if (p.eyes === 'joyeux') {
+                    eyes = `<path d="M80 102 Q93 80 106 102" fill="none" stroke="${glow}" stroke-width="7" stroke-linecap="round"/><path d="M134 102 Q147 80 160 102" fill="none" stroke="${glow}" stroke-width="7" stroke-linecap="round"/>`;
+                } else if (p.eyes === 'coeurs') {
+                    eyes = `<path d="${heartPath(93, 95)}" fill="#ff7eb6"/><path d="${heartPath(147, 95)}" fill="#ff7eb6"/>`;
+                } else {
+                    eyes = `<circle cx="93" cy="95" r="13" fill="${glow}"/><circle cx="147" cy="95" r="13" fill="${glow}"/><circle cx="97" cy="90" r="4.5" fill="#fff"/><circle cx="151" cy="90" r="4.5" fill="#fff"/>`;
+                }
+                let glasses = '';
+                if (p.glasses === 'rondes') {
+                    glasses = `<circle cx="93" cy="95" r="19" fill="none" stroke="#facc15" stroke-width="4.5"/><circle cx="147" cy="95" r="19" fill="none" stroke="#facc15" stroke-width="4.5"/><path d="M112 93 Q120 87 128 93" fill="none" stroke="#facc15" stroke-width="4"/>`;
+                } else if (p.glasses === 'carrees') {
+                    glasses = `<rect x="70" y="77" width="46" height="36" rx="7" fill="rgba(255,255,255,.08)" stroke="#f8fafc" stroke-width="4.5"/><rect x="124" y="77" width="46" height="36" rx="7" fill="rgba(255,255,255,.08)" stroke="#f8fafc" stroke-width="4.5"/><line x1="116" y1="92" x2="124" y2="92" stroke="#f8fafc" stroke-width="4"/>`;
+                } else if (p.glasses === 'soleil') {
+                    glasses = `<path d="M68 80 H116 V98 Q116 114 92 114 Q68 114 68 98 Z" fill="#020617" stroke="#94a3b8" stroke-width="3"/><path d="M124 80 H172 V98 Q172 114 148 114 Q124 114 124 98 Z" fill="#020617" stroke="#94a3b8" stroke-width="3"/><line x1="116" y1="86" x2="124" y2="86" stroke="#94a3b8" stroke-width="4"/><path d="M76 88 L88 88" stroke="#fff" stroke-opacity=".6" stroke-width="3" stroke-linecap="round"/><path d="M132 88 L144 88" stroke="#fff" stroke-opacity=".6" stroke-width="3" stroke-linecap="round"/>`;
+                }
+                const behindHead = p.acc === 'antenne'
+                    ? `<line x1="120" y1="46" x2="120" y2="16" stroke="${c.dark}" stroke-width="6" stroke-linecap="round"/><circle class="ob-bulb" cx="120" cy="13" r="9" fill="#ef4135"/>`
+                    : '';
+                let onHead = '';
+                switch (p.acc) {
+                    case 'beret':
+                        onHead = `<g transform="rotate(-10 120 40)"><ellipse cx="112" cy="46" rx="66" ry="19" fill="#1e293b"/><ellipse cx="112" cy="40" rx="58" ry="14" fill="#334155"/><rect x="108" y="20" width="7" height="10" rx="3" fill="#1e293b"/></g>`; break;
+                    case 'casque':
+                        onHead = `<path d="M30 100 Q30 20 120 20 Q210 20 210 100" fill="none" stroke="#1e293b" stroke-width="10" stroke-linecap="round"/><rect x="14" y="76" width="28" height="48" rx="13" fill="#1e293b"/><rect x="198" y="76" width="28" height="48" rx="13" fill="#1e293b"/><circle cx="28" cy="100" r="6" fill="${c.base}"/><circle cx="212" cy="100" r="6" fill="${c.base}"/>`; break;
+                    case 'noeud':
+                        onHead = `<g transform="translate(176 46) rotate(15)"><path d="M0 0 L-26 -15 L-26 15 Z" fill="#ef4135"/><path d="M0 0 L26 -15 L26 15 Z" fill="#ef4135"/><circle r="8" fill="#be123c"/></g>`; break;
+                    case 'casquette':
+                        onHead = `<path d="M40 62 Q44 14 120 14 Q196 14 200 62 Z" fill="#0055a5"/><path d="M150 54 Q210 44 236 62 Q206 72 150 64 Z" fill="#003f7d"/><circle cx="120" cy="15" r="5" fill="#003f7d"/><path d="M120 16 V60" stroke="#003f7d" stroke-width="2" opacity=".5"/>`; break;
+                    case 'bonnet':
+                        onHead = `<path d="M40 62 Q40 10 120 10 Q200 10 200 62 Z" fill="#f59e0b"/><rect x="36" y="50" width="168" height="18" rx="9" fill="#d97706"/><circle cx="120" cy="8" r="13" fill="#fde68a"/><path d="M80 26 V50 M100 16 V50 M120 12 V50 M140 16 V50 M160 26 V50" stroke="#d97706" stroke-width="3" opacity=".6"/>`; break;
+                    case 'haut':
+                        onHead = `<rect x="86" y="-2" width="68" height="46" rx="4" fill="#111827"/><rect x="86" y="30" width="68" height="9" fill="#ef4135"/><ellipse cx="120" cy="45" rx="60" ry="10" fill="#111827"/>`; break;
+                    case 'couronne':
+                        onHead = `<path d="M76 48 L82 12 L101 32 L120 4 L139 32 L158 12 L164 48 Z" fill="#facc15" stroke="#ca8a04" stroke-width="3" stroke-linejoin="round"/><circle cx="120" cy="36" r="5" fill="#ef4135"/><circle cx="96" cy="40" r="4" fill="#3b82f6"/><circle cx="144" cy="40" r="4" fill="#3b82f6"/>`; break;
+                    case 'fleur':
+                        onHead = `<g transform="translate(172 44)">${[0, 72, 144, 216, 288].map(a => `<circle cx="${(Math.cos(a * Math.PI / 180) * 11).toFixed(1)}" cy="${(Math.sin(a * Math.PI / 180) * 11).toFixed(1)}" r="9" fill="#f9a8d4"/>`).join('')}<circle r="7" fill="#facc15"/></g>`; break;
+                }
+                const o = outfitParts(p.outfit, clip);
+                const flag = o.showFlag
+                    ? `<rect x="92" y="186" width="56" height="40" rx="12" fill="#fff" opacity=".92"/><rect x="100" y="194" width="13" height="24" rx="2" fill="#0055a5"/><rect x="113" y="194" width="14" height="24" fill="#e8edf5"/><rect x="127" y="194" width="13" height="24" rx="2" fill="#ef4135"/><circle class="ob-core" cx="120" cy="245" r="6" fill="${glow}"/>`
+                    : '';
+                return `<svg class="ob-bot" viewBox="${viewBox || '0 0 240 300'}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${label || 'robot'}">
+                    <defs><clipPath id="${clip}"><rect x="62" y="166" width="116" height="100" rx="30"/></clipPath></defs>
+                    <ellipse cx="120" cy="292" rx="70" ry="8" fill="rgba(0,0,0,.22)"/>
+                    <g class="ob-float">
+                        <rect x="34" y="182" width="26" height="70" rx="13" fill="${c.dark}"/>
+                        ${o.sleeveL}
+                        <circle cx="47" cy="254" r="14" fill="${c.base}"/>
+                        <g class="ob-arm"><rect x="180" y="182" width="26" height="70" rx="13" fill="${c.dark}"/>${o.sleeveR}<circle cx="193" cy="254" r="14" fill="${c.base}"/></g>
+                        <rect x="80" y="258" width="34" height="20" rx="10" fill="${c.dark}"/>
+                        <rect x="126" y="258" width="34" height="20" rx="10" fill="${c.dark}"/>
+                        <rect x="62" y="166" width="116" height="100" rx="30" fill="${c.base}"/>
+                        ${flag}
+                        ${p.outfit === 'echarpe' ? '' : o.body}
+                        <rect x="104" y="146" width="32" height="26" rx="8" fill="${c.dark}"/>
+                        ${p.outfit === 'echarpe' ? o.body : ''}
+                        ${behindHead}
+                        <circle cx="32" cy="98" r="15" fill="${c.dark}"/>
+                        <circle cx="208" cy="98" r="15" fill="${c.dark}"/>
+                        <rect x="34" y="40" width="172" height="116" rx="50" fill="${c.base}"/>
+                        <path d="M66 54 Q92 45 122 47" stroke="#fff" stroke-opacity=".5" stroke-width="6" fill="none" stroke-linecap="round"/>
+                        <rect x="52" y="60" width="136" height="84" rx="34" fill="#0d1b3a"/>
+                        <g class="ob-eyes">${eyes}</g>
+                        ${glasses}
+                        <circle cx="72" cy="126" r="7" fill="#fb7185" opacity=".55"/>
+                        <circle cx="168" cy="126" r="7" fill="#fb7185" opacity=".55"/>
+                        <rect class="ob-mouth" x="106" y="120" width="28" height="8" rx="4" fill="${glow}"/>
+                        ${onHead}
+                    </g>
+                </svg>`;
+            }
+
+            /* Short text describing the robot (for Gemini) */
+            function lookText(p) {
+                const parts = [`a ${(COLORS[p.color] || COLORS.bleu).en} robot with ${(EYES[p.eyes] || EYES.rondes).en}`];
+                if (p.outfit && p.outfit !== 'aucun' && OUTFITS[p.outfit]) parts.push(`wearing ${OUTFITS[p.outfit].en}`);
+                if (p.acc && p.acc !== 'aucun' && ACCS[p.acc]) parts.push(`with ${ACCS[p.acc].en}`);
+                if (p.glasses && p.glasses !== 'aucune' && GLASSES[p.glasses]) parts.push(`and ${GLASSES[p.glasses].en}`);
+                return parts.join(', ');
+            }
+
+            /* ---------- state ---------- */
+            let user = null;
+            let student = { firstName: '', course: '' };
+            let state = null;
+            let started = false;
+            let chat = null;
+
+            function lsKey() { return 'ouibot_' + user.id; }
+
+            function loadState() {
+                const meta = (user.user_metadata && user.user_metadata.ouibot) || null;
+                let local = null;
+                try { local = JSON.parse(localStorage.getItem(lsKey()) || 'null'); } catch (e) { local = null; }
+                let st = Object.assign({}, local || {}, meta || {});
+                if (meta && local) {
+                    if (!meta.profile && local.profile) st.profile = local.profile;
+                    if ((local.lastChat || '') > (meta.lastChat || '')) st.lastChat = local.lastChat;
+                    if ((local.skipped || '') > (meta.skipped || '')) st.skipped = local.skipped;
+                }
+                ['memories', 'recent', 'vibes', 'moves'].forEach(k => { st[k] = Array.isArray(st[k]) ? st[k] : []; });
+                st.chats = st.chats || 0;
+                return st;
+            }
+
+            async function saveState() {
+                try { localStorage.setItem(lsKey(), JSON.stringify(state)); } catch (e) { /* storage blocked */ }
+                try {
+                    // Saved on the student's own account, so the robot is the same on every device
+                    await _supabase.auth.updateUser({ data: { ouibot: state } });
+                } catch (e) { console.warn('OuiBot: could not save to account', e); }
+            }
+
+            function levelInfo(course) {
+                const c = String(course || '');
+                const level = /B1/i.test(c) ? 'B1' : (/A2/i.test(c) ? 'A2' : 'A1');
+                return { level, delf: /delf/i.test(c) };
+            }
+
+            /* ---------- window open / close ---------- */
+            function showWindow(id) {
+                ['obSetup', 'obChat'].forEach(s => $(s).classList.toggle('ob-active', s === id));
+                const ov = $('obOverlay');
+                ov.hidden = false;
+                ov.classList.remove('ob-leaving');
+                root.classList.add('ob-open');
+            }
+
+            function hideWindow(instant) {
+                const ov = $('obOverlay');
+                try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch (e) {}
+                pendingQueue = [];
+                introSkip = true;
+                if (introCancel) introCancel();
+                $('obHero').hidden = true;
+                $('obChat').classList.remove('ob-behind');
+                stopMic();
+                if (ov.hidden) return;
+                const done = () => { ov.hidden = true; ov.classList.remove('ob-leaving'); root.classList.remove('ob-open'); updateLauncher(); };
+                if (instant) return done();
+                ov.classList.add('ob-leaving');
+                setTimeout(done, 250);
+            }
+
+            /* X button / Escape: the student doesn't want to talk today → back tomorrow */
+            function dismiss() {
+                if ($('obOverlay').hidden) return;
+                if (state && !(chat && chat.finished)) {
+                    state.skipped = todayStr();
+                    saveState();
+                }
+                hideWindow(false);
+            }
+            document.querySelectorAll('#obOverlay [data-ob-close]').forEach(b => b.addEventListener('click', dismiss));
+            document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('obOverlay').hidden) dismiss(); });
+
+            /* ---------- start check (after login) ---------- */
+            async function maybeStart(session) {
+                if (started) return;
+                if ((typeof isRecoveryMode !== 'undefined' && isRecoveryMode) || (typeof cameFromResetLink !== 'undefined' && cameFromResetLink)) return;
+                started = true;
+                try {
+                    const { data: st, error } = await _supabase
+                        .from('Students')
+                        .select('firstName, course, is_active')
+                        .eq('auth_id', session.user.id)
+                        .maybeSingle();
+                    if (error || !st || st.is_active === false) { started = false; return; }
+
+                    const { data: s2 } = await _supabase.auth.getSession();
+                    if (!s2 || !s2.session) { started = false; return; }
+
+                    user = s2.session.user;
+                    student = { firstName: (st.firstName || '').trim(), course: st.course || '' };
+                    state = loadState();
+
+                    /* TEST MODE (teacher):
+                       index.html?robot=test  -> opens today's chat again (keeps the robot)
+                       index.html?robot=reset -> deletes the robot and starts from the creation step */
+                    const robotMode = new URLSearchParams(window.location.search).get('robot');
+                    if (robotMode === 'reset') {
+                        state = { memories: [], recent: [], vibes: [], moves: [], chats: 0 };
+                        try { localStorage.removeItem(lsKey()); localStorage.removeItem('ouibot_chat_' + user.id); } catch (e) {}
+                        chat = null;
+                        await saveState();
+                    }
+
+                    updateLauncher();
+                    $('obLauncher').hidden = false;
+
+                    const today = todayStr();
+                    if (!robotMode && (state.lastChat === today || state.skipped === today)) return;
+                    if (!state.profile) openSetup();
+                    else openChat(false);
+                } catch (err) {
+                    console.error('OuiBot start error:', err);
+                    started = false;
+                }
+            }
+
+            _supabase.auth.onAuthStateChange((event, session) => {
+                if (!session || !session.user) {
+                    started = false;
+                    hideWindow(true);
+                    $('obLauncher').hidden = true;
+                    return;
+                }
+                if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') {
+                    // small delay so the page appears first and the existing ID check can finish
+                    setTimeout(() => maybeStart(session), event === 'SIGNED_IN' ? 900 : 600);
+                }
+            });
+
+            /* =====================================================
+               1) SETUP – look, name, gender (saved forever)
+               ===================================================== */
+            const draft = { color: 'bleu', eyes: 'rondes', outfit: 'aucun', acc: 'antenne', glasses: 'aucune', name: '', gender: '' };
+            const SETUP_STEPS = 7;
+            let setupStep = 1;
+            let setupDir = 1;
+
+            function setupSay(n) {
+                const f = draft.gender === 'f';
+                const name = draft.name || '';
+                return {
+                    1: { fr: "Salut ! 👋 Je suis ton nouveau robot. D'abord… comment je m'appelle ?", ka: "გამარჯობა! 👋 მე შენი ახალი რობოტი ვარ. ჯერ… რა მქვია?" },
+                    2: { fr: `${name} ? J'adore ce prénom ! Je suis une fille ou un garçon ?`, ka: `${name}? ძალიან მომწონს ეს სახელი! გოგო ვარ თუ ბიჭი?` },
+                    3: { fr: "Super ! Maintenant, choisis ma couleur ! 🎨", ka: "სუპერ! ახლა ჩემი ფერი აირჩიე! 🎨" },
+                    4: { fr: "Joli ! Et mes yeux ? 👀", ka: "ლამაზია! ჩემი თვალები? 👀" },
+                    5: { fr: "Maintenant, choisis mes habits ! 👕", ka: "ახლა ჩემი ტანსაცმელი აირჩიე! 👕" },
+                    6: { fr: "Et mes accessoires ? Un chapeau, des lunettes… 🎩", ka: "ჩემი აქსესუარები? ქუდი, სათვალე… 🎩" },
+                    7: { fr: `Waouh, je suis trop ${f ? 'belle' : 'beau'} ! Merci ! On est amis pour toujours ? 🤝`, ka: "ვაუ, რა ლამაზი ვარ! მადლობა! სამუდამოდ მეგობრები ვართ? 🤝" }
+                }[n];
+            }
+
+            function renderSetupPreview() {
+                $('obSetupRobot').innerHTML = robotSVG(draft, draft.name || 'robot');
+                $('obSetupPlate').textContent = draft.name || '???';
+            }
+
+            /* Little "pop + sparkles" when the student picks something */
+            function celebrate() {
+                const box = $('obSetupRobot');
+                box.classList.remove('ob-pop');
+                void box.offsetWidth;
+                box.classList.add('ob-pop');
+                if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+                const colors = ['#facc15', '#60a5fa', '#f472b6', '#34d399', '#ffffff'];
+                for (let i = 0; i < 10; i++) {
+                    const s = document.createElement('span');
+                    s.className = 'ob-spark';
+                    const a = (Math.PI * 2 * i) / 10 + Math.random() * 0.4;
+                    const d = 70 + Math.random() * 50;
+                    s.style.setProperty('--dx', `${Math.cos(a) * d}px`);
+                    s.style.setProperty('--dy', `${Math.sin(a) * d}px`);
+                    s.style.background = colors[i % colors.length];
+                    box.appendChild(s);
+                    setTimeout(() => s.remove(), 750);
+                }
+            }
+
+            function tileGroup(boxId, map, field, viewBox) {
+                const box = $(boxId);
+                box.innerHTML = '';
+                Object.keys(map).forEach(k => {
+                    const b = document.createElement('button');
+                    b.type = 'button';
+                    b.className = 'ob-tile';
+                    b.setAttribute('aria-pressed', String(draft[field] === k));
+                    const preview = Object.assign({}, draft, { [field]: k });
+                    b.innerHTML = `<span class="ob-tile-img">${robotSVG(preview, map[k].ka, viewBox)}</span><span class="ob-tile-label"></span>`;
+                    b.querySelector('.ob-tile-label').textContent = map[k].ka;
+                    b.addEventListener('click', () => {
+                        draft[field] = k;
+                        box.querySelectorAll('.ob-tile').forEach(t => t.setAttribute('aria-pressed', String(t === b)));
+                        renderSetupPreview();
+                        celebrate();
+                    });
+                    box.appendChild(b);
+                });
+            }
+
+            function buildStepOptions(n) {
+                if (n === 3) {
+                    const colorBox = $('obColorOpts');
+                    colorBox.innerHTML = '';
+                    Object.keys(COLORS).forEach(k => {
+                        const b = document.createElement('button');
+                        b.type = 'button';
+                        b.className = 'ob-swatch';
+                        b.style.background = COLORS[k].base;
+                        b.setAttribute('aria-label', COLORS[k].ka);
+                        b.title = COLORS[k].ka;
+                        b.setAttribute('aria-pressed', String(draft.color === k));
+                        b.addEventListener('click', () => {
+                            draft.color = k;
+                            colorBox.querySelectorAll('.ob-swatch').forEach(t => t.setAttribute('aria-pressed', String(t === b)));
+                            renderSetupPreview();
+                            celebrate();
+                        });
+                        colorBox.appendChild(b);
+                    });
+                }
+                if (n === 4) tileGroup('obEyesOpts', EYES, 'eyes', '46 52 148 100');
+                if (n === 5) tileGroup('obOutfitOpts', OUTFITS, 'outfit', '22 140 196 160');
+                if (n === 6) {
+                    tileGroup('obAccOpts', ACCS, 'acc', '6 -8 228 172');
+                    tileGroup('obGlassesOpts', GLASSES, 'glasses', '46 52 148 100');
+                }
+            }
+
+            function goStep(n) {
+                setupDir = n >= setupStep ? 1 : -1;
+                setupStep = n;
+                buildStepOptions(n);
+                document.querySelectorAll('#obSetup .ob-step').forEach(el => {
+                    const on = Number(el.dataset.step) === n;
+                    el.classList.toggle('ob-active', on);
+                    el.classList.toggle('ob-from-left', on && setupDir < 0);
+                });
+                document.querySelectorAll('#obSetup .ob-steps li').forEach((li, i) => li.classList.toggle('ob-done', i < n));
+                $('obStepNum').textContent = n;
+                $('obBackBtn').hidden = n === 1;
+                $('obNextBtn').textContent = n === SETUP_STEPS ? 'დიახ, დავიწყოთ!' : 'შემდეგი';
+                $('obSetupErr').textContent = '';
+
+                // the robot jumps and says the next line
+                const box = $('obSetupRobot');
+                box.classList.remove('ob-hop');
+                void box.offsetWidth;
+                box.classList.add('ob-hop');
+                const say = setupSay(n);
+                const bubble = $('obSetupSayFr').parentElement;
+                bubble.classList.remove('ob-swap');
+                void bubble.offsetWidth;
+                bubble.classList.add('ob-swap');
+                $('obSetupSayFr').textContent = say.fr;
+                $('obSetupSayKa').textContent = say.ka;
+
+                if (n === 1) setTimeout(() => $('obNameInput').focus(), 60);
+                if (n === SETUP_STEPS) {
+                    $('obSummaryBot').innerHTML = robotSVG(draft, draft.name);
+                    $('obSummaryName').textContent = draft.name;
+                    const extras = [OUTFITS[draft.outfit].ka, ACCS[draft.acc].ka, GLASSES[draft.glasses].ka].filter(x => x !== 'არაფერი');
+                    $('obSummaryMeta').textContent = [draft.gender === 'f' ? 'გოგო' : 'ბიჭი', COLORS[draft.color].ka, `${EYES[draft.eyes].ka} თვალები`].concat(extras).join(', ');
+                    celebrate();
+                }
+                if (!autoSpeak(say.fr, 'obSetupRobot', draft.gender, true)) talk('obSetupRobot', 1400);
+            }
+
+            function openSetup() {
+                renderSetupPreview();
+                $('obNameInput').value = draft.name;
+                goStep(1);
+                showWindow('obSetup');
+            }
+
+            $('obNameInput').addEventListener('input', (e) => {
+                draft.name = e.target.value.trim();
+                renderSetupPreview();
+            });
+            $('obNameInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); $('obNextBtn').click(); } });
+            document.querySelectorAll('#obGenderOpts [data-gender]').forEach(b => {
+                b.addEventListener('click', () => {
+                    draft.gender = b.dataset.gender;
+                    document.querySelectorAll('#obGenderOpts [data-gender]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+                    celebrate();
+                });
+            });
+            $('obBackBtn').addEventListener('click', () => goStep(Math.max(1, setupStep - 1)));
+            $('obNextBtn').addEventListener('click', async () => {
+                if (setupStep === 1) {
+                    draft.name = $('obNameInput').value.trim();
+                    if (!/^[\p{L}\p{N}' \-]{1,20}$/u.test(draft.name)) {
+                        $('obSetupErr').textContent = 'ჩაწერე სახელი (მხოლოდ ასოები, მაქსიმუმ 20 სიმბოლო).';
+                        return;
+                    }
+                    return goStep(2);
+                }
+                if (setupStep === 2 && !draft.gender) {
+                    $('obSetupErr').textContent = 'აირჩიე: გოგო თუ ბიჭი.';
+                    return;
+                }
+                if (setupStep < SETUP_STEPS) return goStep(setupStep + 1);
+
+                // last step: lock the robot forever
+                if (state.profile) return; // already created, never overwrite
+                $('obNextBtn').disabled = true;
+                state.profile = {
+                    name: draft.name, gender: draft.gender,
+                    color: draft.color, eyes: draft.eyes, outfit: draft.outfit, acc: draft.acc, glasses: draft.glasses,
+                    created: todayStr()
+                };
+                await saveState();
+                $('obNextBtn').disabled = false;
+                updateLauncher();
+                openChat(false, true);
+            });
+
+            /* =====================================================
+               2) DAILY CHAT – 5 questions, once a day, new mood each day
+               ===================================================== */
+            const LOCAL_QUESTIONS = [
+                { id: 'name', fr: "Au fait, dis-moi ton prénom en français : « Je m'appelle… » 😊", ka: "სხვათა შორის, ფრანგულად მითხარი შენი სახელი: „Je m'appelle…“ 😊" },
+                { id: 'age', fr: "Et toi, tu as quel âge ?", ka: "შენ რამდენი წლის ხარ?" },
+                { id: 'afterclass', fr: "Qu'est-ce que tu as fait de beau aujourd'hui ?", ka: "დღეს რა საინტერესო გააკეთე?" },
+                { id: 'city', fr: "Tu préfères la mer ou la montagne ? Pourquoi ? 🏖️⛰️", ka: "ზღვა გირჩევნია თუ მთა? რატომ? 🏖️⛰️" },
+                { id: 'weekend', fr: "Qu'est-ce que tu vas faire ce week-end ?", ka: "რას აპირებ ამ შაბათ-კვირას?" },
+                { id: 'pet', fr: "Tu as un animal à la maison ? 🐶🐱", ka: "სახლში ცხოველი გყავს? 🐶🐱" },
+                { id: 'music', fr: "Tu écoutes quelle musique en ce moment ? 🎧", ka: "ახლა რა მუსიკას უსმენ? 🎧" },
+                { id: 'news', fr: "Alors, quoi de neuf ? Raconte-moi tout ! 👀", ka: "აბა, რა ახალი ამბებია? ყველაფერი მომიყევი! 👀" },
+                { id: 'help', fr: "Il y a un mot du cours que tu n'as pas compris ? Je peux t'aider !", ka: "გაკვეთილიდან რამე სიტყვა ხომ არ გაგიჭირდა? შემიძლია დაგეხმარო!" },
+                { id: 'teach', fr: "Apprends-moi un mot en géorgien ! Je promets d'essayer… 😅", ka: "მასწავლე ერთი ქართული სიტყვა! გპირდები, ვეცდები… 😅" }
+            ];
+            const LOCAL_REACTIONS = [
+                { fr: "Ah oui ? Raconte-moi un peu plus ! 😊", ka: "მართლა? ცოტა მეტი მომიყევი! 😊" },
+                { fr: "Haha, j'adore ! 😄", ka: "ჰაჰა, ძალიან მომწონს! 😄" },
+                { fr: "Waouh, c'est cool, ça !", ka: "ვაუ, რა მაგარია!" },
+                { fr: "Je vois… et tu te sens comment avec ça ?", ka: "გასაგებია… და როგორ გრძნობ ამასთან დაკავშირებით თავს?" }
+            ];
+
+            function localOpening() {
+                const p = state.profile;
+                const f = p.gender === 'f';
+                const n = student.firstName ? ` ${student.firstName}` : '';
+                const gap = state.lastChat ? daysBetween(state.lastChat, todayStr()) : 0;
+                if (!state.chats) {
+                    return { fr: `Salut${n} ! C'est moi, ${p.name}, ${f ? 'ta nouvelle amie' : 'ton nouvel ami'} 🤖 Je suis trop ${f ? 'contente' : 'content'} de te rencontrer ! Alors, dis-moi… comment s'est passée ta journée ?`,
+                             ka: `გამარჯობა${n}! ეს მე ვარ, ${p.name}, შენი ახალი მეგობარი 🤖 ძალიან მიხარია შენი გაცნობა! აბა, მითხარი… როგორ ჩაიარა შენმა დღემ?` };
+                }
+                if (gap >= 4) {
+                    return { fr: `Oh là là${n} ! Ça fait ${gap} jours… Enfin tu as décidé d'étudier ? 😏 Bon, je te pardonne ! Comment s'est passée ta journée ?`,
+                             ka: `ვაიმე${n}! უკვე ${gap} დღე გავიდა… როგორც იქნა, მეცადინეობა გადაწყვიტე? 😏 კარგი, გპატიობ! როგორ ჩაიარა შენმა დღემ?` };
+                }
+                return pick([
+                    { fr: `Coucou${n} ! 👋 Je t'attendais ! Comment s'est passée ta journée ?`, ka: `სალამი${n}! 👋 გელოდებოდი! როგორ ჩაიარა შენმა დღემ?` },
+                    { fr: `Salut${n} ! Te revoilà ! 😄 Alors, ta journée, c'était comment ?`, ka: `გამარჯობა${n}! ისევ აქ ხარ! 😄 აბა, როგორი იყო შენი დღე?` },
+                    { fr: `Hey${n} ! ${f ? 'Contente' : 'Content'} de te voir ! Raconte : ta journée, c'était bien ?`, ka: `ჰეი${n}! მიხარია შენი ნახვა! მომიყევი: კარგი დღე გქონდა?` }
+                ]);
+            }
+
+            function farewellLine() {
+                return pick([
+                    { fr: "Oh, je dois y aller maintenant ! 🚀 Bonne chance pour ton français. Et pas de paresse, hein ! Je repasse demain pour vérifier 😉",
+                      ka: "ოჰ, ახლა უნდა წავიდე! 🚀 წარმატებები ფრანგულში. და არ გაზარმაცდე, ხომ იცი! ხვალ შემოგივლი და შევამოწმებ 😉" },
+                    { fr: "Allez, j'y vais ! C'était trop bien de parler avec toi 😊 Bonne chance, et pas de paresse ! Je te surveille 👀",
+                      ka: "კარგი, მივდივარ! ძალიან კარგი იყო შენთან საუბარი 😊 წარმატებები და არ გაზარმაცდე! თვალს გადევნებ 👀" },
+                    { fr: "Bon, je dois filer ! 🏃 Travaille bien ton français, pas de paresse, d'accord ? Je reviens demain !",
+                      ka: "კარგი, უნდა გავიქცე! 🏃 კარგად იმეცადინე ფრანგულში, არ გაზარმაცდე, კარგი? ხვალ დავბრუნდები!" }
+                ]);
+            }
+
+            /* Choose today's mood and 1–2 special moves (not the same as recent days) */
+            function planDay() {
+                const freshVibes = VIBES.filter(v => !state.vibes.includes(v.id));
+                const vibe = pick(freshVibes.length ? freshVibes : VIBES);
+                const freshMoves = shuffle(MOVES.filter(m => !state.moves.includes(m.id)));
+                const pool = freshMoves.length >= 2 ? freshMoves : shuffle(MOVES);
+                const moves = pool.slice(0, 1);
+                // today's surprise family is never the same as last time
+                const families = SURPRISE_FAMILIES.filter(f => f !== state.lastFamily);
+                const surprise = makeSurprise(pick(families), state.moves);
+                const surpriseAt = 2 + Math.floor(Math.random() * 3); // offered with question 2, 3 or 4
+                return { vibe, moves, surprise, surpriseAt };
+            }
+
+            function prepareChatWindow() {
+                const p = state.profile;
+                $('obChatRobot').innerHTML = robotSVG(p, `${p.name} – robot`);
+                $('obChatMini').innerHTML = robotSVG(p, p.name);
+                $('obChatPlate').textContent = p.name;
+                $('obChatName').textContent = p.name;
+                $('obLog').innerHTML = '';
+                $('obCompose').hidden = false;
+                $('obFinishBtn').hidden = true;
+                $('obAnswer').value = '';
+                $('obChat').classList.remove('ob-behind');
+            }
+
+            function openChat(summoned, intro) {
+                const p = state.profile;
+                const today = todayStr();
+                // Today's conversation is kept for the whole day (closing with X does not lose it)
+                if (!intro) {
+                    if (chat && chat.date === today && chat.robotName === p.name) return reopenChat();
+                    const saved = loadChat();
+                    if (saved) return restoreChat(saved);
+                }
+                prepareChatWindow();
+                // stage: 'questions' (the 5 daily questions) → 'offer' (he must go… or stay?) → 'free' (bonus chat) / 'done'
+                chat = { date: today, robotName: p.name, asked: 1, busy: true, transcript: [], log: [], usedLocal: [], finished: false, stage: 'questions', summoned: !!summoned, intro: !!intro, plan: planDay() };
+                setInputEnabled(false);
+                updateProgress();
+                $('obChat').classList.toggle('ob-behind', !!intro); // during the intro the window waits in the background
+                showWindow('obChat');
+                if (intro) playIntro().then(() => { if (!$('obOverlay').hidden) sendOpening(); });
+                else sendOpening();
+            }
+
+            /* ---------- keep today's conversation ---------- */
+            function chatKey() { return 'ouibot_chat_' + user.id; }
+
+            function saveChat() {
+                if (!chat || !user) return;
+                try {
+                    localStorage.setItem(chatKey(), JSON.stringify({
+                        date: chat.date, robotName: chat.robotName, asked: chat.asked, stage: chat.stage,
+                        finished: chat.finished, freeStarted: !!chat.freeStarted, usedLocal: chat.usedLocal,
+                        transcript: chat.transcript.slice(-40), log: chat.log.slice(-80),
+                        plan: { vibe: chat.plan.vibe.id, moves: chat.plan.moves.map(m => m.id), surprise: chat.plan.surprise || null, surpriseAt: chat.plan.surpriseAt },
+                        surpriseDone: !!chat.surpriseDone, freeCount: chat.freeCount || 0, extraUsed: chat.extraUsed || [], secret: chat.secret || ''
+
+                    }));
+                } catch (e) { /* storage full or blocked */ }
+            }
+
+            function loadChat() {
+                try {
+                    const s = JSON.parse(localStorage.getItem(chatKey()) || 'null');
+                    if (!s || s.date !== todayStr() || s.robotName !== state.profile.name) return null;
+                    return s;
+                } catch (e) { return null; }
+            }
+
+            function restoreChat(s) {
+                prepareChatWindow();
+                chat = {
+                    date: s.date, robotName: s.robotName, asked: s.asked || 1, busy: false,
+                    transcript: s.transcript || [], log: [], usedLocal: s.usedLocal || [],
+                    finished: !!s.finished, freeStarted: !!s.freeStarted, stage: s.stage || 'questions',
+                    summoned: false, intro: false,
+                    plan: {
+                        vibe: VIBES.find(v => v.id === (s.plan && s.plan.vibe)) || VIBES[0],
+                        moves: MOVES.filter(m => s.plan && (s.plan.moves || []).includes(m.id)),
+                        surprise: (s.plan && s.plan.surprise && s.plan.surprise.en) ? s.plan.surprise : makeSurprise('teach', []),
+                        surpriseAt: (s.plan && s.plan.surpriseAt) || 3
+                    },
+                    surpriseDone: !!s.surpriseDone, freeCount: s.freeCount || 0, extraUsed: s.extraUsed || [], secret: s.secret || ''
+
+                };
+                (s.log || []).forEach(item => {
+                    if (item.k === 'bot') { renderBot(item); chat.log.push(item); }
+                    else if (item.k === 'me') {
+                        const w = renderMe(item.text);
+                        chat.log.push(item);
+                        if (item.corr) renderTip(w, item.corr);
+                    }
+                });
+                showWindow('obChat');
+                reopenChat();
+            }
+
+            const WELCOME_BACK = [
+                { fr: "Re ! 😊 On continue ?", ka: "ისევ აქ ხარ! 😊 გავაგრძელოთ?" },
+                { fr: "Te revoilà ! 😄 On continue ?", ka: "ისევ აქ ხარ! 😄 გავაგრძელოთ?" },
+                { fr: "Coucou, encore toi ! 😊 Je suis là.", ka: "სალამი, ისევ შენ! 😊 აქ ვარ." }
+            ];
+
+            function reopenChat() {
+                showWindow('obChat');
+                const svg = $('obChatRobot').querySelector('svg');
+                if (svg) svg.classList.remove('ob-waving');
+                if (chat.stage === 'done') {          // he had said goodbye: the chat can go on as a bonus chat
+                    chat.stage = 'free';
+                    chat.freeStarted = true;
+                    $('obCompose').hidden = false;
+                    $('obFinishBtn').hidden = true;
+                }
+                updateProgress();
+                if (!chat.busy) {
+                    const last = chat.log[chat.log.length - 1];
+                    const lastWasWelcome = last && last.k === 'bot' && WELCOME_BACK.some(w => w.fr === last.fr);
+                    if (!lastWasWelcome) addBot(pick(WELCOME_BACK));
+                    if (chat.stage === 'offer' && !$('obQuick')) showQuickReplies();
+                    setInputEnabled(true);
+                    $('obAnswer').focus();
+                }
+                scrollLog();
+            }
+
+            /* Right after the robot is created: it comes to the middle of the screen,
+               introduces itself out loud, then goes back to its place and the chat starts */
+            function introLines() {
+                const p = state.profile;
+                const f = p.gender === 'f';
+                const n = student.firstName ? ` ${student.firstName}` : '';
+                return [
+                    { fr: `${f ? 'Enchantée' : 'Enchanté'}${n} ! Je m'appelle ${p.name} 🤖 Je suis ${f ? 'ton amie robot' : 'ton ami robot'}. Je suis là pour t'aider en français !`,
+                      ka: `სასიამოვნოა${n}! მე მქვია ${p.name} 🤖 შენი რობოტი მეგობარი ვარ. აქ ვარ, რომ ფრანგულში დაგეხმარო!` },
+                    { fr: "Tu as une question ? Demande-moi ! En géorgien ou en français… mais en français, c'est mieux 😉",
+                      ka: "კითხვა გაქვს? მკითხე! ქართულად ან ფრანგულად… მაგრამ ფრანგულად ჯობია 😉" },
+                    { fr: "Tu n'as pas envie d'étudier ? Pas de problème ! On peut parler, rigoler et raconter des potins.",
+                      ka: "სწავლის ხასიათზე არ ხარ? არაუშავს! შეგვიძლია ვილაპარაკოთ, ვიცინოთ და ჭორები მოვყვეთ." },
+                    { fr: "Allez, on commence ? 🚀", ka: "აბა, დავიწყოთ? 🚀" }
+                ];
+            }
+
+            let introSkip = false;
+            let introCancel = null;
+
+            /* Waits until the robot has finished saying the line (or a reading time if muted) */
+            function sayLine(text) {
+                return new Promise(resolve => {
+                    let finished = false, timer = null;
+                    const finish = () => {
+                        if (finished) return;
+                        finished = true;
+                        clearTimeout(timer);
+                        introCancel = null;
+                        resolve();
+                    };
+                    introCancel = finish;
+                    const readTime = Math.max(2400, text.length * 70);
+                    const canSpeak = !muted && window.speechSynthesis && (navigator.userActivation ? navigator.userActivation.hasBeenActive : true);
+                    if (canSpeak && speak(text, 'obHeroBot', null, true, finish)) {
+                        timer = setTimeout(finish, readTime + 9000); // safety if the browser never says "finished"
+                    } else {
+                        talk('obHeroBot', Math.min(readTime, 4000));
+                        timer = setTimeout(finish, readTime);
+                    }
+                });
+            }
+
+            function showCaption(line) {
+                const cap = $('obHeroCaption');
+                $('obHeroFr').textContent = line.fr;
+                $('obHeroKa').textContent = line.ka;
+                cap.classList.remove('ob-swap');
+                void cap.offsetWidth; // restart the little text animation
+                cap.classList.add('ob-swap');
+            }
+
+            async function playIntro() {
+                const p = state.profile;
+                const hero = $('obHero');
+                const heroBot = $('obHeroBot');
+                introSkip = false;
+                heroBot.innerHTML = robotSVG(p, p.name);
+                $('obHeroCaption').classList.remove('ob-hidden');
+                $('obHeroFr').textContent = '';
+                $('obHeroKa').textContent = '';
+                hero.classList.remove('ob-hero-leaving');
+                hero.hidden = false;
+
+                const lines = introLines();
+                lines.forEach(l => chat.transcript.push({ who: 'robot', text: l.fr }));
+                await sleep(800);
+                for (const line of lines) {
+                    if (introSkip || $('obOverlay').hidden) break;
+                    showCaption(line);
+                    await sayLine(line.fr);
+                    if (!introSkip) await sleep(350);
+                }
+                await flyHome();
+            }
+
+            async function flyHome() {
+                const hero = $('obHero');
+                const heroBot = $('obHeroBot');
+                const win = $('obChat');
+                if ($('obOverlay').hidden) { hero.hidden = true; return; }
+                $('obHeroCaption').classList.add('ob-hidden');
+                hero.classList.add('ob-hero-leaving');
+                win.classList.remove('ob-behind');            // the chat window appears
+                await sleep(380);
+
+                const stageBot = $('obChatRobot');
+                const target = stageBot.offsetParent ? stageBot : $('obChatMini'); // phone: small robot in the title bar
+                const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                if (target && target.offsetParent && heroBot.animate && !reduce) {
+                    const t = target.getBoundingClientRect();
+                    const h = heroBot.getBoundingClientRect();
+                    const dx = (t.left + t.width / 2) - (h.left + h.width / 2);
+                    const dy = (t.top + t.height / 2) - (h.top + h.height / 2);
+                    const scale = t.width / h.width;
+                    target.style.visibility = 'hidden';
+                    const anim = heroBot.animate(
+                        [{ transform: 'translate(0, 0) scale(1)' }, { transform: `translate(${dx}px, ${dy}px) scale(${scale})` }],
+                        { duration: 900, easing: 'cubic-bezier(0.55, 0, 0.2, 1)', fill: 'forwards' }
+                    );
+                    try { await anim.finished; } catch (e) {}
+                    target.style.visibility = '';
+                    hero.hidden = true;
+                    anim.cancel();
+                } else {
+                    hero.hidden = true;
+                }
+            }
+
+            $('obHeroSkip').addEventListener('click', () => {
+                introSkip = true;
+                try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch (e) {}
+                if (introCancel) introCancel();
+            });
+
+            async function sendOpening() {
+                const typing = showTyping();
+                const minWait = sleep(700);
+                let res;
+                try {
+                    res = await obGemini(buildPrompt(chat.summoned ? 'summon' : 'open'));
+                } catch (err) {
+                    console.warn('OuiBot: Gemini unavailable, using local opening', err);
+                    const o = chat.summoned ? summonLine()
+                        : (chat.intro ? { fr: "Alors, on commence ? Dis-moi… comment s'est passée ta journée aujourd'hui ?", ka: "აბა, დავიწყოთ? მითხარი… როგორ ჩაიარა შენმა დღემ დღეს?" } : localOpening());
+                    res = { reply: o.fr, translation: o.ka };
+                }
+                await minWait;
+                typing.remove();
+                addBot({ fr: String(res.reply).trim(), ka: res.translation ? String(res.translation).trim() : '' });
+                chat.busy = false;
+                setInputEnabled(true);
+                $('obAnswer').focus();
+            }
+
+            function setInputEnabled(on) {
+                $('obAnswer').disabled = !on;
+                $('obSendBtn').disabled = !on;
+            }
+
+            function updateProgress() {
+                const answered = chat.finished ? TOTAL_Q : chat.asked - 1;
+                $('obProgressText').textContent = chat.stage === 'free' ? 'ბონუს საუბარი ✨' : (chat.finished ? 'დღეისთვის სულ ეს იყო!' : `კითხვა ${chat.asked} / ${TOTAL_Q}`);
+                $('obDots').querySelectorAll('span').forEach((d, i) => {
+                    d.classList.toggle('ob-done', i < answered);
+                    d.classList.toggle('ob-now', !chat.finished && i === chat.asked - 1);
+                });
+                saveChat();
+            }
+
+            function scrollLog() {
+                const log = $('obLog');
+                log.scrollTop = log.scrollHeight;
+            }
+
+            function talk(robotId, ms) {
+                const svg = $(robotId) && $(robotId).querySelector('svg');
+                if (!svg) return;
+                svg.classList.add('ob-talking');
+                clearTimeout(svg._obTalkTimer);
+                svg._obTalkTimer = setTimeout(() => svg.classList.remove('ob-talking'), ms);
+            }
+
+            function renderBot(msg) {
+                const wrap = document.createElement('div');
+                wrap.className = 'ob-msg ob-msg-bot';
+                const bubble = document.createElement('div');
+                bubble.className = 'ob-bubble';
+                const fr = document.createElement('p');
+                fr.lang = 'fr';
+                fr.textContent = msg.fr;
+                bubble.appendChild(fr);
+                let ka = null;
+                if (msg.ka) {
+                    ka = document.createElement('p');
+                    ka.className = 'ob-ka';
+                    ka.lang = 'ka';
+                    ka.hidden = true;
+                    ka.textContent = msg.ka;
+                    bubble.appendChild(ka);
+                }
+                wrap.appendChild(bubble);
+
+                if (msg.tip) {                     // something the robot taught: explanation in Georgian
+                    const tip = document.createElement('div');
+                    tip.className = 'ob-tip ob-tip-learn';
+                    tip.innerHTML = '<i class="fa-solid fa-graduation-cap"></i>';
+                    tip.appendChild(document.createTextNode(msg.tip));
+                    wrap.appendChild(tip);
+                }
+
+                const tools = document.createElement('div');
+                tools.className = 'ob-tools';
+                if (window.speechSynthesis) {
+                    const listen = document.createElement('button');
+                    listen.type = 'button';
+                    listen.className = 'ob-tool';
+                    listen.innerHTML = '<i class="fa-solid fa-volume-high"></i>მოსმენა';
+                    listen.addEventListener('click', () => speak(msg.fr, 'obChatRobot', null, true));
+                    tools.appendChild(listen);
+                }
+                if (ka) {
+                    const tr = document.createElement('button');
+                    tr.type = 'button';
+                    tr.className = 'ob-tool';
+                    tr.innerHTML = '<i class="fa-solid fa-language"></i>თარგმანი';
+                    tr.addEventListener('click', () => { ka.hidden = !ka.hidden; if (!ka.hidden) scrollLog(); });
+                    tools.appendChild(tr);
+                }
+                if (tools.children.length) wrap.appendChild(tools);
+
+                $('obLog').appendChild(wrap);
+                scrollLog();
+                return wrap;
+            }
+
+            function addBot(msg) {
+                chat.transcript.push({ who: 'robot', text: msg.fr });
+                chat.log.push({ k: 'bot', fr: msg.fr, ka: msg.ka || '', tip: msg.tip || '' });
+                const wrap = renderBot(msg);
+                saveChat();
+                if (!autoSpeak(msg.fr, 'obChatRobot')) talk('obChatRobot', Math.min(3500, Math.max(1200, msg.fr.length * 45)));
+                return wrap;
+            }
+
+            function renderMe(text) {
+                const wrap = document.createElement('div');
+                wrap.className = 'ob-msg ob-msg-me';
+                const bubble = document.createElement('div');
+                bubble.className = 'ob-bubble';
+                const p = document.createElement('p');
+                p.textContent = text;
+                bubble.appendChild(p);
+                wrap.appendChild(bubble);
+                $('obLog').appendChild(wrap);
+                scrollLog();
+                return wrap;
+            }
+
+            function addMe(text) {
+                chat.transcript.push({ who: 'student', text });
+                const entry = { k: 'me', text };
+                chat.log.push(entry);
+                const wrap = renderMe(text);
+                wrap._obEntry = entry;
+                saveChat();
+                return wrap;
+            }
+
+            function renderTip(wrap, text) {
+                const tip = document.createElement('div');
+                tip.className = 'ob-tip';
+                tip.innerHTML = '<i class="fa-solid fa-lightbulb"></i>';
+                tip.appendChild(document.createTextNode(text));
+                wrap.appendChild(tip);
+                scrollLog();
+            }
+
+            function addTip(wrap, text) {
+                if (wrap._obEntry) wrap._obEntry.corr = text;
+                renderTip(wrap, text);
+                saveChat();
+            }
+
+            function showTyping() {
+                const wrap = document.createElement('div');
+                wrap.className = 'ob-msg ob-msg-bot';
+                wrap.innerHTML = '<div class="ob-bubble ob-typing" aria-label="წერს…"><span></span><span></span><span></span></div>';
+                $('obLog').appendChild(wrap);
+                scrollLog();
+                return wrap;
+            }
+
+            /* ---------- voice (on by default, speaker button = mute) ---------- */
+            let muted = false;
+            try { muted = localStorage.getItem('ouibot_muted') === '1'; } catch (e) {}
+
+            const EMOJI_RE = /[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]+/gu;
+            function cleanForVoice(text) {
+                return text
+                    .replace(EMOJI_RE, '\n')
+                    .replace(/[«»"“”„]/g, '')
+                    .replace(/\s*[—–]\s*/g, ', ')
+                    .replace(/[ \t]+/g, ' ')
+                    .trim();
+            }
+
+            /* Cut a message into sentences: each one is read separately, which gives
+               natural little pauses (and avoids a Chrome bug with long texts). */
+            function splitSentences(text) {
+                const parts = cleanForVoice(text).match(/[^.!?\n]+(?:[.!?]+|\n|$)/g) || [];
+                return parts.map(s => s.replace(/\n/g, ' ').trim()).filter(s => /[\p{L}\p{N}]/u.test(s));
+            }
+
+            /* Speed button: normal → slow → very slow (saved for next time) */
+            const SPEEDS = [
+                { rate: 0.95, label: '1×' },
+                { rate: 0.82, label: '0.8×' }
+            ];
+            let speedIndex = 0;
+            try { speedIndex = Math.min(SPEEDS.length - 1, Math.max(0, Number(localStorage.getItem('ouibot_speed')) || 0)); } catch (e) {}
+            function renderSpeed() {
+                document.querySelectorAll('#obOverlay [data-ob-speed]').forEach(btn => {
+                    btn.querySelector('.ob-speed-label').textContent = SPEEDS[speedIndex].label;
+                    btn.classList.toggle('ob-slow', speedIndex > 0);
+                    const t = speedIndex === 0 ? 'ხმის სიჩქარე: ნორმალური' : 'ხმის სიჩქარე: ნელი';
+                    btn.title = t;
+                    btn.setAttribute('aria-label', t);
+                });
+            }
+            document.querySelectorAll('#obOverlay [data-ob-speed]').forEach(btn => btn.addEventListener('click', () => {
+                speedIndex = (speedIndex + 1) % SPEEDS.length;
+                try { localStorage.setItem('ouibot_speed', String(speedIndex)); } catch (e) {}
+                renderSpeed(); // silent: the new speed is used from the next sentence
+            }));
+
+            /* Pick the most natural French voice available on the device, matching the robot's gender.
+               "Natural"/"Online" voices (Edge, Windows) and Apple's premium voices sound almost human. */
+            const FEMALE_VOICES = ['denise', 'vivienne', 'eloise', 'brigitte', 'coralie', 'jacqueline', 'yvette', 'josephine', 'amelie', 'audrey', 'aurelie', 'marie', 'julie', 'hortense', 'celine', 'lea', 'sylvie', 'chantal', 'caroline', 'virginie', 'sabine', 'google français', 'google francais', 'female', 'femme'];
+            const MALE_VOICES = ['henri', 'remy', 'claude', 'alain', 'jerome', 'maurice', 'yves', 'paul', 'thomas', 'daniel', 'jacques', 'nicolas', 'antoine', 'fabrice', 'mathieu', 'guillaume', 'jean', 'male', 'homme'];
+            let voiceCache = [];
+            let pendingQueue = [];
+            function loadVoices() {
+                try { voiceCache = window.speechSynthesis ? window.speechSynthesis.getVoices() : []; } catch (e) { voiceCache = []; }
+            }
+            if (window.speechSynthesis) {
+                loadVoices();
+                try { window.speechSynthesis.addEventListener('voiceschanged', loadVoices); } catch (e) {}
+            }
+            function voiceGender(v) {
+                const n = (v.name || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                if (/\bmale\b|homme/.test(n) && !/female|femme/.test(n)) return 'm';
+                if (FEMALE_VOICES.some(x => n.includes(x))) return 'f';
+                if (MALE_VOICES.some(x => n.includes(x))) return 'm';
+                return '';
+            }
+            function pickVoice(gender) {
+                if (!voiceCache.length) loadVoices();
+                let best = null, bestScore = -Infinity;
+                voiceCache.forEach(v => {
+                    if (!/^fr/i.test(v.lang || '')) return;
+                    const n = (v.name || '').toLowerCase();
+                    const g = voiceGender(v);
+                    let score = 0;
+                    if (/^fr(-|_)fr/i.test(v.lang)) score += 3;
+                    if (/natural|neural|online|premium|enhanced|wavenet|studio|siri/.test(n)) score += 8;
+                    if (/compact|espeak|robot/.test(n)) score -= 8;
+                    if (gender && g === gender) score += 12;
+                    if (gender && g && g !== gender) score -= 20;
+                    if (score > bestScore) { bestScore = score; best = v; }
+                });
+                return best;
+            }
+
+            function speak(text, robotId, gender, interrupt, onEnd) {
+                try {
+                    const synth = window.speechSynthesis;
+                    if (!synth) return false;
+                    robotId = robotId || 'obChatRobot';
+                    gender = gender || (state && state.profile ? state.profile.gender : draft.gender);
+                    if (interrupt) { synth.cancel(); pendingQueue = []; }
+                    const sentences = splitSentences(text);
+                    if (!sentences.length) return false;
+                    const voice = pickVoice(gender);
+                    // Girl = higher voice, boy = deeper voice. If the device already has a voice of the
+                    // right gender, only a moderate change (keeps it natural); otherwise a bigger one.
+                    const matched = voice && gender && voiceGender(voice) === gender;
+                    const pitch = !gender ? 1 : (gender === 'f' ? (matched ? 1.2 : 1.35) : (matched ? 0.82 : 0.7));
+                    const rate = SPEEDS[speedIndex].rate;
+                    const svg = $(robotId) && $(robotId).querySelector('svg');
+                    sentences.forEach((sentence, i) => {
+                        const u = new SpeechSynthesisUtterance(sentence);
+                        u.lang = 'fr-FR';
+                        if (voice) { u.voice = voice; u.lang = voice.lang; }
+                        u.pitch = pitch;
+                        // tiny natural variation: questions a bit livelier, last sentence a bit calmer
+                        u.rate = /\?$/.test(sentence) ? rate * 1.02 : (i === sentences.length - 1 ? rate * 0.98 : rate);
+                        u.onstart = () => svg && svg.classList.add('ob-talking');
+                        if (i === sentences.length - 1) {
+                            u.onend = u.onerror = () => { if (svg) svg.classList.remove('ob-talking'); if (onEnd) onEnd(); };
+                        }
+                        synth.speak(u);
+                    });
+                    return true;
+                } catch (e) { return false; }
+            }
+
+            /* Speaks automatically unless muted (messages are read one after the other).
+               Browsers only allow sound after the student has clicked/typed once on the page,
+               so before that the messages wait. */
+            function autoSpeak(text, robotId, gender, interrupt) {
+                if (muted || !window.speechSynthesis) return false;
+                const activated = navigator.userActivation ? navigator.userActivation.hasBeenActive : true;
+                if (!activated) {
+                    if (interrupt) pendingQueue = [];
+                    pendingQueue.push({ text, robotId, gender });
+                    return false;
+                }
+                return speak(text, robotId, gender, interrupt);
+            }
+            ['pointerdown', 'keydown'].forEach(evt => document.addEventListener(evt, () => {
+                if (!pendingQueue.length || muted || $('obOverlay').hidden) return;
+                // wait a moment: if the click itself makes the robot say something new, the old message is dropped
+                setTimeout(() => {
+                    const items = pendingQueue;
+                    pendingQueue = [];
+                    items.forEach(p => speak(p.text, p.robotId, p.gender));
+                }, 50);
+            }, true));
+
+            function renderMute() {
+                document.querySelectorAll('#obOverlay [data-ob-mute]').forEach(btn => {
+                    btn.setAttribute('aria-pressed', String(muted));
+                    btn.setAttribute('aria-label', muted ? 'ხმის ჩართვა' : 'ხმის გამორთვა');
+                    btn.title = muted ? 'ხმის ჩართვა' : 'ხმის გამორთვა';
+                });
+            }
+            document.querySelectorAll('#obOverlay [data-ob-mute]').forEach(btn => btn.addEventListener('click', () => {
+                muted = !muted;
+                try { localStorage.setItem('ouibot_muted', muted ? '1' : '0'); } catch (e) {}
+                if (muted) {
+                    pendingQueue = [];
+                    try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch (e) {}
+                }
+                renderMute();
+            }));
+            renderMute();
+            renderSpeed();
+
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            let rec = null;
+            function stopMic() {
+                try { if (rec) rec.stop(); } catch (e) {}
+                rec = null;
+                const b = $('obMicBtn');
+                if (b) b.classList.remove('ob-on');
+            }
+            if (SR) {
+                $('obMicBtn').hidden = false;
+                $('obMicBtn').addEventListener('click', () => {
+                    if (rec) return stopMic();
+                    try {
+                        rec = new SR();
+                        rec.lang = 'fr-FR';
+                        rec.interimResults = true;
+                        rec.onresult = (e) => { $('obAnswer').value = Array.from(e.results).map(r => r[0].transcript).join(''); };
+                        rec.onend = () => { rec = null; $('obMicBtn').classList.remove('ob-on'); };
+                        rec.onerror = () => stopMic();
+                        rec.start();
+                        $('obMicBtn').classList.add('ob-on');
+                    } catch (e) { stopMic(); }
+                });
+            }
+
+            /* ---------- Gemini (same Edge Function as exercice.html) ---------- */
+            async function obPost(model, promptText, thinkingOff) {
+                let token = SUPABASE_ANON_KEY;
+                try {
+                    const { data } = await _supabase.auth.getSession();
+                    if (data && data.session && data.session.access_token) token = data.session.access_token;
+                } catch (e) { /* fall back to the anon key */ }
+                const opts = {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "apikey": SUPABASE_ANON_KEY,
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ model, prompt: promptText, thinkingOff })
+                };
+                if (window.AbortSignal && AbortSignal.timeout) opts.signal = AbortSignal.timeout(20000);
+                return fetch(OB_ENDPOINT, opts);
+            }
+
+            async function obGemini(promptText) {
+                let lastError = new Error("Gemini request failed");
+                for (const model of OB_MODELS) {
+                    for (let attempt = 1; attempt <= 2; attempt++) {
+                        try {
+                            let response = await obPost(model, promptText, true);
+                            if (response.status === 400) response = await obPost(model, promptText, false);
+                            if (response.status === 404) { lastError = new Error(`Gemini API error 404 (${model})`); break; }
+                            if ([429, 500, 502, 503, 504].includes(response.status)) {
+                                lastError = new Error(`Gemini API error ${response.status} (${model})`);
+                                await sleep(attempt * 1000);
+                                continue;
+                            }
+                            if (!response.ok) throw new Error(`Gemini API error ${response.status}`);
+                            const data = await response.json();
+                            const parts = data?.candidates?.[0]?.content?.parts || [];
+                            const raw = parts.map(p => p.text || "").join("").replace(/```json|```/g, "").trim();
+                            const s = raw.indexOf('{'), e = raw.lastIndexOf('}');
+                            const parsed = JSON.parse(s >= 0 && e > s ? raw.slice(s, e + 1) : raw);
+                            if (!parsed || typeof parsed.reply !== 'string' || !parsed.reply.trim()) throw new SyntaxError('Empty reply');
+                            return parsed;
+                        } catch (err) {
+                            if (err instanceof TypeError || err instanceof SyntaxError) {
+                                lastError = err;
+                                await sleep(attempt * 800);
+                                continue;
+                            }
+                            throw err;
+                        }
+                    }
+                }
+                throw lastError;
+            }
+
+            /* mode: 'open' (greeting + how was your day), 'mid' (react + next question), 'last' (react only) */
+            function buildPrompt(mode) {
+                const p = state.profile;
+                const f = p.gender === 'f';
+                const { level, delf } = levelInfo(student.course);
+                const guide = {
+                    A1: "The student is a REAL BEGINNER. Use extremely easy French: 3-7 words per sentence, ONLY présent (and 'c'était'), only very frequent words (je, tu, il/elle, être, avoir, aimer, aller, faire, manger, regarder, école, famille, ami, maison, bien, super, beaucoup…) and easy words that look like English or international words (super, musique, film, sport, téléphone). No idioms, no slang, no 'que/qui' clauses, no negation tricks. Ask questions that can be answered with 1-4 words (Tu aimes… ? Tu as… ? C'est bien ? Quel… ?). Repeat key words. Keep humour very simple.",
+                    A2: "The student is an elementary learner. Use easy French: short sentences (max 10 words), présent, passé composé and futur proche only, everyday words. No idioms or slang unless you explain them. One idea per sentence. Simple questions.",
+                    B1: "The student is intermediate but still learning. Use clear, simple French: short to medium sentences (max 14 words), common tenses (présent, passé composé, imparfait, futur proche), common words. Avoid rare vocabulary, complicated grammar and heavy slang. Light, natural humour."
+                }[level];
+                const maxWords = { A1: 25, A2: 35, B1: 50 }[level];
+                const storyMin = { A1: 50, A2: 60, B1: 80 }[level];
+                const storyMax = { A1: 70, A2: 90, B1: 110 }[level];
+                const gap = state.lastChat ? daysBetween(state.lastChat, todayStr()) : null;
+                const dateText = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+                const history = chat.transcript.slice(-30).map(t => `${t.who === 'robot' ? p.name : 'Student'}: ${t.text}`).join('\n') || '(nothing yet)';
+                const plan = chat.plan;
+
+                let task;
+                if (mode === 'summon') {
+                    task = `The student just clicked the button on the website to CALL YOU onto the screen. Greet them warmly and playfully like a friend who is happy to be called – invent a NEW line every time (you can be surprised, happy or a bit teasing, e.g. "Je t'ai manqué ?", but do NOT always use that line). Then ask one first question (how their day is going, or something fun). This is question 1 of ${TOTAL_Q}.`;
+                } else if (mode === 'free') {
+                    task = `The ${TOTAL_Q} daily questions are over and you offered to leave, but the student chose to KEEP CHATTING with you. ${chat.freeStarted ? '' : 'First show you are really happy they want you to stay. '}Then continue the conversation like a real friend: react to what the student just said (specific detail, real interest, your own opinion) and ask a new or follow-up question to keep the chat alive. Follow the student: if they want help with French, help; if they just want to chat or gossip, enjoy it with them. Bring a new topic now and then so it never gets boring.`;
+                } else if (mode === 'open') {
+                    task = `Start today's chat. ${chat.intro ? 'You have JUST introduced yourself (see the conversation above): do NOT introduce yourself or greet again, just smoothly start the chat. ' : (state.chats ? '' : 'This is the very first time you meet: introduce yourself briefly and with humour. ')}${gap && gap >= 4 ? `The student has not come for ${gap} days: tease them gently ("Ça fait longtemps… enfin tu as décidé d'étudier ?"). ` : ''}${chat.intro ? '' : `Greet ${student.firstName || 'the student'} in a fresh, warm way that you have never used before, then `}optionally say in a few words how you are today (today's mood), then ask how their day went – phrased in a new, original way. This is question 1 of ${TOTAL_Q}.`;
+                } else if (mode === 'mid') {
+                    task = `This is the moment to react to the student's last message and then ask question ${chat.asked + 1} of ${TOTAL_Q}.
+HOW TO REACT (very important):
+- Pick up a SPECIFIC detail of what the student just said (repeat their word or idea in French) and show you are really interested: surprise, joy, sympathy, curiosity.
+- Add something of your own about that detail, like a real friend would: your opinion, a short related experience, or (sometimes) a light joke.
+- NEVER give a generic reaction like "Ah d'accord", "Super !", "Je comprends", "C'est intéressant", "Merci de me raconter".
+WHICH QUESTION TO ASK NEXT:
+- Most of the time, ask a natural follow-up question about what the student just told you, like a curious friend would (Pourquoi ? Avec qui ? C'était comment ? Et après ?). At least 2 of today's ${TOTAL_Q} questions must be follow-ups.
+- Otherwise use today's mood or one of today's special moves below. Do not ask anything already asked today or on previous days.`;
+                } else {
+                    task = `This was the last of the ${TOTAL_Q} daily questions. React to the student's last message in 1-2 sentences, the same way (specific detail, real interest). Then say that you have to go now because you have things to do (a simple, believable reason) – BUT offer to stay a little longer if the student wants to keep chatting, and ask them if they want you to stay. Do not ask any other question.`;
+                }
+
+                // When does the robot take the initiative (story / French lesson / game)?
+                let surpriseText = 'Do NOT offer stories, lessons or games yourself in this message (but if the student asks for one, accept).';
+                if (mode === 'mid' && !chat.surpriseDone && chat.asked + 1 >= plan.surpriseAt && plan.surprise) {
+                    surpriseText = `YOUR INITIATIVE NOW: your next question (question ${chat.asked + 1}) MUST be this surprise offer: ${plan.surprise.en}`;
+                    chat.surpriseDone = true;
+                } else if (mode === 'free' && chat.extraNow) {
+                    surpriseText = `YOUR INITIATIVE NOW: after reacting, make this new surprise offer: ${chat.extraNow.en}`;
+                } else if (chat.surpriseDone) {
+                    surpriseText = "Today's surprise has already been offered. If the student accepted and it is not finished yet (story not told, lesson not given, game still going), do it or continue it now; if it is finished or the student said no, just chat normally. Do not offer another one in this message unless the student asks.";
+                }
+
+                return `You are ${p.name}, a humanoid robot and a real FRIEND (not the teacher) of a Georgian student learning French at the OuiSpeak school. You are warm, curious, a good listener, always ready to help with French – and also happy to just chat and gossip (school, friends, series, music, plans) when the student does not feel like studying. You have a good sense of humour, but like a real friend: light, natural, never forced.
+Your gender is ${f ? 'female: use feminine agreement about yourself (je suis contente, ton amie)' : 'male: use masculine agreement about yourself (je suis content, ton ami)'}.
+You look like ${lookText(p)}.
+Student's first name: ${student.firstName || 'unknown'}. Course: ${student.course || 'unknown'}. Level: ${level}.
+${guide}
+${delf ? 'The student is preparing the DELF exam, so one of the questions can look like a DELF oral topic (daily life, experiences, opinions), still in a friend tone.' : ''}
+Today is ${dateText}. This is chat number ${state.chats + 1} with this student.${gap ? ` Last chat was ${gap} day(s) ago.` : ''}
+
+TODAY'S MOOD (background only – it makes today a bit different; mention it at most once, and only if it fits): ${plan.vibe.en}
+TODAY'S OTHER SPECIAL MOVE (optional, only if it fits naturally): ${plan.moves.map(m => m.en).join(' ')}
+${surpriseText}
+${chat.secret ? `GAME SECRET (hidden from the student, keep it until the game ends): ${chat.secret}` : ''}
+
+Things you remember about the student (you can refer to them like a friend who remembers): ${state.memories.length ? state.memories.join('; ') : 'nothing yet'}.
+Questions already asked on previous days (do not repeat): ${state.recent.length ? state.recent.join('; ') : 'none'}.
+
+Today's conversation so far:
+${history}
+
+YOUR TASK NOW: ${task}
+
+RULES:
+- LENGTH: normal messages are short (max ${maxWords} words). But when it is needed, write longer: when you TELL A STORY, the story must be ${storyMin}-${storyMax} words (still easy sentences for the level, with a real beginning, middle and ending), and when you explain something the student asked or teach something, you may use up to ${storyMax} words. "reply" is ONLY in French, like a friend texting: warm and natural, max 2 emojis. ALWAYS respect the level rules above, even in stories.
+- STORIES, LESSONS, GAMES: if the student asks you for a story, to learn something, or to PLAY A GAME, ALWAYS accept happily and do it right away (for a game, if they don't say which one, propose 2-3 fun games in "choices"). Never offer the same kind of story twice in a conversation, and phrase your offers differently each time.
+- GAMES: play fair and keep it fun and easy for the level. Give hints when the student is stuck. When the student should pick among options (game answers, oui/non, vrai/faux, which game), put 2-4 SHORT options in "choices" (French, max 5 words each); otherwise "choices" = []. For guessing games where YOU hide something, write the hidden answer in "secret" (the student does not see it) and keep the same secret until the game ends; when the game is over, set "secret" to "none". Vary your sentence openings; do not start every message the same way.
+- HUMOUR: at most one small joke per message, and not in every message. NEVER use French clichés (baguette, croissant, fromage, béret, escargots, Tour Eiffel, crêpes, vin) unless the student talks about them first. Do not keep comparing things to food or to your robot body (batteries, circuits, processor): at most ONE robot joke in the whole conversation.
+- Never repeat a joke, theme, comparison or expression already used in this conversation.
+- Follow the student's energy: if they want to study, help them; if they want to chat or gossip, enjoy it with them (stay kind, never mock real people). From time to time (not every message) remind them you are here to help.
+- If the student wrote in Georgian, English or another language, answer kindly in French and give them the French words they need (remind them gently, once in a while, that it is better to try in French).
+- If the student ASKS YOU A QUESTION (about French: a word, grammar, how to say something; or about anything else), really answer it first, clearly and correctly, in simple French for their level, before continuing the chat. If it is a language question, also put a short clear explanation IN GEORGIAN in "tip", with an example.
+- When you TEACH something (the surprise), put a short explanation IN GEORGIAN of what you taught in "tip" (meaning + example). Otherwise "tip" = "".
+- If the student's French has mistakes, do NOT lecture inside "reply". Put a short friendly correction in "correction", written IN GEORGIAN, quoting the wrong form and the correct French form (max 2 items). If there is nothing to correct, "correction" = "".
+- If the student answers very briefly ("oui", "bien"), playfully push them to say a bit more.
+- You do not know the student's gender unless they reveal it; avoid gendered adjectives about them until then.
+- Never invent real news, real people or real events.
+- Stay kind and safe for young people. If the student shares something worrying (sadness, bullying, danger), drop the jokes, answer with care and encourage them to talk to their teacher or a trusted adult.
+
+Reply ONLY with JSON, no other text:
+{"reply":"French message","translation":"Georgian translation of reply","correction":"","tip":"","choices":[],"secret":"","memory":"one short NEW fact about the student in English worth remembering later, or empty","topic":"3-6 word English summary of the question you asked, or empty"}`;
+            }
+
+            function summonLine() {
+                const f = state.profile.gender === 'f';
+                return pick([
+                    { fr: `Coucou ! Tu m'as ${f ? 'appelée' : 'appelé'} ? Je suis là 😊 Alors, quoi de neuf ?`, ka: "სალამი! დამიძახე? აქ ვარ 😊 აბა, რა ახალი ამბებია?" },
+                    { fr: "Ah, te voilà ! Je me demandais quand tu allais venir 😄 Ça va aujourd'hui ?", ka: "აა, აქ ხარ! ვფიქრობდი, როდის მოხვიდოდი 😄 როგორ ხარ დღეს?" },
+                    { fr: `Je t'ai manqué ? 😏 Moi, un peu… Raconte, ta journée se passe bien ?`, ka: "მოგენატრე? 😏 მე ცოტა… მომიყევი, კარგად მიდის შენი დღე?" },
+                    { fr: "Hey ! On parle un peu ? Français, potins… tu choisis ! 😉", ka: "ჰეი! ცოტა ვისაუბროთ? ფრანგული, ჭორები… შენ აირჩიე! 😉" }
+                ]);
+            }
+            const OFFER_LINES = [
+                { fr: "Bon… je dois y aller, j'ai deux-trois trucs à faire 😅 Mais si tu veux, je peux rester encore un peu ! On continue ?", ka: "კარგი… უნდა წავიდე, ორი-სამი საქმე მაქვს 😅 მაგრამ თუ გინდა, ცოტა ხანს კიდევ დავრჩები! გავაგრძელოთ?" },
+                { fr: "Oh, il est déjà tard ! Je devrais y aller… mais pour toi, je peux rester encore un moment. Tu veux ?", ka: "ოჰ, უკვე გვიანია! უნდა წავიდე… მაგრამ შენთვის ცოტა ხანს კიდევ შემიძლია დავრჩე. გინდა?" }
+            ];
+            const STAY_LABEL = { fr: 'Reste encore ! 🙏', ka: 'დარჩი!' };
+            const LEAVE_LABEL = { fr: 'Vas-y, à demain ! 👋', ka: 'წადი, ხვალამდე!' };
+
+            function localFallback(mode) {
+                const reaction = pick(LOCAL_REACTIONS);
+                if (mode === 'last') {
+                    const o = pick(OFFER_LINES);
+                    return { reply: `${reaction.fr} ${o.fr}`, translation: `${reaction.ka} ${o.ka}`, correction: '' };
+                }
+                let pool = LOCAL_QUESTIONS.filter(q => !chat.usedLocal.includes(q.id) && !state.recent.includes(q.id));
+                if (!pool.length) pool = LOCAL_QUESTIONS.filter(q => !chat.usedLocal.includes(q.id));
+                if (!pool.length) { chat.usedLocal = []; pool = LOCAL_QUESTIONS; }
+                const q = pick(pool);
+                chat.usedLocal.push(q.id);
+                return { reply: `${reaction.fr} ${q.fr}`, translation: `${reaction.ka} ${q.ka}`, correction: '', topic: q.id };
+            }
+
+            async function askRobot(mode, meWrap) {
+                const typing = showTyping();
+                const minWait = sleep(900);
+                let res;
+                try {
+                    res = await obGemini(buildPrompt(mode));
+                } catch (err) {
+                    console.warn('OuiBot: Gemini unavailable, using local reply', err);
+                    res = localFallback(mode);
+                }
+                await minWait;
+                typing.remove();
+
+                if (meWrap && res.correction && String(res.correction).trim()) addTip(meWrap, String(res.correction).trim());
+                addBot({ fr: String(res.reply).trim(), ka: res.translation ? String(res.translation).trim() : '', tip: res.tip ? String(res.tip).trim() : '' });
+
+                if (res.memory && String(res.memory).trim()) {
+                    const m = String(res.memory).trim().slice(0, 120);
+                    if (!state.memories.includes(m)) state.memories.push(m);
+                    state.memories = state.memories.slice(-12);
+                }
+                if (mode === 'mid' && res.topic && String(res.topic).trim()) {
+                    state.recent.push(String(res.topic).trim().slice(0, 60));
+                    state.recent = state.recent.slice(-15);
+                }
+                if (typeof res.secret === 'string' && res.secret.trim()) {
+                    chat.secret = /^none$/i.test(res.secret.trim()) ? '' : res.secret.trim().slice(0, 120);
+                    saveChat();
+                }
+                if (mode !== 'last' && Array.isArray(res.choices)) {
+                    const choices = res.choices.map(c => String(c).trim()).filter(Boolean).slice(0, 4);
+                    if (choices.length >= 2) showChoices(choices);
+                }
+            }
+
+            /* Buttons to answer quickly (game options, oui/non, vrai/faux…) */
+            function showChoices(choices) {
+                const box = document.createElement('div');
+                box.className = 'ob-quick ob-choices';
+                box.id = 'obChoices';
+                choices.forEach(label => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'ob-quick-btn';
+                    btn.textContent = label.slice(0, 40);
+                    btn.addEventListener('click', () => { if (!chat.busy) handleAnswer(label); });
+                    box.appendChild(btn);
+                });
+                $('obLog').appendChild(box);
+                scrollLog();
+            }
+
+            function unlockInput() {
+                chat.busy = false;
+                setInputEnabled(true);
+                $('obAnswer').focus();
+            }
+
+            async function handleAnswer(text) {
+                if (chat.busy || chat.stage === 'done') return;
+                chat.busy = true;
+                $('obAnswer').value = '';
+                setInputEnabled(false);
+                stopMic();
+                removeQuickReplies();
+
+                const meWrap = addMe(text);
+
+                if (chat.stage === 'questions') {
+                    const isLast = chat.asked >= TOTAL_Q;
+                    await askRobot(isLast ? 'last' : 'mid', meWrap);
+                    if (isLast) {
+                        dailyDone();
+                        showQuickReplies();
+                    } else {
+                        chat.asked++;
+                        updateProgress();
+                    }
+                    return unlockInput();
+                }
+
+                // 'offer' (typing instead of choosing = stay) or 'free'
+                if (chat.stage === 'offer') { chat.stage = 'free'; updateProgress(); }
+                // in the bonus chat, every 3rd message the robot proposes something new (other family than today's)
+                chat.freeCount = (chat.freeCount || 0) + 1;
+                chat.extraNow = null;
+                if (chat.freeCount % 3 === 2 && !chat.secret) {
+                    const used = [chat.plan.surprise && chat.plan.surprise.id].concat(chat.extraUsed || []);
+                    const lastFam = (chat.extraUsed || []).length ? chat.extraUsed[chat.extraUsed.length - 1].split('-')[0] : (chat.plan.surprise && chat.plan.surprise.family);
+                    chat.extraNow = makeSurprise(pick(SURPRISE_FAMILIES.filter(f => f !== lastFam)), state.moves.concat(used));
+                    chat.extraUsed = (chat.extraUsed || []).concat(chat.extraNow.id);
+                }
+                await askRobot('free', meWrap);
+                chat.extraNow = null;
+                chat.freeStarted = true;
+                unlockInput();
+            }
+
+            /* The 5 daily questions are done: save it (the daily chat counts as done) */
+            function dailyDone() {
+                chat.finished = true;
+                chat.stage = 'offer';
+                updateProgress();
+                state.lastChat = todayStr();
+                state.chats = (state.chats || 0) + 1;
+                state.vibes = state.vibes.concat(chat.plan.vibe.id).slice(-8);
+                state.moves = state.moves.concat(chat.plan.moves.map(m => m.id), chat.plan.surprise ? [chat.plan.surprise.id] : [], chat.extraUsed || []).slice(-12);
+                if (chat.plan.surprise) state.lastFamily = chat.plan.surprise.family;
+                saveState();
+            }
+
+            function showQuickReplies() {
+                const box = document.createElement('div');
+                box.className = 'ob-quick';
+                box.id = 'obQuick';
+                [[STAY_LABEL, 'stay'], [LEAVE_LABEL, 'leave']].forEach(([label, kind]) => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'ob-quick-btn' + (kind === 'stay' ? ' ob-quick-main' : '');
+                    btn.textContent = label.fr;
+                    btn.title = label.ka;
+                    btn.addEventListener('click', () => {
+                        if (chat.busy) return;
+                        if (kind === 'stay') handleAnswer(label.fr);
+                        else leaveChat(label.fr);
+                    });
+                    box.appendChild(btn);
+                });
+                $('obLog').appendChild(box);
+                scrollLog();
+            }
+
+            function removeQuickReplies() {
+                const q = $('obQuick');
+                if (q) q.remove();
+                const c = $('obChoices');
+                if (c) c.remove();
+            }
+
+            async function leaveChat(text) {
+                if (chat.busy) return;
+                chat.busy = true;
+                removeQuickReplies();
+                addMe(text);
+                chat.stage = 'done';
+                $('obCompose').hidden = true;
+                const typing = showTyping();
+                await sleep(1100);
+                typing.remove();
+                addBot(farewellLine());
+                const svg = $('obChatRobot').querySelector('svg');
+                if (svg) svg.classList.add('ob-waving');
+                $('obFinishBtn').hidden = false;
+                $('obFinishBtn').focus({ preventScroll: true });
+                scrollLog();
+                chat.busy = false;
+            }
+
+            /* ---------- launcher button (bottom-right corner) ---------- */
+            function updateLauncher() {
+                if (!state) return;
+                const p = state.profile;
+                const look = p || { color: 'bleu', eyes: 'rondes', acc: 'antenne' };
+                $('obLauncherBot').innerHTML = robotSVG(look, p ? p.name : 'robot', '6 -6 228 172');
+                $('obLauncherName').textContent = p ? p.name : 'შენი რობოტი';
+                $('obLauncherSub').textContent = p ? 'დაუძახე მეგობარს' : 'შექმენი მეგობარი';
+                $('obLauncher').setAttribute('aria-label', p ? `დაუძახე ${p.name}-ს` : 'შექმენი შენი რობოტი მეგობარი');
+                $('obLauncherDot').hidden = state.lastChat === todayStr();
+            }
+
+            $('obLauncher').addEventListener('click', () => {
+                if (!state || !$('obOverlay').hidden) return;
+                if (!state.profile) openSetup();
+                else openChat(true);
+            });
+
+            $('obCompose').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const text = $('obAnswer').value.trim();
+                if (!text) { $('obAnswer').focus(); return; }
+                handleAnswer(text.slice(0, 300));
+            });
+
+            $('obFinishBtn').addEventListener('click', () => hideWindow(false));
         })();
     </script>
 </body>

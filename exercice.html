@@ -1899,9 +1899,89 @@ async function loadHeaderScore(userEmail) {
                         ]
                     }
                 },
-                /*
                 kvira_4: {
+                    1: { 
+                        instruction: "Choisissez la bonne réponse parmi les options proposées.", 
+                        questions: [
+                            { text: "Je _______ un chat noir.", options: ["suis", "ai", "fais", "vais"], answer: "ai", type: "mc" },
+                            { text: "Tu _______ fatigué ce soir ?", options: ["vas", "as", "es", "fais"], answer: "es", type: "mc" },
+                            { text: "Il _______ au supermarché.", options: ["fait", "prends", "va", "vient"], answer: "va", type: "mc" },
+                            { text: "Nous _______ les courses au marché.", options: ["sommes", "savons", "faisons", "pouvons"], answer: "faisons", type: "mc" },
+                            { text: "Vous _______ un café, s'il vous plaît ?", options: ["pouvez", "voulez", "devez", "savez"], answer: "voulez", type: "mc" },
+                            { text: "Elles _______ de Lyon.", options: ["viennent", "vont", "ont", "sont"], answer: "viennent", type: "mc" },
+                            { text: "Je _______ parler espagnol.", options: ["sais", "peux", "dois", "veux"], answer: "peux", type: "mc" },
+                            { text: "Tu _______ réussir cet examen.", options: ["veux", "as", "dois", "sais"], answer: "dois", type: "mc" },
+                            { text: "Nous _______ contents de vous rencontrer.", options: ["allons", "venons", "sommes", "avons"], answer: "sommes", type: "mc" },
+                            { text: "Vous _______ vos devoirs le soir.", options: ["avez", "êtes", "faites", "allez"], answer: "faites", type: "mc" }
+                        ] 
+                    },
+                    2: {
+                        instruction: "Complétez les phrases avec le verbe indiqué entre parenthèses conjugué au présent.",
+                        questions: [
+                            { text: "J'_______ une belle voiture rouge. (avoir)", answer: "ai", type: "open" },
+                            { text: "Tu _______ en retard aujourd'hui. (être)", answer: "es", type: "open" },
+                            { text: "Il _______ au cinéma avec ses amis. (aller)", answer: "va", type: "open" },
+                            { text: "Elle _______ du sport le mardi. (faire)", answer: "fait", type: "open" },
+                            { text: "Nous _______ prêts pour le voyage. (être)", answer: "sommes", type: "open" },
+                            { text: "Vous _______ une question ? (avoir)", answer: "avez", type: "open" },
+                            { text: "Ils _______ en vacances en Espagne. (aller)", answer: "vont", type: "open" },
+                            { text: "Elles _______ la cuisine ensemble. (faire)", answer: "font", type: "open" },
+                            { text: "Je _______ du vélo le dimanche. (faire)", answer: "fais", type: "open" },
+                            { text: "Tu _______ un crayon pour écrire ? (avoir)", answer: "as", type: "open" }
+                        ]
+                    },
+                    3: {
+                        instruction: "Complétez chaque phrase avec le verbe indiqué entre parenthèses au présent.",
+                        questions: [
+                            { text: "Je [ _______ ] la réponse exacte. (savoir)", answer: "sais", type: "open" },
+                            { text: "Tu [ _______ ] un morceau de gâteau ? (vouloir)", answer: "veux", type: "open" },
+                            { text: "Il [ _______ ] travailler demain. (devoir)", answer: "doit", type: "open" },
+                            { text: "Elle [ _______ ] de la campagne. (venir)", answer: "vient", type: "open" },
+                            { text: "On [ _______ ] le bus pour aller en ville. (prendre)", answer: "prend", type: "open" },
+                            { text: "Nous [ _______ ] réussir ensemble. (pouvoir)", answer: "pouvons", type: "open" },
+                            { text: "Vous [ _______ ] une belle randonnée. (faire)", answer: "faites", type: "open" },
+                            { text: "Ils [ _______ ] beaucoup de patience. (avoir)", answer: "ont", type: "open" },
+                            { text: "Elles [ _______ ] à la maison. (être)", answer: "sont", type: "open" },
+                            { text: "Je [ _______ ] au restaurant ce soir. (aller)", answer: "vais", type: "open" }
+                        ]
+                    },
+                    4: {
+                        instruction: "Traduisez les phrases suivantes du géorgien vers le français",
+                        questions: [
+                            { text: "მე მაქვს სახლი.<br>_________________", answer: "", type: "open" },
+                            { text: "შენ ხარ მეგობარი.<br>_________________", answer: "", type: "open" },
+                            { text: "ის მიდის მაღაზიაში.<br>_________________", answer: "", type: "open" },
+                            { text: "ჩვენ ვაკეთებთ.<br>_________________", answer: "", type: "open" },
+                            { text: "ის იღებს წიგნს.<br>_________________", answer: "", type: "open" },
+                            { text: "ისინი მოდიან სახლში.<br>_________________", answer: "", type: "open" },
+                            { text: "მე შემიძლია წასვლა.<br>_________________", answer: "", type: "open" },
+                            { text: "შენ გინდა ყავა.<br>_________________", answer: "", type: "open" },
+                            { text: "მას უნდა მუშაობა.<br>_________________", answer: "", type: "open" },
+                            { text: "მე ვიცი ეს ამბავი.<br>_________________", answer: "", type: "open" }
+                        ]
+                    },
+                    5: {
+                        instruction: "აუღლეთ შემდეგი ზმნები აწმყო დროში ფრანგულად ყველა პირში: je, tu, il, elle, on, nous, vous, ils, elles; ზმნები შემდეგია: je suis, j'ai, je vais, je fais, je prends, je viens, je peux, je veux, je dois, je sais.",
+                        type: "essay"
+                    },
+                    6: {
+                        instruction: "უყურეთ ვიდეორგოლს და უპასუხეთ კითხვებს",
+                        video: "videos/a1_video4.mp4",
+                        questions: [
+                            { text: "Où se déroule la scène ?", options: ["Au supermarché", "Au marché", "Dans une boulangerie", "Au restaurant"], answer: "Au marché", type: "mc" },
+                            { text: "Qu'est-ce que le client veut acheter au début ?", options: ["Des vêtements", "Des livres", "Des fruits et des légumes", "Du pain"], answer: "Des fruits et des légumes", type: "mc" },
+                            { text: "Combien coûte le kilo de bananes ?", options: ["3 euros", "1 euro", "2 euros", "5 euros"], answer: "2 euros", type: "mc" },
+                            { text: "Quelle quantité de bananes le client achète-t-il ?", options: ["Un kilo", "Deux kilos", "Trois kilos", "Demi-kilo"], answer: "Un kilo", type: "mc" },
+                            { text: "Combien coûtent deux kilos d'oranges ?", options: ["4 euros", "5 euros", "6 euros", "3 euros"], answer: "5 euros", type: "mc" },
+                            { text: "Que demande le client après les oranges ?", options: ["Une salade et deux kilos de carottes", "Des pommes et des tomates", "Du fromage et du lait", "Un chou et des pommes de terre"], answer: "Une salade et deux kilos de carottes", type: "mc" },
+                            { text: "Quel est le prix de la salade ?", options: ["2 euros", "0,50 euro", "1 euro", "3 euros"], answer: "1 euro", type: "mc" },
+                            { text: "Combien coûtent deux kilos de carottes ?", options: ["3 euros", "2 euros", "4 euros", "1 euro"], answer: "3 euros", type: "mc" },
+                            { text: "Quel est le montant total des achats ?", options: ["9 euros", "11 euros", "10 euros", "12 euros"], answer: "11 euros", type: "mc" },
+                            { text: "Quelle somme le client donne-t-il au vendeur ?", options: ["Un billet de 10 euros et une pièce de 1 euro", "Un billet de 20 euros", "Deux billets de 5 euros", "Un billet de 10 euros et une pièce de 2 euros"], answer: "Un billet de 10 euros et une pièce de 1 euro", type: "mc" }
+                        ]
+                    },
                 },
+                /*
                 kvira_5: {
                 },
                 kvira_6: {
@@ -2333,9 +2413,89 @@ async function loadHeaderScore(userEmail) {
                         ]
                     }
                 },
-                /*
                 kvira_4: {
+                    1: { 
+                        instruction: "Choisissez la bonne réponse parmi les options proposées au passé composé.", 
+                        questions: [
+                            { text: "Hier, Marie _______ très tôt ce matin.", options: ["a partiel", "est partie", "a parti"], answer: "est partie", type: "mc" },
+                            { text: "Les élèves _______ leurs leçons avant de sortir.", options: ["ont appris", "sont appris", "ont apprivoisé"], answer: "ont appris", type: "mc" },
+                            { text: "Nous _______ en vacances en Italie l'été dernier.", options: ["avons allés", "sommes allés", "sommes allé"], answer: "sommes allés", type: "mc" },
+                            { text: "Est-ce que tu _______ cette belle chanson à la radio ?", options: ["as entendu", "es entendu", "as entendue"], answer: "as entendu", type: "mc" },
+                            { text: "Thomas et Julien _______ à la maison toute la soirée.", options: ["ont resté", "sont resté", "sont restés"], answer: "sont restés", type: "mc" },
+                            { text: "Ma petite sœur _______ à Paris en 2020.", options: ["est née", "a né", "est né"], answer: "est née", type: "mc" },
+                            { text: "Vous _______ un très bel effort pour réussir cet examen.", options: ["êtes faits", "avez fait", "ont fait"], answer: "avez fait", type: "mc" },
+                            { text: "Elles _______ du train avec toutes leurs valises.", options: ["sont descendues", "ont descendu", "sont descendu"], answer: "sont descendues", type: "mc" },
+                            { text: "J'_______ mes clés sur la table du salon.", options: ["suis oublié", "ai oublié", "ai oubliée"], answer: "ai oublié", type: "mc" },
+                            { text: "Mes grands-parents _______ en ville après une longue absence.", options: ["ont retourné", "sont retournés", "sont retourné"], answer: "sont retournés", type: "mc" }
+                        ] 
+                    },
+                    2: {
+                        instruction: "Conjuguez les verbes entre parenthèses au passé composé avec l'auxiliaire être (attention aux accords !)",
+                        questions: [
+                            { text: "Hélène (arriver) _______ en retard à la réunion ce matin.", answer: "est arrivée", type: "open" },
+                            { text: "Mes frères (partir) _______ en voyage d'affaires hier.", answer: "sont partis", type: "open" },
+                            { text: "Notre grand-père (rester) _______ à la maison cet après-midi.", answer: "est resté", type: "open" },
+                            { text: "Les enfants (tomber) _______ dans le jardin en jouant.", answer: "sont tombés", type: "open" },
+                            { text: "Julie et Sophie (retourner) _______ en cours après la pause.", answer: "sont retournées", type: "open" },
+                            { text: "Cette célèbre actrice (mourir) _______ l'hiver dernier.", answer: "est morte", type: "open" },
+                            { text: "Deux nouveaux bébés (naître) _______ dans notre famille cette année.", answer: "sont nés", type: "open" },
+                            { text: "Nous (sortir) _______ tard du cinéma hier soir.", answer: "sommes sortis", type: "open" },
+                            { text: "Tu (venir) _______ me rendre visite le mois dernier.", answer: "es venu", type: "open" },
+                            { text: "Les clients (descendre) _______ de l'hôtel pour prendre le petit-déjeuner.", answer: "sont descendus", type: "open" }
+                        ]
+                    },
+                    3: {
+                        instruction: "Complétez les phrases au passé composé en choisissant le bon auxiliaire (être ou avoir) et en faisant l'accord si nécessaire.",
+                        questions: [
+                            { text: "Hier après-midi, (visiter) j'_______ un magnifique musée.", answer: "ai visité", type: "open" },
+                            { text: "Mon amie (sortir) _______ de la bibliothèque à dix heures.", answer: "est sortie", type: "open" },
+                            { text: "Nous (discuter) _______ longuement de ce projet ensemble.", answer: "avons discuté", type: "open" },
+                            { text: "Les touristes (monter) _______ au sommet de la tour Eiffel.", answer: "sont montés", type: "open" },
+                            { text: "Est-ce que vous (comprendre) _______ toutes les explications ?", answer: "avez compris", type: "open" },
+                            { text: "Mes cousins (venir) _______ passer le week-end avec nous.", answer: "sont venus", type: "open" },
+                            { text: "Pierre (glisser) _______ sur le sol mouillé de la cuisine.", answer: "a glissé", type: "open" },
+                            { text: "Mes parents et moi, nous (acheter) _______ une belle maison à la campagne.", answer: "avons acheté", type: "open" },
+                            { text: "Elles (entrer) _______ dans le magasin pour regarder les vitrines.", answer: "sont entrées", type: "open" },
+                            { text: "Tu (passer) _______ un excellent moment lors de cette fête.", answer: "as passé", type: "open" }
+                        ]
+                    },
+                    4: {
+                        instruction: "Traduisez les phrases suivantes du géorgien vers le français au passé composé",
+                        questions: [
+                            { text: "მე მივწერე წერილი მეგობარს.<br>_________________", answer: "", type: "open" },
+                            { text: "მან (ქალმა) დატოვა სახლი დილით.<br>_________________", answer: "", type: "open" },
+                            { text: "ჩვენ ვნახეთ კარგი ფილმი გუშინ.<br>_________________", answer: "", type: "open" },
+                            { text: "შენ წაიკითხე ეს საინტერესო ჟურნალი.<br>_________________", answer: "", type: "open" },
+                            { text: "მათ იყიდეს ახალი ბინა ქალაქში.<br>_________________", answer: "", type: "open" },
+                            { text: "მან (კაცმა) დაკარგა გასაღებები.<br>_________________", answer: "", type: "open" },
+                            { text: "ჩვენ დავბრუნდით გვიან საღამოს.<br>_________________", answer: "", type: "open" },
+                            { text: "თქვენ მოამზადეთ სადილი დროულად.<br>_________________", answer: "", type: "open" },
+                            { text: "ბავშვი წავიდა მარკში მარტო.<br>_________________", answer: "", type: "open" },
+                            { text: "გოგონები ჩამოვიდნენ მთიდან.<br>_________________", answer: "", type: "open" }
+                        ]
+                    },
+                    5: {
+                        instruction: "მოკლედ დაწერეთ თქვენი საყვარელი ფილმის შესახებ ფრანგულად. გამოიყენეთ მარტივი წინადადებები და არ დაიხმაროთ დამხმარე მასალები, გარდა გაკვეთილზე გამოყენებული ტექსტისა.",
+                        type: "essay"
+                    },
+                    6: {
+                        instruction: "უყურეთ ვიდეორგოლს და უპასუხეთ კითხვებს",
+                        video: "videos/a2_video4.mp4",
+                        questions: [
+                            { text: "Avec quoi Caillou et son papa jouent-ils au début de la vidéo ?", options: ["Avec des voitures", "Avec un train électrique", "Avec un avion", "Avec des cubes"], answer: "Avec un train électrique", type: "mc" },
+                            { text: "Quel type de train va sous terre selon le papa ?", options: ["Un train à grande vitesse", "Un train de marchandises", "Un métro", "Un tramway"], answer: "Un métro", type: "mc" },
+                            { text: "Que met Caillou sur sa tête pour partir à l'aventure ?", options: ["Son chapeau rouge", "Son bonnet d'hiver", "Son chapeau bleu", "Une casquette jaune"], answer: "Son chapeau bleu", type: "mc" },
+                            { text: "Qu'est-ce que le papa achète aux guichets de la station ?", options: ["Deux billets de métro", "Des cartes postales", "Un plan de la ville", "Des friandises"], answer: "Deux billets de métro", type: "mc" },
+                            { text: "Que se passe-t-il quand Caillou passe le tourniquet la première fois ?", options: ["Il court très vite", "Il perd son billet", "Il est coincé", "Il tombe par terre"], answer: "Il est coincé", type: "mc" },
+                            { text: "Quelle leçon le papa donne-t-il à Caillou après l'incident du chapeau envolé ?", options: ["Il ne faut pas courir", "Un bon explorateur doit toujours garder son chapeau", "Il faut fermer les yeux", "Il ne faut pas parler dans le métro"], answer: "Un bon explorateur doit toujours garder son chapeau", type: "mc" },
+                            { text: "Qu'est-ce qu'on trouve dans la station de métro en plus des voyageurs ?", options: ["Un homme qui joue de la guitare", "Un chien perdu", "Une fontaine d'eau", "Un vendeur de ballons"], answer: "Un homme qui joue de la guitare", type: "mc" },
+                            { text: "Qu'est-ce que Caillou et son papa regardent sur le mur avant de prendre le métro ?", options: ["Une grande carte colorée avec des lignes", "Une affiche de cirque", "Une photo de famille", "La météo de la semaine"], answer: "Une grande carte colorée avec des lignes", type: "mc" },
+                            { text: "Où s'assoient Caillou et son papa après leur promenade dans le parc à la fin ?", options: ["Sur un banc", "Sur l'herbe verte", "Sur le rebord d'une fontaine", "Sur les marches de la maison"], answer: "Sur un banc", type: "mc" },
+                            { text: "Qu'est-ce que Caillou sort de son sac à dos à la fin de la vidéo ?", options: ["Des biscuits", "Des pommes", "Des sandwichs", "Des bonbons"], answer: "Des biscuits", type: "mc" }
+                        ]
+                    },
                 },
+                /*
                 kvira_5: {
                 },
                 kvira_6: {
@@ -2848,9 +3008,101 @@ async function loadHeaderScore(userEmail) {
                         ]
                     },
                 },
-                /*
                 kvira_4: {
+                    1: { 
+                        instruction: "Choisissez la bonne réponse parmi les options proposées au passé composé.", 
+                        questions: [
+                            { text: "Hier, Marie _______ très tôt ce matin.", options: ["a partiel", "est partie", "a parti"], answer: "est partie", type: "mc" },
+                            { text: "Les élèves _______ leurs leçons avant de sortir.", options: ["ont appris", "sont appris", "ont apprivoisé"], answer: "ont appris", type: "mc" },
+                            { text: "Nous _______ en vacances en Italie l'été dernier.", options: ["avons allés", "sommes allés", "sommes allé"], answer: "sommes allés", type: "mc" },
+                            { text: "Est-ce que tu _______ cette belle chanson à la radio ?", options: ["as entendu", "es entendu", "as entendue"], answer: "as entendu", type: "mc" },
+                            { text: "Thomas et Julien _______ à la maison toute la soirée.", options: ["ont resté", "sont resté", "sont restés"], answer: "sont restés", type: "mc" },
+                            { text: "Ma petite sœur _______ à Paris en 2020.", options: ["est née", "a né", "est né"], answer: "est née", type: "mc" },
+                            { text: "Vous _______ un très bel effort pour réussir cet examen.", options: ["êtes faits", "avez fait", "ont fait"], answer: "avez fait", type: "mc" },
+                            { text: "Elles _______ du train avec toutes leurs valises.", options: ["sont descendues", "ont descendu", "sont descendu"], answer: "sont descendues", type: "mc" },
+                            { text: "J'_______ mes clés sur la table du salon.", options: ["suis oublié", "ai oublié", "ai oubliée"], answer: "ai oublié", type: "mc" },
+                            { text: "Mes grands-parents _______ en ville après une longue absence.", options: ["ont retourné", "sont retournés", "sont retourné"], answer: "sont retournés", type: "mc" }
+                        ] 
+                    },
+                    2: {
+                        instruction: "Conjuguez les verbes entre parenthèses au passé composé avec l'auxiliaire être (attention aux accords !)",
+                        questions: [
+                            { text: "Hélène (arriver) _______ en retard à la réunion ce matin.", answer: "est arrivée", type: "open" },
+                            { text: "Mes frères (partir) _______ en voyage d'affaires hier.", answer: "sont partis", type: "open" },
+                            { text: "Notre grand-père (rester) _______ à la maison cet après-midi.", answer: "est resté", type: "open" },
+                            { text: "Les enfants (tomber) _______ dans le jardin en jouant.", answer: "sont tombés", type: "open" },
+                            { text: "Julie et Sophie (retourner) _______ en cours après la pause.", answer: "sont retournées", type: "open" },
+                            { text: "Cette célèbre actrice (mourir) _______ l'hiver dernier.", answer: "est morte", type: "open" },
+                            { text: "Deux nouveaux bébés (naître) _______ dans notre famille cette année.", answer: "sont nés", type: "open" },
+                            { text: "Nous (sortir) _______ tard du cinéma hier soir.", answer: "sommes sortis", type: "open" },
+                            { text: "Tu (venir) _______ me rendre visite le mois dernier.", answer: "es venu", type: "open" },
+                            { text: "Les clients (descendre) _______ de l'hôtel pour prendre le petit-déjeuner.", answer: "sont descendus", type: "open" }
+                        ]
+                    },
+                    3: {
+                        instruction: "Complétez les phrases au passé composé en choisissant le bon auxiliaire (être ou avoir) et en faisant l'accord si nécessaire.",
+                        questions: [
+                            { text: "Hier après-midi, (visiter) j'_______ un magnifique musée.", answer: "ai visité", type: "open" },
+                            { text: "Mon amie (sortir) _______ de la bibliothèque à dix heures.", answer: "est sortie", type: "open" },
+                            { text: "Nous (discuter) _______ longuement de ce projet ensemble.", answer: "avons discuté", type: "open" },
+                            { text: "Les touristes (monter) _______ au sommet de la tour Eiffel.", answer: "sont montés", type: "open" },
+                            { text: "Est-ce que vous (comprendre) _______ toutes les explications ?", answer: "avez compris", type: "open" },
+                            { text: "Mes cousins (venir) _______ passer le week-end avec nous.", answer: "sont venus", type: "open" },
+                            { text: "Pierre (glisser) _______ sur le sol mouillé de la cuisine.", answer: "a glissé", type: "open" },
+                            { text: "Mes parents et moi, nous (acheter) _______ une belle maison à la campagne.", answer: "avons acheté", type: "open" },
+                            { text: "Elles (entrer) _______ dans le magasin pour regarder les vitrines.", answer: "sont entrées", type: "open" },
+                            { text: "Tu (passer) _______ un excellent moment lors de cette fête.", answer: "as passé", type: "open" }
+                        ]
+                    },
+                    4: {
+                        instruction: "Traduisez les phrases suivantes du géorgien vers le français au passé composé",
+                        questions: [
+                            { text: "მე მივწერე წერილი მეგობარს.<br>_________________", answer: "", type: "open" },
+                            { text: "მან (ქალმა) დატოვა სახლი დილით.<br>_________________", answer: "", type: "open" },
+                            { text: "ჩვენ ვნახეთ კარგი ფილმი გუშინ.<br>_________________", answer: "", type: "open" },
+                            { text: "შენ წაიკითხე ეს საინტერესო ჟურნალი.<br>_________________", answer: "", type: "open" },
+                            { text: "მათ იყიდეს ახალი ბინა ქალაქში.<br>_________________", answer: "", type: "open" },
+                            { text: "მან (კაცმა) დაკარგა გასაღებები.<br>_________________", answer: "", type: "open" },
+                            { text: "ჩვენ დავბრუნდით გვიან საღამოს.<br>_________________", answer: "", type: "open" },
+                            { text: "თქვენ მოამზადეთ სადილი დროულად.<br>_________________", answer: "", type: "open" },
+                            { text: "ბავშვი წავიდა მარკში მარტო.<br>_________________", answer: "", type: "open" },
+                            { text: "გოგონები ჩამოვიდნენ მთიდან.<br>_________________", answer: "", type: "open" }
+                        ]
+                    },
+                    5: {
+                        instruction: "Lisez le texte suivant et répondez aux questions",
+                        textFile: "texts/a2_delf_text_4_1.txt",
+                        questions: [
+                            { text: "Cet article parle...", options: ["D'un parc d'attractions.", "D'un festival de cinéma", "D'une exposition de peinture.", "D'un concert de musique."], answer: "D'un festival de cinéma", type: "mc" },
+                            { text: "Qui dirige cet événement ?", options: ["Une réalisatrice passionnée", "Le maire de Strasbourg.", "Des étudiants en audiovisuel.", "Un acteur célèbre."], answer: "Une réalisatrice passionnée", type: "mc" },
+                            { text: "Que peut-on voir et faire durant ce festival ?", options: ["Des représentations de théâtre.", "Des concerts de musique rock.", "Des films internationaux en plein air", "Des spectacles de danse."], answer: "Des films internationaux en plein air", type: "mc" },
+                            { text: "Sophie Marchand s'intéresse au cinéma depuis qu'elle est jeune.", options: ["Vrai", "Faux", "On ne sait pas", "Impossible"], answer: "Vrai", type: "mc" },
+                            { text: "Que se passe-t-il le deuxième vendredi du festival ?", options: ["L'entrée est gratuite pour tout le monde.", "On peut gagner des places gratuites.", "On peut rencontrer des professionnels du cinéma", "Il y a un grand feu d'artifice."], answer: "On peut rencontrer des professionnels du cinéma", type: "mc" },
+                            { text: "Le festival est réservé uniquement aux étudiants en cinéma.", options: ["Faux", "Vrai", "Seulement le soir", "Uniquement le week-end"], answer: "Faux", type: "mc" },
+                            { text: "Qui a aidé Sophie Marchand à rassembler l'argent pour le projet ?", options: ["L'office de tourisme de Strasbourg.", "La mairie de Strasbourg.", "Des étudiants en audiovisuel", "Des entreprises privées."], answer: "Des étudiants en audiovisuel", type: "mc" },
+                            { text: "Quel est le montant total nécessaire pour réaliser ce projet ?", options: ["5 800 €", "12 000 €", "8 500 €", "10 000 €"], answer: "8 500 €", type: "mc" },
+                            { text: "Quels sont les horaires d'ouverture du festival ?", options: ["Toute la journée de 9h à 18h.", "De 20h à minuit", "Uniquement les weekends.", "De 14h à 22h."], answer: "De 20h à minuit", type: "mc" },
+                            { text: "Cet événement culturel dure exactement deux semaines.", options: ["Faux", "Vrai", "Trois semaines", "Un mois entier"], answer: "Vrai", type: "mc" }
+                        ]
+                    },
+                    6: {
+                        instruction: "Lisez le texte suivant et répondez aux questions",
+                        textFile: "texts/a2_delf_text_4_2.txt",
+                        questions: [
+                            { text: "Ce texte présente...", options: ["Une bibliothèque municipale gratuite.", "Une grande surface de livres neufs.", "Un café-librairie solidaire", "Un restaurant gastronomique."], answer: "Un café-librairie solidaire", type: "mc" },
+                            { text: "Qui est à l'origine de ce nouveau projet ?", options: ["Une association d'étudiants en cuisine.", "Une jeune entrepreneure lyonnaise", "Le ministère de la Culture.", "Un écrivain célèbre."], answer: "Une jeune entrepreneure lyonnaise", type: "mc" },
+                            { text: "Que propose cet établissement à ses visiteurs ?", options: ["Des cours de cuisine et de langues.", "Des spectacles de danse et de poésie.", "Des livres d'occasion et des pâtisseries", "Du matériel informatique."], answer: "Des livres d'occasion et des pâtisseries", type: "mc" },
+                            { text: "Julie Vernier pensait à ce projet depuis son enfance.", options: ["Faux", "Vrai", "Depuis le lycée", "Depuis un an seulement"], answer: "Faux", type: "mc" },
+                            { text: "Que se passe-t-il le premier samedi de chaque mois ?", options: ["Tous les livres sont vendus à moitié prix.", "On peut assister à des ateliers d'écriture", "Le café est fermé pour travaux.", "Il y a un concert de jazz."], answer: "On peut assister à des ateliers d'écriture", type: "mc" },
+                            { text: "Ce lieu est ouvert sept jours sur sept, sans exception.", options: ["Faux", "Vrai", "Seulement le dimanche", "Uniquement en semaine"], answer: "Faux", type: "mc" },
+                            { text: "Qui a aidé Julie à collecter l'argent nécessaire pour démarrer ?", options: ["La mairie de Lyon.", "L'office de tourisme local.", "Des banques partenaires.", "Des bénévoles d'une association"], answer: "Des bénévoles d'une association", type: "mc" },
+                            { text: "Quel est le montant total réuni pour ouvrir ce commerce ?", options: ["3 000 €", "10 000 €", "6 000 €", "5 000 €"], answer: "6 000 €", type: "mc" },
+                            { text: "Quels jours de la semaine le café-librairie est-il ouvert ?", options: ["Du mardi au dimanche.", "Uniquement les weekends.", "Du lundi au samedi", "Tous les jours de la semaine"], answer: "Du lundi au samedi", type: "mc" },
+                            { text: "Les clients peuvent y trouver des milliers de livres d'occasion.", options: ["Vrai", "Faux", "Seulement des livres neufs", "Uniquement des magazines"], answer: "Vrai", type: "mc" }
+                        ]
+                    },
                 },
+                /*
                 kvira_5: {
                 },
                 kvira_6: {

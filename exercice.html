@@ -3479,10 +3479,101 @@ async function loadHeaderScore(userEmail) {
                             ]
                     },
                 },
-                
-                /*
                 kvira_4: {
+                    1: { 
+                        instruction: "Choisissez la bonne réponse", 
+                        questions: [
+                            { text: "Quand nous sommes arrivés au cinéma, le film ______ déjà.", options: ["a) a commencé", "b) avait commencé", "c) commençait"], answer: "b) avait commencé", type: "mc" },
+                            { text: "Julie était très fatiguée parce qu'elle ______ toute la nuit.", options: ["a) a travaillé", "b) travaillait", "c) avait travaillé"], answer: "c) avait travaillé", type: "mc" },
+                            { text: "Tu ______ tes clés avant de partir en vacances ?", options: ["a) avais trouvé", "b) avais trouvé(e)", "c) avais trouvées"], answer: "c) avais trouvées", type: "mc" },
+                            { text: "Les enfants ______ tous leurs jouets avant que leur mère n'arrive.", options: ["a) avaient rangé", "b) ont rangé", "c) rangeaient"], answer: "a) avaient rangé", type: "mc" },
+                            { text: "Je ______ à la gare à dix heures ce jour-là.", options: ["a) étais arrivé(e)", "b) suis arrivé(e)", "c) avais arrivé(e)"], answer: "a) étais arrivé(e)", type: "mc" },
+                            { text: "Si seulement tu ______ la vérité plus tôt !", options: ["a) as dit", "b) avais dit", "c) disais"], answer: "b) avais dit", type: "mc" },
+                            { text: "Il n'______ jamais ______ de pizza avant de venir en Italie.", options: ["a) avait / mangé", "b) était / mangé", "c) a / mangé"], answer: "a) avait / mangé", type: "mc" },
+                            { text: "Marie ______ quand son amie a sonné à la porte.", options: ["a) était déjà partie", "b) est déjà partie", "c) had already left"], answer: "a) était déjà partie", type: "mc" },
+                            { text: "Thomas a retrouvé le livre qu'il ______ l'année dernière.", options: ["a) a acheté", "b) avait acheté", "c) était acheté"], answer: "b) avait acheté", type: "mc" },
+                            { text: "Si j'______ le plan, je ne me serais pas perdu.", options: ["a) ai suivi", "b) avais suivi", "c) suivais"], answer: "b) avais suivi", type: "mc" }
+                        ] 
+                    },
+                    2: { 
+                        instruction: "Mettez le verbe de la deuxième phrase au plus-que-parfait", 
+                        questions: [
+                            { text: "Je suis arrivé en retard au travail parce que (rater) j’____________________ mon train.", answer: "avais raté", type: "open" },
+                            { text: "Elle a raté son examen parce qu’elle (ne pas réviser) n’____________________ pas ____________________.", answer: "n'avait pas révisé", type: "open" },
+                            { text: "Tu as mangé toute la soupe que (préparer) j’____________________ ____________________.", answer: "avais préparée", type: "open" },
+                            { text: "Il a acheté un nouveau manteau parce qu’il (perdre) ____________________ l’ancien.", answer: "avait perdu", type: "open" },
+                            { text: "Nous avons visité un musée où nous (ne jamais aller) n’____________________ jamais ____________________.", answer: "n'étions jamais allés", type: "open" },
+                            { text: "J’ai retrouvé le chat que (perdre) ____________________ la semaine dernière.", answer: "avais perdu", type: "open" },
+                            { text: "Tu as téléphoné à Marc parce qu’il (rentrer) ____________________ de voyage.", answer: "était rentré", type: "open" },
+                            { text: "Elle a attendu longtemps parce que tu (oublier) ____________________ ton rendez-vous.", answer: "avais oublié", type: "open" },
+                            { text: "Nous avons aimé ce restaurant parce que tu nous en (parler) ____________________ ____________________.", answer: "avais parlé", type: "open" },
+                            { text: "Il a bien dormi parce qu’il (courir) ____________________ pendant une heure.", answer: "avait couru", type: "open" }
+                        ] 
+                    },
+                    3: {
+                        instruction: "Traduisez les phrases suivantes du français vers le géorgien",
+                        questions: [
+                            { text: "Quand je suis arrivé à la maison, maman avait déjà préparé le dîner.<br>_________________", answer: "", type: "open" },
+                            { text: "Elle m'a dit qu'elle avait déjà lu ce livre.<br>_________________", answer: "", type: "open" },
+                            { text: "Nous étions fatigués parce que nous avions travaillé toute la journée.<br>_________________", answer: "", type: "open" },
+                            { text: "Si seulement tu étais venu plus tôt !<br>_________________", answer: "", type: "open" },
+                            { text: "Quand tu es rentré, j'avais déjà fini mes devoirs.<br>_________________", answer: "", type: "open" },
+                            { text: "Avant ce voyage, il n'était jamais allé en Espagne.<br>_________________", answer: "", type: "open" },
+                            { text: "Tu m'as dit que tu avais trouvé un nouveau travail.<br>_________________", answer: "", type: "open" },
+                            { text: "J'ai acheté la robe que j'avais vue la veille.<br>_________________", answer: "", type: "open" },
+                            { text: "Elle avait faim parce qu'elle n'avait rien mangé depuis le matin.<br>_________________", answer: "", type: "open" },
+                            { text: "Si j'avais su la vérité, je t'aurais aidé.<br>_________________", answer: "", type: "open" }
+                        ]
+                    },
+                    4: {
+                        instruction: "Traduisez les phrases suivantes du géorgien vers le français",
+                        questions: [
+                            { text: "როცა სახლში დავბრუნდი, ჩემი ძმა უკვე დაბრუნები იყო.<br>_________________", answer: "", type: "open" },
+                            { text: "მან მითხრა, რომ ეს ფილმი უკვე ნანახი ჰქონდა.<br>_________________", answer: "", type: "open" },
+                            { text: "დაღლილები ვიყავით, რადგან მთელი დღე ვიარეთ. (utilisez « on »)<br>_________________", answer: "", type: "open" },
+                            { text: "ნეტავ უფრო ადრე გავსულიყავი სახლიდან!<br>_________________", answer: "", type: "open" },
+                            { text: "როცა შემოვედი, სადილი უკვე გამზადებული გქონდა.<br>_________________", answer: "", type: "open" },
+                            { text: "ამ ქალაქში ის არასოდეს ჩამოსულა.<br>_________________", answer: "", type: "open" },
+                            { text: "შენ მითხარი, რომ ახალი მანქანა იყიდე.<br>_________________", answer: "", type: "open" },
+                            { text: "ვიპოვე სახლი, რომელიც ჟურნალში ვნახე.<br>_________________", answer: "", type: "open" },
+                            { text: "მშიერი იყო, რადგან დილიდან არაფერი ეჭამა.<br>_________________", answer: "", type: "open" },
+                            { text: "არ გავაკეთე ეს, რადგან შენ მითხარი რომ არ გამეკეთებინა.<br>_________________", answer: "", type: "open" }
+                        ]
+                    },
+                    5: {
+                        instruction: "Le défi des transports écologiques en ville",
+                        textFile: "texts/b1_delf_text_4_1.txt",
+                        questions: [
+                            { text: "Quel est l'objectif principal des municipalités européennes ?", options: ["a) Développer la construction de nouveaux parkings.", "b) Réduire la pollution de l'air en limitant la voiture.", "c) Augmenter la vitesse des transports en commun."], answer: "b) Réduire la pollution de l'air en limitant la voiture.", type: "mc" },
+                            { text: "Comment les jeunes générations voient-elles la voiture en ville selon Thomas Leroy ?", options: ["a) Comme un symbole de réussite sociale.", "b) Comme un moyen indispensable pour voyager.", "c) Comme une source de stress et de dépenses inutiles."], answer: "c) Comme une source de stress et de dépenses inutiles.", type: "mc" },
+                            { text: "Quel pourcentage de citadins privilégie le vélo ou la trottinette pour aller travailler ?", options: ["a) Environ 65 %.", "b) Environ 72 %.", "c) Environ 50 %."], answer: "a) Environ 65 %.", type: "mc" },
+                            { text: "Quelle condition est indispensable pour que les citadins utilisent ces nouveaux modes de transport ?", options: ["a) Avoir une subvention de la part de l'État.", "b) Disposer d'infrastructures de sécurité suffisantes.", "c) Pouvoir ranger son équipement au bureau."], answer: "b) Disposer d'infrastructures de sécurité suffisantes.", type: "mc" },
+                            { text: "Quel problème les commerçants du centre-ville rencontrent-ils ?", options: ["a) Leurs employés refusent de venir travailler en voiture.", "b) Les clients de la périphérie ont du mal à accéder aux boutiques.", "c) Les loyers des magasins ont augmenté de façon excessive."], answer: "b) Les clients de la périphérie ont du mal à accéder aux boutiques.", type: "mc" },
+                            { text: "Pourquoi les clients de Sophie ont-ils du mal à venir ?", options: ["a) Parce qu'il y a trop de circulation dans sa rue.", "b) Parce qu'elle a changé l'horaire d'ouverture de sa boutique.", "c) Parce que les parkings relais manquent et les transports desservent mal la zone."], answer: "c) Parce que les parkings relais manquent et les transports desservent mal la zone.", type: "mc" },
+                            { text: "Quel marché est également transformé par cette nouvelle politique de transport ?", options: ["a) Le marché de l'immobilier urbain.", "b) Le marché de l'automobile d'occasion.", "c) Le marché du tourisme international."], answer: "a) Le marché de l'immobilier urbain.", type: "mc" },
+                            { text: "Quels quartiers attirent particulièrement de nouvelles familles ?", options: ["a) Ceux qui se trouvent uniquement à la campagne.", "b) Ceux qui sont bien desservis ou dotés de pistes cyclables.", "c) Ceux qui possèdent les plus grands parcs de stationnement."], answer: "b) Ceux qui sont bien desservis ou dotés de pistes cyclables.", type: "mc" },
+                            { text: "Quelle est la conséquence de cette forte demande dans ces quartiers ?", options: ["a) Une baisse de la criminalité.", "b) Une augmentation de la population rurale.", "c) Une hausse des prix de l'immobilier."], answer: "c) Une hausse des prix de l'immobilier.", type: "mc" },
+                            { text: "Que cherchent à faire les autorités locales face à ces tensions ?", options: ["a) Interdire totalement l'accès aux voitures en ville.", "b) Équilibrer transition écologique et dynamisme économique.", "c) Supprimer les taxes sur les transports en commun."], answer: "b) Équilibrer transition écologique et dynamisme économique.", type: "mc" }
+                        ]
+                    },
+                    6: {
+                        instruction: "Le boom du tourisme local et responsable",
+                        textFile: "texts/b1_delf_text_4_2.txt",
+                        questions: [
+                            { text: "Qu'est-ce qui a principalement motivé le changement des habitudes de vacances ?", options: ["a) La baisse du coût des billets d'avion.", "b) La crise sanitaire et les préoccupations climatiques.", "c) L'interdiction de voyager à l'étranger."], answer: "b) La crise sanitaire et les préoccupations climatiques.", type: "mc" },
+                            { text: "Que signifie le terme « staycation » mentionné dans le texte ?", options: ["a) Voyager uniquement en train à travers l'Europe.", "b) Passer ses vacances chez soi ou tout près de chez soi.", "c) Travailler à distance depuis un lieu de villégiature."], answer: "b) Passer ses vacances chez soi ou tout près de chez soi.", type: "mc" },
+                            { text: "Quelle est la tendance actuelle des voyageurs français ?", options: ["a) Ils préfèrent redécouvrir les richesses de leur propre pays.", "b) Ils attendent la dernière minute pour partir à l'étranger.", "c) Ils n'emportent plus que le strict minimum en voyage."], answer: "a) Ils préfèrent redécouvrir les richesses de leur propre pays.", type: "mc" },
+                            { text: "Qu'est-ce qui a changé dans la clientèle du gîte d'Antoine Mercier ?", options: ["a) Les clients viennent uniquement en hiver maintenant.", "b) Les clients viennent toute l'année pour des weekends prolongés.", "c) Les clients réservent exclusivement par l'intermédiaire d'agences."], answer: "b) Les clients viennent toute l'année pour des weekends prolongés.", type: "mc" },
+                            { text: "Que recherchent principalement ces familles lors de leurs séjours ?", options: ["a) Le luxe et le confort des grands hôtels urbains.", "b) Le calme, la nature et le respect de l'environnement.", "c) Les animations nocturnes et les grandes plages."], answer: "b) Le calme, la nature et le respect de l'environnement.", type: "mc" },
+                            { text: "Quel pourcentage de vacanciers privilégie des hébergements écologiques ?", options: ["a) Environ 58 %.", "b) Environ 65 %.", "c) Environ 72 %."], answer: "a) Environ 58 %.", type: "mc" },
+                            { text: "Quel problème les flux touristiques posent-ils aux petites communes rurales ?", options: ["a) Une baisse importante des impôts locaux.", "b) Une perturbation de la vie quotidienne des habitants.", "c) Une diminution du nombre de commerces ouverts."], answer: "b) Une perturbation de la vie quotidienne des habitants.", type: "mc" },
+                            { text: "Quelles infrastructures subissent une pression énorme en été ?", options: ["a) Les réseaux de téléphonie mobile et d'Internet.", "b) Les écoles et les centres de santé.", "c) La gestion de l'eau et le stationnement."], answer: "c) La gestion de l'eau et le stationnement.", type: "mc" },
+                            { text: "Quel est l'objectif du tourisme « 4 saisons » encouragé par les régions ?", options: ["a) Répartir les arrivées de visiteurs sur toute l'année.", "b) Supprimer définitivement les vacances d'été.", "c) Obliger les touristes à rester au moins un mois sur place."], answer: "a) Répartir les arrivées de visiteurs sur toute l'année.", type: "mc" },
+                            { text: "Quel est le double avantage de cette nouvelle stratégie touristique ?", options: ["a) Baisser les prix des locations et attirer des investisseurs étrangers.", "b) Préserver la biodiversité tout en soutenant l'économie locale.", "c) Créer de grands parcs de loisirs et moderniser les routes."], answer: "b) Préserver la biodiversité tout en soutenant l'économie locale.", type: "mc" }
+                        ]
+                    },
                 },
+                /*
                 kvira_5: {
                 },
                 kvira_6: {

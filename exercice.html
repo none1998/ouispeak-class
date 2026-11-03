@@ -1981,9 +1981,89 @@ async function loadHeaderScore(userEmail) {
                         ]
                     },
                 },
-                /*
                 kvira_5: {
+                    1: { 
+                        instruction: "Choisissez la bonne réponse au passé composé.", 
+                        questions: [
+                            { text: "Hier, je _____ à Paris.", options: ["suis allé", "as parlé", "avons mangé", "ont fini"], answer: "suis allé", type: "mc" },
+                            { text: "Tu _____ ton travail hier soir ?", options: ["as fini", "ai mangé", "sommes sortis", "est venu"], answer: "as fini", type: "mc" },
+                            { text: "Elle _____ une belle robe pour la fête.", options: ["avez acheté", "ont choisi", "a acheté", "sommes partis"], answer: "a acheté", type: "mc" },
+                            { text: "Nous _____ le dialogue ensemble.", options: ["a écouté", "ont regardé", "avez parlé", "avons écouté"], answer: "avons écouté", type: "mc" },
+                            { text: "Vous _____ de belles vacances ?", options: ["ont passé", "as eu", "avez passé", "suis resté"], answer: "avez eu", type: "mc" },
+                            { text: "Ils _____ toute la nuit.", options: ["a dormi", "ont dormi", "sommes entrés", "avez fait"], answer: "ont dormi", type: "mc" },
+                            { text: "J'_____ une lettre à mon ami.", options: ["avons écrit", "a pris", "ont lu", "ai écrit"], answer: "ai écrit", type: "mc" },
+                            { text: "Tu _____ la bonne réponse ?", options: ["avez trouvé", "a compris", "as trouvé", "ont su"], answer: "as trouvé", type: "mc" },
+                            { text: "Elle _____ très tôt ce matin.", options: ["ont is", "est partie", "avez dit", "avons mis"], answer: "est partie", type: "mc" },
+                            { text: "Nous _____ nos devoirs hier.", options: ["ont fini", "a fait", "as pris", "avons fini"], answer: "avons fini", type: "mc" }
+                        ] 
+                    },
+                    2: { 
+                        instruction: "Complétez les phrases avec le verbe entre parenthèses au passé composé.", 
+                        questions: [
+                            { text: "Oui, je _________________ (parler) avec le professeur.", answer: "ai parlé" }, 
+                            { text: "Oui, tu _________________ (finir) ton travail.", answer: "as fini" }, 
+                            { text: "Oui, il _________________ (manger) une pomme.", answer: "a mangé" }, 
+                            { text: "Oui, nous _________________ (choisir) cette option.", answer: "avons choisi" }, 
+                            { text: "Oui, vous _________________ (habiter) à Paris.", answer: "avez habité" }, 
+                            { text: "Oui, elles _________________ (réussir) l'examen.", answer: "ont réussi" }, 
+                            { text: "Oui, j'_________________ (écouter) la chanson.", answer: "ai écouté" }, 
+                            { text: "Oui, tu _________________ (regarder) un film.", answer: "as regardé" }, 
+                            { text: "Oui, nous _________________ (travailler) hier.", answer: "avons travaillé" }, 
+                            { text: "Oui, vous _________________ (commencer) tôt.", answer: "avez commencé" }
+                        ] 
+                    },
+                    3: {
+                        instruction: "Traduisez les phrases suivantes du français vers le géorgien en utilisant le passé composé",
+                        questions: [
+                            { text: "წინადადება:<br>J'ai parlé avec Sofia.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>Tu as regardé un film.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>Il a fini son travail.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>Nous avons écouté le dialogue.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>Vous avez visité Paris.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>Elles ont aimé la leçon.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>J'ai préparé les questions.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>Tu as commencé le travail.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>Nous avons chanté une chanson.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>Ils ont réussi l'examen.", answer: "", type: "open" }
+                        ]
+                    },
+                    4: {
+                        instruction: "Traduisez les phrases géorgiennes suivantes en français en utilisant le passé composé",
+                        questions: [
+                            { text: "წინადადება:<br>მან ფილმი ნახა.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>ჩვენ ვისაუბრეთ", answer: "", type: "open" },
+                            { text: "წინადადება:<br>შენ მოუსმინე.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>მან დაასრულა თავისი სამუშაო.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>ჩვენ დავიწყეთ ფრანგული.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>თქვენ მოამზადეთ კითხვები.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>მათ მოეწონათ დიალოგი.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>მე ვნახე ჩემი მეგობარი.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>შენ იყიდე ერთი წიგნი.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>ჩვენ ვიპოვეთ სწორი პასუხი.", answer: "", type: "open" }
+                        ]
+                    },
+                    5: {
+                        instruction: "მოიფიქრეთ და დაწერეთ წარსულ დროში 5 წინადადება. მაგალითად: Hier, j'ai mangé une pomme.",
+                        type: "essay"
+                    },
+                    6: {
+                        instruction: "უყურეთ ვიდეორგოლს და უპასუხეთ კითხვებს",
+                        video: "videos/a1_video5.mp4",
+                        questions: [
+                            { text: "Qu'est-ce que Karim a regardé dimanche dernier ?", options: ["un film", "un livre", "une voiture", "un match"], answer: "un film", type: "mc" },
+                            { text: "De quoi Sofia a-t-elle parlé avec Karim ?", options: ["de mathématiques", "de cuisine", "de sport", "des mois et des jours"], answer: "des mois et des jours", type: "mc" },
+                            { text: "Qu'est-ce que Karim a écouté ?", options: ["Sofia", "la musique", "la radio", "le professeur"], answer: "Sofia", type: "mc" },
+                            { text: "Est-ce que Karim a travaillé samedi ?", options: ["Non, il n'a pas travaillé", "Oui, il a travaillé", "Il a dormi", "Il a fini"], answer: "Non, il n'a pas travaillé", type: "mc" },
+                            { text: "Qu'est-ce que Karim a fini le vendredi soir ?", options: ["sa semaine de travail", "son film", "son livre", "son repas"], answer: "sa semaine de travail", type: "mc" },
+                            { text: "Quel sujet Sofia a-t-elle choisi pour pratiquer le français ?", options: ["la géographie", "la science", "l'histoire", "les jours et les mois"], answer: "les jours et les mois", type: "mc" },
+                            { text: "Est-ce que Karim a aimé la conversation ?", options: ["Oui, il a aimé", "Non, il a détesté", "Il a oublié", "Il a parlé"], answer: "Oui, il a aimé", type: "mc" },
+                            { text: "Qu'est-ce que Sofia a préparé pour sa discussion ?", options: ["quelques questions", "un gâteau", "un voyage", "une leçon"], answer: "quelques questions", type: "mc" },
+                            { text: "Est-ce que Karim a réussi à nommer tous les mois ?", options: ["Oui, il a réussi", "Non, il a échoué", "Il a oublié", "Il a dormi"], answer: "Oui, il a réussi", type: "mc" },
+                            { text: "Comment Sofia a-t-elle commencé la discussion ?", options: ["par une chanson", "par un exercice", "par un film", "par dire Salut Karim"], answer: "par dire Salut Karim", type: "mc" }
+                        ] 
+                    }
                 },
+                /*
                 kvira_6: {
                 },
                 kvira_7: {
@@ -2495,9 +2575,89 @@ async function loadHeaderScore(userEmail) {
                         ]
                     },
                 },
-                /*
                 kvira_5: {
+                    1: { 
+                        instruction: "Choisissez la bonne réponse au passé composé (verbes du 3e groupe).", 
+                        questions: [
+                            { text: "Hier, Marie _____ une lettre à ses parents.", options: ["a pris", "a écrit", "sont sortis", "avez dit"], answer: "a écrit", type: "mc" },
+                            { text: "Tu _____ de bonne heure ce matin ?", options: ["est parti", "as voulu", "es venu", "ont fait"], answer: "es venu", type: "mc" },
+                            { text: "Il _____ son manteau à cause du froid.", options: ["avons mis", "a mis", "ont su", "êtes pris"], answer: "a mis", type: "mc" },
+                            { text: "Nous _____ un délicieux gâteau pour l'anniversaire.", options: ["ont pris", "es venu", "ont fait", "avons fait"], answer: "avons fait", type: "mc" },
+                            { text: "Vous _____ la bonne réponse à cette question ?", options: ["a pris", "ont su", "avez su", "sommes partis"], answer: "avez su", type: "mc" },
+                            { text: "Elles _____ très tard de la maison hier.", options: ["a dit", "as pu", "ont mis", "sont sorties"], answer: "sont sorties", type: "mc" },
+                            { text: "J'_____ une décision importante pour mon avenir.", options: ["ont écrit", "ai pris", "est venu", "avons fait"], answer: "ai pris", type: "mc" },
+                            { text: "Tu _____ finir ton travail à temps ?", options: ["a fait", "sommes venus", "as pu", "ont su"], answer: "as pu", type: "mc" },
+                            { text: "Pierre _____ en retard à la réunion.", options: ["ont mis", "avez vu", "est arrivé", "a pris"], answer: "est arrivé", type: "mc" },
+                            { text: "Nous _____ un beau paysage pendant le voyage.", options: ["avez dit", "ont fait", "as pris", "avons vu"], answer: "avons vu", type: "mc" }
+                        ] 
+                    },
+                    2: { 
+                        instruction: "Complétez les phrases avec le verbe du 3e groupe entre parenthèses au passé composé.", 
+                        questions: [
+                            { text: "Oui, je _________________ (prendre) mon sac.", answer: "ai pris" }, 
+                            { text: "Oui, tu _________________ (venir) avec nous.", answer: "es venu" }, 
+                            { text: "Oui, il _________________ (faire) ses devoirs.", answer: "a fait" }, 
+                            { text: "Oui, nous _________________ (voir) ce film.", answer: "avons vu" }, 
+                            { text: "Oui, vous _________________ (dire) la vérité.", answer: "avez dit" }, 
+                            { text: "Oui, elles _________________ (partir) en voyage.", answer: "sont parties" }, 
+                            { text: "Oui, j'_________________ (écrire) un e-mail.", answer: "ai écrit" }, 
+                            { text: "Oui, tu _________________ (mettre) ta veste.", answer: "as mis" }, 
+                            { text: "Oui, nous _________________ (pouvoir) réussir.", answer: "avons pu" }, 
+                            { text: "Oui, ils _________________ (sortir) du restaurant.", answer: "sont sortis" }
+                        ] 
+                    },
+                    3: {
+                        instruction: "Traduisez les phrases suivantes du français vers le géorgien en utilisant le passé composé (verbes du 3e groupe)",
+                        questions: [
+                            { text: "წინადადება:<br>J'ai pris mon livre.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>Tu es venu à la fête.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>Il a fait un gâteau.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>Nous avons vu un chat.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>Vous avez dit bonjour.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>Elles sont parties tôt.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>J'ai écrit une lettre.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>Tu as mis ton chapeau.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>Nous avons pu voyager.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>Ils sont sortis de la maison.", answer: "", type: "open" }
+                        ]
+                    },
+                    4: {
+                        instruction: "Traduisez les phrases géorgiennes suivantes en français en utilisant le passé composé (verbes du 3e groupe)",
+                        questions: [
+                            { text: "წინადადება:<br>მე ავიღე ჩანთა.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>ჩვენ ვნახეთ ეს ქალაქი.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>შენ სიმართლე თქვი.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>ისინი ადრე წავიდნენ.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>მე წერილი დავწერე.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>ჩვენ შევძელით მოსვლა.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>მან ქურთუკი ჩაიცვა.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>შენ მოხვედი სკოლაში.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>ის ოთახიდან გავიდა.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>ჩვენ ვახშამი მოვამზადეთ.", answer: "", type: "open" }
+                        ]
+                    },
+                    5: {
+                        instruction: "ფრანგულად დაწერეთ აღწერა, რომ ეძებთ ბინას და აღწერეთ დეტალურად როგორი უნდა იყოს ის. სად, რასთან ახლოს, რომელ სართულზე, აივნით თუ მის გარეშე, სარფაფით თუ არა, რამდენ საძინებლიანი, ავეჯიანი თუ არა. მინიმალური სიტყვების რაოდენობაა 40. გთხოვთ არ დაწეროთ 40 სიტყვაზე ნაკლები.",
+                        type: "essay"
+                    },
+                    6: {
+                        instruction: "უყურეთ ვიდეორგოლს (ტიტანიკი) და უპასუხეთ კითხვებს passé composé-ს გამოყენებით",
+                        video: "videos/a2_video5.mp4",
+                        questions: [
+                            { text: "Qu'est-ce que Rose a fait face au danger dans la vidéo ?", options: ["Elle a mangé", "Elle a pris une décision", "Elle a fini", "Elle a choisi"], answer: "Elle a pris une décision", type: "mc" },
+                            { text: "Qu'est-ce que Jack a dit à Rose ?", options: ["Il a chanté", "Il a dormi", "Il a dit de monter", "Il a couru"], answer: "Il a dit de monter", type: "mc" },
+                            { text: "Qu'est-ce que Cal a fait avec son arrangement ?", options: ["Il a fini", "Il a fait une promesse", "Il a choisi", "Il a rempli"], answer: "Il a fait une promesse", type: "mc" },
+                            { text: "Est-ce que Rose est montée dans le bateau ?", options: ["Oui", "Non"], answer: "Oui", type: "mc" },
+                            { text: "Qu'est-ce que les passagers ont fait derrière les personnages principeaux ?", options: ["Ils ont fait la priere", "Ils ont attendu leur tour"], answer: "Ils ont attendu leur tour", type: "mc" },
+                            { text: "Qu'est-ce que Jack a vu dans les yeux de Rose ?", options: ["Il a vu la joie", "Il a vu la peur"], answer: "Il a vu la peur", type: "mc" },
+                            { text: "Est-ce que Cal a dit la vérité à Jack ?", options: ["Oui", "Non"], answer: "Non", type: "mc" },
+                            { text: "Esc-ce que Cal avait gardé la place dans un bateau pour lui-même", options: ["Oui", "Non"], answer: "Oui", type: "mc" },
+                            { text: "Pourquoi les hommes ne montent pas sur les bateaux ?", options: ["Ils sont réservés pour les femmes seulement", "Ils sont réservés pour les enfants seulement", "Ils sont réservés pour les femmes et les enfants seulement", "Ils sont réservés pour les hommes seulement"], answer: "Ils sont réservés pour les femmes et les enfants seulement", type: "mc" },
+                            { text: "Tu penses que Rose va rester dans le bateau ?", options: ["Oui", "Non",], answer: "Non", type: "mc" }
+                        ] 
+                    }
                 },
+                /*
                 kvira_6: {
                 },
                 kvira_7: {
@@ -3102,9 +3262,89 @@ async function loadHeaderScore(userEmail) {
                         ]
                     },
                 },
-                /*
                 kvira_5: {
+                    1: { 
+                        instruction: "Choisissez la bonne réponse au passé composé (verbes du 3e groupe).", 
+                        questions: [
+                            { text: "Hier, Marie _____ une lettre à ses parents.", options: ["a pris", "a écrit", "sont sortis", "avez dit"], answer: "a écrit", type: "mc" },
+                            { text: "Tu _____ de bonne heure ce matin ?", options: ["est parti", "as voulu", "es venu", "ont fait"], answer: "es venu", type: "mc" },
+                            { text: "Il _____ son manteau à cause du froid.", options: ["avons mis", "a mis", "ont su", "êtes pris"], answer: "a mis", type: "mc" },
+                            { text: "Nous _____ un délicieux gâteau pour l'anniversaire.", options: ["ont pris", "es venu", "ont fait", "avons fait"], answer: "avons fait", type: "mc" },
+                            { text: "Vous _____ la bonne réponse à cette question ?", options: ["a pris", "ont su", "avez su", "sommes partis"], answer: "avez su", type: "mc" },
+                            { text: "Elles _____ très tard de la maison hier.", options: ["a dit", "as pu", "ont mis", "sont sorties"], answer: "sont sorties", type: "mc" },
+                            { text: "J'_____ une décision importante pour mon avenir.", options: ["ont écrit", "ai pris", "est venu", "avons fait"], answer: "ai pris", type: "mc" },
+                            { text: "Tu _____ finir ton travail à temps ?", options: ["a fait", "sommes venus", "as pu", "ont su"], answer: "as pu", type: "mc" },
+                            { text: "Pierre _____ en retard à la réunion.", options: ["ont mis", "avez vu", "est arrivé", "a pris"], answer: "est arrivé", type: "mc" },
+                            { text: "Nous _____ un beau paysage pendant le voyage.", options: ["avez dit", "ont fait", "as pris", "avons vu"], answer: "avons vu", type: "mc" }
+                        ] 
+                    },
+                    2: { 
+                        instruction: "Complétez les phrases avec le verbe du 3e groupe entre parenthèses au passé composé.", 
+                        questions: [
+                            { text: "Oui, je _________________ (prendre) mon sac.", answer: "ai pris" }, 
+                            { text: "Oui, tu _________________ (venir) avec nous.", answer: "es venu" }, 
+                            { text: "Oui, il _________________ (faire) ses devoirs.", answer: "a fait" }, 
+                            { text: "Oui, nous _________________ (voir) ce film.", answer: "avons vu" }, 
+                            { text: "Oui, vous _________________ (dire) la vérité.", answer: "avez dit" }, 
+                            { text: "Oui, elles _________________ (partir) en voyage.", answer: "sont parties" }, 
+                            { text: "Oui, j'_________________ (écrire) un e-mail.", answer: "ai écrit" }, 
+                            { text: "Oui, tu _________________ (mettre) ta veste.", answer: "as mis" }, 
+                            { text: "Oui, nous _________________ (pouvoir) réussir.", answer: "avons pu" }, 
+                            { text: "Oui, ils _________________ (sortir) du restaurant.", answer: "sont sortis" }
+                        ] 
+                    },
+                    3: {
+                        instruction: "Traduisez les phrases suivantes du français vers le géorgien en utilisant le passé composé (verbes du 3e groupe)",
+                        questions: [
+                            { text: "წინადადება:<br>J'ai pris mon livre.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>Tu es venu à la fête.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>Il a fait un gâteau.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>Nous avons vu un chat.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>Vous avez dit bonjour.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>Elles sont parties tôt.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>J'ai écrit une lettre.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>Tu as mis ton chapeau.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>Nous avons pu voyager.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>Ils sont sortis de la maison.", answer: "", type: "open" }
+                        ]
+                    },
+                    4: {
+                        instruction: "Traduisez les phrases géorgiennes suivantes en français en utilisant le passé composé (verbes du 3e groupe)",
+                        questions: [
+                            { text: "წინადადება:<br>მე ავიღე ჩანთა.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>ჩვენ ვნახეთ ეს ქალაქი.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>შენ სიმართლე თქვი.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>ისინი ადრე წავიდნენ.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>მე წერილი დავწერე.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>ჩვენ შევძელით მოსვლა.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>მან ქურთუკი ჩაიცვა.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>შენ მოხვედი სკოლაში.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>ის ოთახიდან გავიდა.", answer: "", type: "open" },
+                            { text: "წინადადება:<br>ჩვენ ვახშამი მოვამზადეთ.", answer: "", type: "open" }
+                        ]
+                    },
+                    5: {
+                        instruction: "ფრანგულად დაწერეთ აღწერა, რომ ეძებთ ბინას და აღწერეთ დეტალურად როგორი უნდა იყოს ის. სად, რასთან ახლოს, რომელ სართულზე, აივნით თუ მის გარეშე, სარფაფით თუ არა, რამდენ საძინებლიანი, ავეჯიანი თუ არა. მინიმალური სიტყვების რაოდენობაა 40. გთხოვთ არ დაწეროთ 40 სიტყვაზე ნაკლები.",
+                        type: "essay"
+                    },
+                    6: {
+                        instruction: "უყურეთ ვიდეორგოლს (ტიტანიკი) და უპასუხეთ კითხვებს passé composé-ს გამოყენებით",
+                        video: "videos/a2_video5.mp4",
+                        questions: [
+                            { text: "Qu'est-ce que Rose a fait face au danger dans la vidéo ?", options: ["Elle a mangé", "Elle a pris une décision", "Elle a fini", "Elle a choisi"], answer: "Elle a pris une décision", type: "mc" },
+                            { text: "Qu'est-ce que Jack a dit à Rose ?", options: ["Il a chanté", "Il a dormi", "Il a dit de monter", "Il a couru"], answer: "Il a dit de monter", type: "mc" },
+                            { text: "Qu'est-ce que Cal a fait avec son arrangement ?", options: ["Il a fini", "Il a fait une promesse", "Il a choisi", "Il a rempli"], answer: "Il a fait une promesse", type: "mc" },
+                            { text: "Est-ce que Rose est montée dans le bateau ?", options: ["Oui", "Non"], answer: "Oui", type: "mc" },
+                            { text: "Qu'est-ce que les passagers ont fait derrière les personnages principeaux ?", options: ["Ils ont fait la priere", "Ils ont attendu leur tour"], answer: "Ils ont attendu leur tour", type: "mc" },
+                            { text: "Qu'est-ce que Jack a vu dans les yeux de Rose ?", options: ["Il a vu la joie", "Il a vu la peur"], answer: "Il a vu la peur", type: "mc" },
+                            { text: "Est-ce que Cal a dit la vérité à Jack ?", options: ["Oui", "Non"], answer: "Non", type: "mc" },
+                            { text: "Esc-ce que Cal avait gardé la place dans un bateau pour lui-même", options: ["Oui", "Non"], answer: "Oui", type: "mc" },
+                            { text: "Pourquoi les hommes ne montent pas sur les bateaux ?", options: ["Ils sont réservés pour les femmes seulement", "Ils sont réservés pour les enfants seulement", "Ils sont réservés pour les femmes et les enfants seulement", "Ils sont réservés pour les hommes seulement"], answer: "Ils sont réservés pour les femmes et les enfants seulement", type: "mc" },
+                            { text: "Tu penses que Rose va rester dans le bateau ?", options: ["Oui", "Non",], answer: "Non", type: "mc" }
+                        ] 
+                    }
                 },
+                /*
                 kvira_6: {
                 },
                 kvira_7: {

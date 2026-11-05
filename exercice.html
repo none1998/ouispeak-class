@@ -2644,9 +2644,9 @@ async function loadHeaderScore(userEmail) {
                         instruction: "უყურეთ ვიდეორგოლს (ტიტანიკი) და უპასუხეთ კითხვებს passé composé-ს გამოყენებით",
                         video: "videos/a2_video5.mp4",
                         questions: [
-                            { text: "Qu'est-ce que Rose a fait face au danger dans la vidéo ?", options: ["Elle a mangé", "Elle a pris une décision", "Elle a fini", "Elle a choisi"], answer: "Elle a pris une décision", type: "mc" },
-                            { text: "Qu'est-ce que Jack a dit à Rose ?", options: ["Il a chanté", "Il a dormi", "Il a dit de monter", "Il a couru"], answer: "Il a dit de monter", type: "mc" },
-                            { text: "Qu'est-ce que Cal a fait avec son arrangement ?", options: ["Il a fini", "Il a fait une promesse", "Il a choisi", "Il a rempli"], answer: "Il a fait une promesse", type: "mc" },
+                            { text: "Qu'est-ce que Rose a fait face au danger dans la vidéo ?", options: ["Elle a pris une décision de ne pas monter dans le bateau", "Elle a pris une décision de monter dans le bateau"], answer: "Elle a pris une décision de monter dans le bateau", type: "mc" },
+                            { text: "Qu'est-ce que Rose était certaine de sa décision ou elle a été poussée ?", options: ["Elle était certaine", "Elle ne voulais pas laisser Jack seul"], answer: "Elle ne voulais pas laisser Jack seul", type: "mc" },
+                            { text: "Qu'est-ce que Cal a fait avec son arrangement ?", options: ["Il a dit la vérité a Jack et a Rose", "Il a fait une fausse promesse"], answer: "Il a fait une fausse promesse", type: "mc" },
                             { text: "Est-ce que Rose est montée dans le bateau ?", options: ["Oui", "Non"], answer: "Oui", type: "mc" },
                             { text: "Qu'est-ce que les passagers ont fait derrière les personnages principeaux ?", options: ["Ils ont fait la priere", "Ils ont attendu leur tour"], answer: "Ils ont attendu leur tour", type: "mc" },
                             { text: "Qu'est-ce que Jack a vu dans les yeux de Rose ?", options: ["Il a vu la joie", "Il a vu la peur"], answer: "Il a vu la peur", type: "mc" },
@@ -3331,9 +3331,9 @@ async function loadHeaderScore(userEmail) {
                         instruction: "უყურეთ ვიდეორგოლს (ტიტანიკი) და უპასუხეთ კითხვებს passé composé-ს გამოყენებით",
                         video: "videos/a2_video5.mp4",
                         questions: [
-                            { text: "Qu'est-ce que Rose a fait face au danger dans la vidéo ?", options: ["Elle a mangé", "Elle a pris une décision", "Elle a fini", "Elle a choisi"], answer: "Elle a pris une décision", type: "mc" },
-                            { text: "Qu'est-ce que Jack a dit à Rose ?", options: ["Il a chanté", "Il a dormi", "Il a dit de monter", "Il a couru"], answer: "Il a dit de monter", type: "mc" },
-                            { text: "Qu'est-ce que Cal a fait avec son arrangement ?", options: ["Il a fini", "Il a fait une promesse", "Il a choisi", "Il a rempli"], answer: "Il a fait une promesse", type: "mc" },
+                            { text: "Qu'est-ce que Rose a fait face au danger dans la vidéo ?", options: ["Elle a pris une décision de ne pas monter dans le bateau", "Elle a pris une décision de monter dans le bateau"], answer: "Elle a pris une décision de monter dans le bateau", type: "mc" },
+                            { text: "Qu'est-ce que Rose était certaine de sa décision ou elle a été poussée ?", options: ["Elle était certaine", "Elle ne voulais pas laisser Jack seul"], answer: "Elle ne voulais pas laisser Jack seul", type: "mc" },
+                            { text: "Qu'est-ce que Cal a fait avec son arrangement ?", options: ["Il a dit la vérité a Jack et a Rose", "Il a fait une fausse promesse"], answer: "Il a fait une fausse promesse", type: "mc" },
                             { text: "Est-ce que Rose est montée dans le bateau ?", options: ["Oui", "Non"], answer: "Oui", type: "mc" },
                             { text: "Qu'est-ce que les passagers ont fait derrière les personnages principeaux ?", options: ["Ils ont fait la priere", "Ils ont attendu leur tour"], answer: "Ils ont attendu leur tour", type: "mc" },
                             { text: "Qu'est-ce que Jack a vu dans les yeux de Rose ?", options: ["Il a vu la joie", "Il a vu la peur"], answer: "Il a vu la peur", type: "mc" },
@@ -3813,9 +3813,89 @@ async function loadHeaderScore(userEmail) {
                         ]
                     },
                 },
-                /*
                 kvira_5: {
+                    1: { 
+                        instruction: "Complétez les phrases avec le verbe entre parenthèses au présent de l'indicatif.", 
+                        questions: [
+                            { text: "Actuellement, je _________________ (comprendre) mieux cette situation.", answer: "comprends" }, 
+                            { text: "Il _________________ (vouloir) réussir son DELF B1.", answer: "veut" }, 
+                            { text: "Nous _________________ (pouvoir) compter sur notre professeur.", answer: "pouvons" }, 
+                            { text: "Vous _________________ (savoir) comment répondre à cette question.", answer: "savez" }, 
+                            { text: "Elles _________________ (devoir) partir plus tôt aujourd'hui.", answer: "doivent" }, 
+                            { text: "Tu _________________ (venir) avec nous au cinéma ce soir ?", answer: "viens" }, 
+                            { text: "On _________________ (prendre) le temps de discuter.", answer: "prend" }, 
+                            { text: "Les étudiants _________________ (faire) des efforts constants.", answer: "font" }, 
+                            { text: "Je _________________ (dire) la vérité à mes amis.", answer: "dis" }, 
+                            { text: "Le train _________________ (partir) à l'heure exacte.", answer: "part" }
+                        ] 
+                    },
+                    2: { 
+                        instruction: "Complétez les phrases avec le verbe entre parenthèses au passé composé ou à l'imparfait.", 
+                        questions: [
+                            { text: "Quand j'étais jeune, je _________________ (habiter) à la campagne.", answer: "habitais" }, 
+                            { text: "Soudain, le téléphone _________________ (sonner) pendant le repas.", answer: "a sonné" }, 
+                            { text: "Il _________________ (faire) beau ce jour-là, alors nous sommes sortis.", answer: "faisait" }, 
+                            { text: "Elle _________________ (perdre) ses clés hier après-midi.", answer: "a perdu" }, 
+                            { text: "Nous _________________ (regarder) un film quand la lumière s'est éteinte.", answer: "regardions" }, 
+                            { text: "Tu _________________ (finir) ton projet la semaine dernière ?", answer: "as fini" }, 
+                            { text: "Pendant que les enfants _________________ (jouer), les parents discutaient.", answer: "jouaient" }, 
+                            { text: "Ils _________________ (prendre) une décision importante hier.", answer: "ont pris" }, 
+                            { text: "La ville _________________ (être) très animée en été.", answer: "était" }, 
+                            { text: "Je _________________ (voir) un accident sur la route ce matin.", answer: "ai vu" }
+                        ] 
+                    },
+                    3: {
+                        instruction: "Complétez les phrases avec le verbe entre parenthèses au passé composé ou au plus-que-parfait.",
+                        questions: [
+                            { text: "Quand je suis arrivé, il _________________ (partir) déjà.", answer: "était parti" },
+                            { text: "Elle a réussi l'examen parce qu'elle _________________ (étudier) sérieusement.", answer: "avait étudié" },
+                            { text: "Hier, nous _________________ (acheter) la maison de nos rêves.", answer: "avons acheté" },
+                            { text: "Ils n'ont pas pu entrer parce qu'ils _________________ (oublier) leurs clés.", answer: "avaient oublié" },
+                            { text: "Tu _________________ (finir) ton travail avant la réunion d'hier ?", answer: "avais fini" },
+                            { text: "J'étais fatigué ce matin car je ne _________________ (dormir) pas bien la veille.", answer: "avais dormi" },
+                            { text: "Le train _________________ (partir) avant notre arrivée à la gare.", answer: "était parti" },
+                            { text: "Vous _________________ (visiter) ce musée l'année dernière ?", answer: "avez visité" },
+                            { text: "Il a retrouvé le document qu'il _________________ (perdre).", answer: "avait perdu" },
+                            { text: "Marie _________________ (prendre) le train pour Lyon hier soir.", answer: "a pris" }
+                        ]
+                    },
+                    4: {
+                        instruction: "Complétez les phrases avec le verbe entre parenthèses au temps qui convient (présent, passé composé, imparfait ou plus-que-parfait).",
+                        questions: [
+                            { text: "Aujourd'hui, il _________________ (faire) un temps magnifique.", answer: "fait" },
+                            { text: "Quand j'étais petit, je _________________ (aimer) lire des romans.", answer: "aimais" },
+                            { text: "Hier, nous _________________ (aller) au restaurant.", answer: "sommes allés" },
+                            { text: "Il a raté son train parce qu'il _________________ (se réveiller) trop tard.", answer: "s'était réveillé" },
+                            { text: "En ce moment, elle _________________ (préparer) son DELF B1.", answer: "prépare" },
+                            { text: "Autrefois, les gens _________________ (voyager) beaucoup moins.", answer: "voyageaient" },
+                            { text: "Tu _________________ (voir) ce magnifique film la semaine dernière ?", answer: "as vu" },
+                            { text: "Elle savait déjà tout parce que son amie le lui _________________ (dire).", answer: "avait dit" },
+                            { text: "Actuellement, ils _________________ (habiter) à Paris.", answer: "habitent" },
+                            { text: "Quand le professeur est entré, les élèves _________________ (écouter) attentivement.", answer: "écoutaient" }
+                        ]
+                    },
+                    5: {
+                        instruction: "Conjugez les 4 verbes suivants aux temps: présent, passé composé, imparfait et plus-que-parfait. Les verbes sont: visiter, rougir, prendre, se reposer.",
+                        type: "essay"
+                    },
+                    6: {
+                        instruction: "უყურეთ ვიდეორგოლს (ტიტანიკი) და უპასუხეთ კითხვებს",
+                        video: "videos/a2_video5.mp4",
+                        questions: [
+                            { text: "Qu'est-ce que Rose a fait face au danger dans la vidéo ?", options: ["Elle a pris une décision de ne pas monter dans le bateau", "Elle a pris une décision de monter dans le bateau"], answer: "Elle a pris une décision de monter dans le bateau", type: "mc" },
+                            { text: "Qu'est-ce que Rose était certaine de sa décision ou elle a été poussée ?", options: ["Elle était certaine", "Elle ne voulais pas laisser Jack seul"], answer: "Elle ne voulais pas laisser Jack seul", type: "mc" },
+                            { text: "Qu'est-ce que Cal a fait avec son arrangement ?", options: ["Il a dit la vérité a Jack et a Rose", "Il a fait une fausse promesse"], answer: "Il a fait une fausse promesse", type: "mc" },
+                            { text: "Est-ce que Rose est montée dans le bateau ?", options: ["Oui", "Non"], answer: "Oui", type: "mc" },
+                            { text: "Qu'est-ce que les passagers ont fait derrière les personnages principeaux ?", options: ["Ils ont fait la priere", "Ils ont attendu leur tour"], answer: "Ils ont attendu leur tour", type: "mc" },
+                            { text: "Qu'est-ce que Jack a vu dans les yeux de Rose ?", options: ["Il a vu la joie", "Il a vu la peur"], answer: "Il a vu la peur", type: "mc" },
+                            { text: "Est-ce que Cal a dit la vérité à Jack ?", options: ["Oui", "Non"], answer: "Non", type: "mc" },
+                            { text: "Esc-ce que Cal avait gardé la place dans un bateau pour lui-même", options: ["Oui", "Non"], answer: "Oui", type: "mc" },
+                            { text: "Pourquoi les hommes ne montent pas sur les bateaux ?", options: ["Ils sont réservés pour les femmes seulement", "Ils sont réservés pour les enfants seulement", "Ils sont réservés pour les femmes et les enfants seulement", "Ils sont réservés pour les hommes seulement"], answer: "Ils sont réservés pour les femmes et les enfants seulement", type: "mc" },
+                            { text: "Tu penses que Rose va rester dans le bateau ?", options: ["Oui", "Non",], answer: "Non", type: "mc" }
+                        ] 
+                    }
                 },
+                /*
                 kvira_6: {
                 },
                 kvira_7: {

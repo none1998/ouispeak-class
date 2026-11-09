@@ -313,7 +313,7 @@
             // stop an exercise audio that is still playing when the page changes exercise
             if (typeof audioActivePlayer !== "undefined" && audioActivePlayer) { audioActivePlayer.pause(); audioActivePlayer = null; }
             // exercise with audio: show the spoken instruction first (once per exercise)
-            if (blockData.audio || (blockData.questions || []).some(q => q.audio)) showListeningInstruction(cacheKeyPrefix);
+            if (blockData.audio || (blockData.questions || []).some(q => q.audio)) showListeningInstruction(`${studentCourse}|${subject}`);
             
             container.innerHTML = `<div class="instruction-box">${instruction}</div>`;
 
@@ -2297,8 +2297,23 @@ Reply ONLY with JSON in this exact shape:
         }
 
         // ---------- The spoken instruction, shown word by word ----------
+        // Shown only ONCE per week (remembered in this browser), even if the week has several audio exercises
+        const LISTEN_INTRO_SEEN = "ouispeak-listen-intro-seen";
+        function listenIntroSeen(weekKey) {
+            if (audioWarnedBlocks.has(weekKey)) return true;
+            try { return (JSON.parse(localStorage.getItem(LISTEN_INTRO_SEEN) || "[]")).includes(weekKey); } catch (e) { return false; }
+        }
+        function markListenIntroSeen(weekKey) {
+            audioWarnedBlocks.add(weekKey);
+            try {
+                const seen = JSON.parse(localStorage.getItem(LISTEN_INTRO_SEEN) || "[]");
+                if (!seen.includes(weekKey)) seen.push(weekKey);
+                localStorage.setItem(LISTEN_INTRO_SEEN, JSON.stringify(seen));
+            } catch (e) { /* storage blocked: once per visit */ }
+        }
+
         function showListeningInstruction(blockKey) {
-            if (audioWarnedBlocks.has(blockKey) || document.getElementById('listenIntro')) return;
+            if (listenIntroSeen(blockKey) || document.getElementById('listenIntro')) return;
 
             const overlay = document.createElement('div');
             overlay.id = "listenIntro";
@@ -2370,7 +2385,7 @@ Reply ONLY with JSON in this exact shape:
             okBtn.addEventListener('click', () => {
                 voice.pause();
                 cancelAnimationFrame(raf);
-                audioWarnedBlocks.add(blockKey);
+                markListenIntroSeen(blockKey);
                 overlay.remove();
             });
 

@@ -14,6 +14,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<VocabSection> VocabSections => Set<VocabSection>();
     public DbSet<VocabWord> VocabWords => Set<VocabWord>();
     public DbSet<Recording> Recordings => Set<Recording>();
+    public DbSet<AudioPlay> AudioPlays => Set<AudioPlay>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -22,6 +23,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
         b.Entity<Course>().HasIndex(c => c.Name).IsUnique();
         b.Entity<Week>().HasIndex(w => new { w.CourseId, w.Number }).IsUnique();
+        b.Entity<AudioPlay>().HasIndex(p => new { p.AuthId, p.AudioKey }).IsUnique();
         b.Entity<Recording>()
             .HasIndex(r => new { r.CourseId, r.GroupNumber, r.WeekNumber, r.LessonNumber })
             .IsUnique();

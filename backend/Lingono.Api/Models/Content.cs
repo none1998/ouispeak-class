@@ -89,3 +89,13 @@ public class Recording
     public int LessonNumber { get; set; }            // 1 or 2 ("გაკვეთილი 1" / "გაკვეთილი 2")
     public string Url { get; set; } = "";
 }
+
+// How many times a student started an exercise audio (limit: 2, the admin can reset it)
+public class AudioPlay
+{
+    public int Id { get; set; }
+    public string AuthId { get; set; } = "";         // the student's login id (Students.auth_id)
+    public string AudioKey { get; set; } = "";       // "course|kvira_3|audios/file.mp3"
+    public int Count { get; set; }
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+}

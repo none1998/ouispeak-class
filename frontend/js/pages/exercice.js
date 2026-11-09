@@ -312,6 +312,8 @@
             const cacheKeyPrefix = `${subject}_block_${currentActiveBlock}`;
             // stop an exercise audio that is still playing when the page changes exercise
             if (typeof audioActivePlayer !== "undefined" && audioActivePlayer) { audioActivePlayer.pause(); audioActivePlayer = null; }
+            // exercise with audio: show the spoken instruction first (once per exercise)
+            if (blockData.audio || (blockData.questions || []).some(q => q.audio)) showListeningInstruction(cacheKeyPrefix);
             
             container.innerHTML = `<div class="instruction-box">${instruction}</div>`;
 
@@ -2228,11 +2230,12 @@ Reply ONLY with JSON in this exact shape:
         }
 
         // =====================================================================
-        // ===== EXERCISE AUDIO: max 2 listenings + spoken warning first =====
+        // ===== EXERCISE AUDIO: max 2 listenings, the student starts it =====
         // =====================================================================
         // - Each exercise audio can be listened to only AUDIO_MAX_PLAYS times (no rewinding, pause is allowed).
-        // - The first time a student starts an audio in an exercise, the warning audio plays first,
-        //   then the exercise audio starts by itself.
+        // - Opening an exercise that contains audio shows a spoken instruction on screen,
+        //   with the words lighting up as they are spoken (karaoke). The student then starts
+        //   the exercise audio whenever they are ready.
         // - The number of listenings is remembered in this browser (also after reloading the page).
         const AUDIO_MAX_PLAYS = 2;
         const AUDIO_WARNING_SRC = "audios/warning_audio.mp3";
@@ -2240,20 +2243,52 @@ Reply ONLY with JSON in this exact shape:
         const audioWarnedBlocks = new Set();
         let audioActivePlayer = null;   // only one audio at a time
 
+        // Words of the instruction, with the second at which each one is spoken in warning_audio.mp3
+        const AUDIO_WARNING_WORDS = [
+            ["წარმოგიდგენთ", 0.08], ["მოსასმენ", 0.93], ["დავალებებს.", 1.53],
+            ["გაითვალისწინეთ,", 2.76], ["რომ", 3.88], ["აუდიო", 4.38], ["ფაილის", 4.84],
+            ["მოსმენას", 5.46], ["შეძლებთ", 5.9], ["მხოლოდ", 6.29], ["ორჯერ.", 6.64],
+            ["არ", 7.4], ["ჩართოთ", 7.6], ["მოსმენის", 8.0], ["დავალება,", 8.51],
+            ["სანამ", 9.11], ["მზად", 9.47], ["არ", 9.79], ["იქნებით.", 9.99]
+        ];
+
         function audioPlaysKey(src) {
             const subject = document.getElementById('subjectSelect').value;
             return `${studentCourse}|${subject}|${src}`;
         }
+        // The counts are kept on the server (so the admin can give listenings back to a student).
+        // A copy is kept in memory; if the server can't be reached, the browser copy is used instead.
+        const audioServerCounts = {};
+        let audioCountsLoading = null;
+        let audioServerOk = false;
+
+        function audioLoadCounts() {
+            if (!audioCountsLoading) {
+                audioCountsLoading = api("/api/listening")
+                    .then(r => {
+                        (r.items || []).forEach(it => { audioServerCounts[it.audioKey] = it.count; });
+                        audioServerOk = true;
+                    })
+                    .catch(err => { console.warn("Listening counts not loaded, using this browser's copy.", err); });
+            }
+            return audioCountsLoading;
+        }
+        function audioLocalAll() {
+            try { return JSON.parse(localStorage.getItem(AUDIO_PLAYS_STORE) || "{}"); } catch (e) { return {}; }
+        }
         function audioGetPlays(src) {
-            try { return (JSON.parse(localStorage.getItem(AUDIO_PLAYS_STORE) || "{}"))[audioPlaysKey(src)] || 0; }
-            catch (e) { return 0; }
+            const key = audioPlaysKey(src);
+            if (audioServerOk) return audioServerCounts[key] || 0;
+            return audioLocalAll()[key] || 0;
         }
         function audioSetPlays(src, count) {
+            const key = audioPlaysKey(src);
+            audioServerCounts[key] = count;
             try {
-                const all = JSON.parse(localStorage.getItem(AUDIO_PLAYS_STORE) || "{}");
-                all[audioPlaysKey(src)] = count;
+                const all = audioLocalAll();
+                all[key] = count;
                 localStorage.setItem(AUDIO_PLAYS_STORE, JSON.stringify(all));
-            } catch (e) { /* storage blocked: the limit still works until the page is reloaded */ }
+            } catch (e) { /* storage blocked */ }
         }
         function audioFmt(sec) {
             if (!isFinite(sec) || sec < 0) sec = 0;
@@ -2261,6 +2296,89 @@ Reply ONLY with JSON in this exact shape:
             return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`;
         }
 
+        // ---------- The spoken instruction, shown word by word ----------
+        function showListeningInstruction(blockKey) {
+            if (audioWarnedBlocks.has(blockKey) || document.getElementById('listenIntro')) return;
+
+            const overlay = document.createElement('div');
+            overlay.id = "listenIntro";
+            overlay.className = "listen-intro";
+            overlay.innerHTML = `
+                <div class="listen-intro-card" role="dialog" aria-modal="true" aria-labelledby="listenIntroTitle">
+                    <div class="listen-intro-icon" aria-hidden="true"><i class="fa-solid fa-headphones"></i></div>
+                    <h2 id="listenIntroTitle">მოსმენის დავალება</h2>
+                    <p class="listen-intro-text" aria-live="off"></p>
+                    <div class="listen-intro-bar"><span></span></div>
+                    <div class="listen-intro-actions">
+                        <button type="button" class="listen-intro-play"><i class="fa-solid fa-play"></i> ინსტრუქციის მოსმენა</button>
+                        <button type="button" class="listen-intro-ok" disabled>გასაგებია</button>
+                    </div>
+                </div>`;
+            document.body.appendChild(overlay);
+
+            const text = overlay.querySelector('.listen-intro-text');
+            const words = AUDIO_WARNING_WORDS.map(([w]) => {
+                const span = document.createElement('span');
+                span.className = "lw";
+                span.textContent = w;
+                text.appendChild(span);
+                text.appendChild(document.createTextNode(" "));
+                return span;
+            });
+            const bar = overlay.querySelector('.listen-intro-bar span');
+            const playBtn = overlay.querySelector('.listen-intro-play');
+            const okBtn = overlay.querySelector('.listen-intro-ok');
+            const voice = new Audio(AUDIO_WARNING_SRC);
+
+            function highlight(t) {
+                words.forEach((span, i) => {
+                    const start = AUDIO_WARNING_WORDS[i][1];
+                    const next = i + 1 < AUDIO_WARNING_WORDS.length ? AUDIO_WARNING_WORDS[i + 1][1] : Infinity;
+                    span.classList.toggle('said', t >= next);
+                    span.classList.toggle('now', t >= start && t < next);
+                });
+            }
+            let raf = null;
+            function tick() {
+                highlight(voice.currentTime);
+                if (voice.duration) bar.style.width = `${Math.min(100, (voice.currentTime / voice.duration) * 100)}%`;
+                if (!voice.paused) raf = requestAnimationFrame(tick);
+            }
+            function start() {
+                voice.currentTime = 0;
+                voice.play().then(() => {
+                    playBtn.hidden = true;
+                    raf = requestAnimationFrame(tick);
+                }).catch(() => {
+                    // the browser wants a click before playing sound: the button stays visible
+                    playBtn.hidden = false;
+                });
+            }
+            function finish() {
+                cancelAnimationFrame(raf);
+                highlight(Infinity);
+                bar.style.width = "100%";
+                okBtn.disabled = false;
+                playBtn.hidden = false;
+                playBtn.innerHTML = `<i class="fa-solid fa-rotate-right"></i> თავიდან მოსმენა`;
+                okBtn.focus();
+            }
+
+            voice.addEventListener('ended', finish);
+            voice.addEventListener('error', finish);   // file missing: never block the student
+            playBtn.addEventListener('click', start);
+            okBtn.addEventListener('click', () => {
+                voice.pause();
+                cancelAnimationFrame(raf);
+                audioWarnedBlocks.add(blockKey);
+                overlay.remove();
+            });
+
+            start();
+            playBtn.focus();
+        }
+
+        // ---------- Exercise audio player (max 2 listenings) ----------
         function createLimitedAudioPlayer(src, labelText, blockKey) {
             const box = document.createElement('div');
             box.className = "audio-player-container limited-audio";
@@ -2286,12 +2404,10 @@ Reply ONLY with JSON in this exact shape:
             const audio = new Audio();
             audio.preload = "metadata";
             audio.src = src;
-            const warning = new Audio(AUDIO_WARNING_SRC);
-            let mode = "idle";   // idle | warning | playing | paused
+            let mode = "idle";   // idle | playing | paused
 
             const player = {
                 pause() {
-                    if (mode === "warning") { warning.pause(); warning.currentTime = 0; mode = "idle"; }
                     if (mode === "playing") { audio.pause(); mode = "paused"; }
                     draw();
                 }
@@ -2306,10 +2422,7 @@ Reply ONLY with JSON in this exact shape:
                 box.classList.toggle('la-locked', remaining === 0 && mode === "idle");
                 box.classList.toggle('la-active', mode !== "idle");
 
-                if (mode === "warning") {
-                    icon.className = "fa-solid fa-stop";
-                    status.textContent = "⚠ ჯერ მოუსმინეთ ინსტრუქციას…";
-                } else if (mode === "playing") {
+                if (mode === "playing") {
                     icon.className = "fa-solid fa-pause";
                     status.textContent = `მოსმენა ${used} / ${AUDIO_MAX_PLAYS}`;
                 } else if (mode === "paused") {
@@ -2321,60 +2434,45 @@ Reply ONLY with JSON in this exact shape:
                 } else {
                     icon.className = "fa-solid fa-play";
                     status.textContent = used === 0
-                        ? `შეგიძლიათ მოუსმინოთ მხოლოდ ${AUDIO_MAX_PLAYS}-ჯერ`
+                        ? `დააჭირეთ, როცა მზად იქნებით (მხოლოდ ${AUDIO_MAX_PLAYS}-ჯერ)`
                         : `დარჩა ${remaining} მოსმენა`;
                 }
                 btn.disabled = remaining === 0 && mode === "idle";
             }
 
-            function startListening() {
+            btn.addEventListener('click', () => {
+                if (mode === "playing") { player.pause(); return; }
+                if (audioActivePlayer && audioActivePlayer !== player) audioActivePlayer.pause();
+                audioActivePlayer = player;
+
+                if (mode === "paused") { mode = "playing"; audio.play(); draw(); return; }
+
                 const used = audioGetPlays(src);
                 if (used >= AUDIO_MAX_PLAYS) { draw(); return; }
                 audioSetPlays(src, used + 1);
                 audio.currentTime = 0;
                 mode = "playing";
-                audio.play().catch(() => { mode = "idle"; draw(); });
+                audio.play().catch(() => { audioSetPlays(src, used); mode = "idle"; draw(); });
                 draw();
-            }
 
-            btn.addEventListener('click', () => {
-                if (mode === "playing") { player.pause(); return; }
-                if (mode === "warning") { player.pause(); return; }
-
-                if (audioActivePlayer && audioActivePlayer !== player) audioActivePlayer.pause();
-                audioActivePlayer = player;
-
-                if (mode === "paused") { mode = "playing"; audio.play(); draw(); return; }
-                if (audioGetPlays(src) >= AUDIO_MAX_PLAYS) { draw(); return; }
-
-                // First audio of this exercise: the spoken warning plays first
-                if (!audioWarnedBlocks.has(blockKey)) {
-                    mode = "warning";
-                    warning.currentTime = 0;
-                    warning.play().catch(() => { audioWarnedBlocks.add(blockKey); startListening(); });
-                    draw();
-                    return;
-                }
-                startListening();
-            });
-
-            warning.addEventListener('timeupdate', () => {
-                if (mode === "warning" && warning.duration) bar.style.width = `${(warning.currentTime / warning.duration) * 100}%`;
-            });
-            warning.addEventListener('ended', () => {
-                if (mode !== "warning") return;
-                audioWarnedBlocks.add(blockKey);
-                bar.style.width = "0%";
-                startListening();
-            });
-            warning.addEventListener('error', () => {   // warning file missing: don't block the exercise
-                if (mode !== "warning") return;
-                audioWarnedBlocks.add(blockKey);
-                startListening();
+                // The server has the final word (the play starts right away so the browser allows the sound)
+                api("/api/listening/start", { method: "POST", body: JSON.stringify({ key: audioPlaysKey(src) }) })
+                    .then(r => {
+                        audioServerOk = true;
+                        audioSetPlays(src, r.count);
+                        if (!r.allowed) {
+                            audio.pause();
+                            audio.currentTime = 0;
+                            mode = "idle";
+                            bar.style.width = "0%";
+                        }
+                        draw();
+                    })
+                    .catch(err => console.warn("Listening not counted on the server:", err));
             });
 
             audio.addEventListener('timeupdate', () => {
-                if (mode !== "playing" && mode !== "paused") return;
+                if (mode === "idle") return;
                 if (audio.duration) bar.style.width = `${(audio.currentTime / audio.duration) * 100}%`;
                 time.textContent = `${audioFmt(audio.currentTime)} / ${audioFmt(audio.duration)}`;
             });
@@ -2386,5 +2484,6 @@ Reply ONLY with JSON in this exact shape:
             });
 
             draw();
+            audioLoadCounts().then(() => { if (mode === "idle") draw(); });
             return box;
         }

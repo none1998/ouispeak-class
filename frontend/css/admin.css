@@ -482,3 +482,15 @@ textarea { overflow: hidden; }
 .icon-btn.audio-here { color: #ea580c; }
 .icon-btn.audio-here:hover { background: #fff7ed; color: #c2410c; }
 .question > div:last-child { display: flex; flex-direction: column; align-items: center; gap: 0.15rem; }
+
+/* Listening limits of a student */
+.listen-panel { border: 1px solid #fed7aa; background: #fffaf3; border-radius: 12px; padding: 0.8rem 0.9rem; display: grid; gap: 0.6rem; }
+.listen-panel-head { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; color: #9a3412; }
+.listen-panel-head .q-note { margin-left: 0.25rem; }
+.listen-list { display: grid; gap: 0.45rem; }
+.listen-item { display: flex; align-items: center; gap: 0.75rem; background: #ffffff; border: 1px solid var(--line); border-radius: 10px; padding: 0.5rem 0.7rem; }
+.listen-item-text { flex: 1; min-width: 0; display: grid; }
+.listen-item-text strong { font-size: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.listen-item-text small { color: var(--muted); font-size: 0.78rem; }
+.listen-count { font-size: 0.8rem; font-weight: 800; padding: 0.2rem 0.55rem; border-radius: 99px; background: #e8f1fb; color: var(--blue); white-space: nowrap; }
+.listen-item.full .listen-count { background: #fdeeed; color: var(--red); }

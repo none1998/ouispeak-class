@@ -1301,6 +1301,7 @@ function renderStudentForm(courseNames) {
             h("label", {}, "Account link (auth_id)",
                 h("input", { value: d.auth_id ?? "", placeholder: "Filled automatically when the student registers", oninput: (e) => { d.auth_id = e.target.value; markUnsaved(); } }),
                 h("small", { class: "q-note" }, "Empty it to unlink the account (for example if the student registered with the wrong email).")),
+            !ed.isNew ? renderListeningPanel(ed.originalId) : null,
             h("div", { class: "add-row" },
                 h("button", { class: "btn btn-primary", onclick: saveStudent }, h("i", { class: "fa-solid fa-floppy-disk" }), ed.isNew ? "Add student" : "Save student"),
                 !ed.isNew ? h("button", { class: "btn btn-ghost danger", onclick: deleteStudent }, h("i", { class: "fa-solid fa-trash" }), "Delete student") : null)));
@@ -1480,3 +1481,71 @@ function autosizeAll() {
 new MutationObserver(() => requestAnimationFrame(autosizeAll)).observe($("editor"), { childList: true });
 document.addEventListener("input", (e) => { if (e.target.matches && e.target.matches("#editor textarea")) autosize(e.target); });
 window.addEventListener("resize", () => requestAnimationFrame(autosizeAll));
+
+// =====================================================================
+// LISTENING LIMITS of one student: see what they listened to, give listenings back
+// =====================================================================
+function describeAudioKey(key) {
+    // "A2 - სასაუბრო კურსი|kvira_3|audios/file.mp3"
+    const [course, week, ...rest] = String(key).split("|");
+    const src = rest.join("|");
+    const weekNo = (week || "").replace(/\D/g, "");
+    return { title: `${course}${weekNo ? `, week ${weekNo}` : ""}`, file: src.split("/").pop() || src };
+}
+
+function renderListeningPanel(studentId) {
+    const panel = h("div", { class: "listen-panel" },
+        h("div", { class: "listen-panel-head" },
+            h("i", { class: "fa-solid fa-headphones" }), h("strong", {}, "Listening limits"),
+            h("span", { class: "q-note" }, "Each exercise audio can be listened to 2 times.")),
+        h("p", { class: "q-note" }, "Loading…"));
+
+    const body = () => panel.lastChild;
+
+    async function load() {
+        try {
+            const r = await api(`/api/admin/students/${encodeURIComponent(studentId)}/listening`);
+            if (!r.registered) {
+                body().replaceWith(h("p", { class: "q-note" }, "This student hasn't registered yet, so there is nothing to reset."));
+                return;
+            }
+            if (!r.items.length) {
+                body().replaceWith(h("p", { class: "q-note" }, "No audio listened to yet."));
+                return;
+            }
+            body().replaceWith(h("div", { class: "listen-list" },
+                r.items.map((it) => {
+                    const d = describeAudioKey(it.audioKey);
+                    const used = Math.min(it.count, r.max);
+                    return h("div", { class: "listen-item" + (used >= r.max ? " full" : "") },
+                        h("div", { class: "listen-item-text" },
+                            h("strong", {}, d.file),
+                            h("small", {}, d.title)),
+                        h("span", { class: "listen-count" }, `${used}/${r.max} used`),
+                        h("button", {
+                            class: "btn btn-outline", title: "The student can listen to it 2 more times",
+                            onclick: () => reset(it.audioKey, d.file)
+                        }, h("i", { class: "fa-solid fa-rotate-left" }), "Give 2 more"));
+                }),
+                h("div", { class: "add-row" },
+                    h("button", { class: "btn btn-ghost", onclick: () => reset(null) }, h("i", { class: "fa-solid fa-rotate-left" }), "Reset all audios of this student"))));
+        } catch (err) {
+            body().replaceWith(h("p", { class: "q-note" }, "Could not load: " + err.message));
+        }
+    }
+
+    async function reset(key, label) {
+        const question = key ? `Give "${label}" back to this student (2 more listenings)?` : "Give ALL audios back to this student (2 more listenings each)?";
+        if (!confirm(question)) return;
+        try {
+            const q = key ? `?key=${encodeURIComponent(key)}` : "";
+            await api(`/api/admin/students/${encodeURIComponent(studentId)}/listening${q}`, { method: "DELETE" });
+            toast(key ? "Done: 2 more listenings for this audio." : "Done: all audios reset for this student.");
+            panel.lastChild.replaceWith(h("p", { class: "q-note" }, "Loading…"));
+            load();
+        } catch (err) { toast(err.message, true); }
+    }
+
+    load();
+    return panel;
+}

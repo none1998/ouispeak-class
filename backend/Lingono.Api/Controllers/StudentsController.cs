@@ -77,6 +77,42 @@ public class StudentsController(AppDbContext db) : ControllerBase
         return deleted == 0 ? NotFound() : NoContent();
     }
 
+    // ---------------- Listening limits (exercise audios) ----------------
+
+    /// <summary>Which exercise audios this student has listened to, and how many times.</summary>
+    [HttpGet("students/{id}/listening")]
+    public async Task<IActionResult> GetListening(string id)
+    {
+        var authId = await StudentAuthId(id);
+        if (authId == null) return Ok(new { Registered = false, Max = ListeningController.DefaultMaxPlays, Items = Array.Empty<object>() });
+
+        var items = await db.AudioPlays
+            .Where(p => p.AuthId == authId)
+            .OrderByDescending(p => p.UpdatedAt)
+            .Select(p => new { p.AudioKey, p.Count, p.UpdatedAt })
+            .ToListAsync();
+        return Ok(new { Registered = true, Max = ListeningController.DefaultMaxPlays, Items = items });
+    }
+
+    /// <summary>Gives the listenings back: one audio (?key=...) or all of them.</summary>
+    [HttpDelete("students/{id}/listening")]
+    public async Task<IActionResult> ResetListening(string id, [FromQuery] string? key)
+    {
+        var authId = await StudentAuthId(id);
+        if (authId == null) return NotFound("This student has no account yet.");
+
+        var query = db.AudioPlays.Where(p => p.AuthId == authId);
+        if (!string.IsNullOrEmpty(key)) query = query.Where(p => p.AudioKey == key);
+        var deleted = await query.ExecuteDeleteAsync();
+        return Ok(new { Reset = deleted });
+    }
+
+    private async Task<string?> StudentAuthId(string id) =>
+        (await db.Database
+            .SqlQuery<string>($"SELECT auth_id::text AS \"Value\" FROM public.\"Students\" WHERE id::text = {id} AND auth_id IS NOT NULL LIMIT 1")
+            .ToListAsync())
+        .FirstOrDefault();
+
     // ---------------- Scores ----------------
 
     [HttpGet("scores")]

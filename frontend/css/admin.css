@@ -286,12 +286,14 @@ label.check small { color: var(--muted); font-weight: 400; }
 .paste-error { color: var(--red); font-weight: 600; }
 
 /* =========================================================
-   THEME — calmer colours, each kind of exercise has its own colour
+   THEME — light glass sidebar, soft grey page, a colour per exercise kind
    ========================================================= */
 :root {
-    --bg: #eef2f8;
-    --line: #dce3ee;
-    --navy: #0b2545;
+    --bg: #e7ecf3;
+    --line: #d3dbe7;
+    --ink: #1e293b;
+    --muted: #5f6f86;
+    --field: #f5f7fb;
     --k-questions: #2563eb;
     --k-essay: #7c3aed;
     --k-match: #0d9488;
@@ -299,49 +301,86 @@ label.check small { color: var(--muted); font-weight: 400; }
     --k-vocab: #16a34a;
 }
 
-body { background: var(--bg); }
+body {
+    background:
+        radial-gradient(900px 600px at -10% -10%, rgba(37, 99, 235, 0.10), transparent 60%),
+        radial-gradient(800px 600px at 110% 10%, rgba(239, 65, 53, 0.07), transparent 60%),
+        radial-gradient(900px 700px at 50% 120%, rgba(13, 148, 136, 0.08), transparent 60%),
+        var(--bg);
+    background-attachment: fixed;
+    color: var(--ink);
+}
 
-/* ---------- Sidebar: dark navy ---------- */
+/* Fields: light grey so they stand out from the white cards */
+input, select, textarea { background: var(--field); border-color: var(--line); color: var(--ink); }
+input:focus, select:focus, textarea:focus { background: #ffffff; }
+textarea { overflow: hidden; }
+
+/* ---------- Sidebar: light frosted glass ---------- */
 .sidebar {
-    background: linear-gradient(180deg, #0b2545 0%, #112f57 100%);
-    border-right: none;
-    color: #dbe7f5;
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(18px) saturate(1.4);
+    -webkit-backdrop-filter: blur(18px) saturate(1.4);
+    border-right: 1px solid rgba(255, 255, 255, 0.7);
+    box-shadow: 1px 0 0 rgba(15, 23, 42, 0.06), 8px 0 30px -20px rgba(15, 23, 42, 0.25);
 }
-.sidebar-top {
+.sidebar-top { padding: 0.2rem 0.1rem; }
+.sidebar .field-label { color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.72rem; }
+.section-nav { border-bottom-color: rgba(15, 23, 42, 0.08); }
+.section-btn { color: #475569; }
+.section-btn:hover { background: rgba(255, 255, 255, 0.75); color: var(--ink); }
+.section-btn.active { background: var(--blue); color: #ffffff; box-shadow: 0 8px 18px -10px rgba(0, 85, 165, 0.8); }
+
+.week-item { color: var(--ink); border-left: 3px solid transparent; }
+.week-item small { color: var(--muted); }
+.week-item:hover { background: rgba(255, 255, 255, 0.7); }
+.week-item.active {
+    background: #ffffff; color: var(--blue);
+    border-left-color: var(--blue);
+    box-shadow: 0 4px 14px -8px rgba(15, 23, 42, 0.35);
+}
+.recordings-link { border: 1px solid var(--line); background: rgba(255, 255, 255, 0.5); }
+.recordings-link.active { border-left: 3px solid #ea580c; }
+
+/* ---------- Course list (instead of the dropdown) ---------- */
+.course-list { display: grid; gap: 0.35rem; }
+.course-item {
+    --c: var(--blue);
+    --c-soft: #e6f0fb;
+    display: flex; align-items: center; gap: 0.65rem;
+    width: 100%; padding: 0.5rem 0.6rem;
+    border: 1px solid transparent; border-radius: 12px;
+    background: transparent; text-align: left; cursor: pointer;
+    transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+.course-item.delf { --c: var(--red); --c-soft: #fdeceb; }
+.course-item:hover { background: rgba(255, 255, 255, 0.75); }
+.course-item.active {
     background: #ffffff;
-    border-radius: 12px;
-    padding: 0.55rem 0.6rem 0.55rem 0.8rem;
-    box-shadow: 0 6px 18px -10px rgba(0, 0, 0, 0.5);
+    border-color: color-mix(in srgb, var(--c) 30%, #ffffff);
+    box-shadow: 0 6px 16px -10px rgba(15, 23, 42, 0.4);
 }
-.sidebar .field-label, .sidebar .muted { color: #8fa8c8; }
-.sidebar select { border-color: transparent; }
-.section-nav { border-bottom-color: rgba(255, 255, 255, 0.12); }
-.section-btn { color: #c3d3e8; }
-.section-btn:hover { background: rgba(255, 255, 255, 0.08); color: #ffffff; }
-.section-btn.active { background: #ffffff; color: var(--navy); box-shadow: 0 6px 16px -10px rgba(0, 0, 0, 0.6); }
-.sidebar .btn-ghost { color: #9cc3ff; }
-.sidebar .btn-ghost:hover { background: rgba(255, 255, 255, 0.08); }
-.sidebar .btn-ghost.danger { color: #ff9a90; }
-.sidebar .btn-ghost.danger:hover { background: rgba(255, 90, 80, 0.12); }
-.week-item { color: #dbe7f5; border-left: 3px solid transparent; }
-.week-item small { color: #8fa8c8; }
-.week-item:hover { background: rgba(255, 255, 255, 0.06); }
-.week-item.active { background: rgba(255, 255, 255, 0.14); color: #ffffff; border-left-color: #6fb1ff; }
-.week-item.active small { color: #c3d3e8; }
-.recordings-link { border-color: rgba(255, 255, 255, 0.18); }
-.recordings-link.active { border-left-color: #ffb36b; }
-.sidebar .icon-btn { color: var(--muted); }
+.course-badge {
+    flex: none; width: 2.3rem; height: 2.3rem; border-radius: 10px;
+    display: grid; place-items: center;
+    background: var(--c-soft); color: var(--c);
+    font-weight: 800; font-size: 0.9rem;
+}
+.course-item.active .course-badge { background: var(--c); color: #ffffff; }
+.course-item-text { display: grid; min-width: 0; }
+.course-item-name { font-weight: 600; font-size: 0.9rem; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.course-item small { font-size: 0.75rem; color: var(--muted); }
 
 /* ---------- Header & tabs ---------- */
 .editor-head {
-    background: rgba(238, 242, 248, 0.92);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background: rgba(231, 236, 243, 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
-.tabs { border-bottom: none; gap: 0.4rem; background: #e2e8f2; padding: 0.3rem; border-radius: 12px; width: fit-content; }
-.tab { border-bottom: none; margin-bottom: 0; border-radius: 9px; padding: 0.5rem 1rem; }
+.tabs { border-bottom: none; gap: 0.3rem; background: rgba(255, 255, 255, 0.55); border: 1px solid var(--line); padding: 0.3rem; border-radius: 12px; width: fit-content; }
+.tab { border-bottom: none; margin-bottom: 0; border-radius: 9px; padding: 0.5rem 1rem; color: var(--muted); }
 .tab:hover { color: var(--ink); }
-.tab.active { background: #ffffff; color: var(--blue); border-bottom: none; box-shadow: 0 2px 8px -4px rgba(15, 23, 42, 0.25); }
+.tab.active { background: #ffffff; color: var(--blue); border-bottom: none; box-shadow: 0 2px 8px -4px rgba(15, 23, 42, 0.3); }
 
 /* ---------- Exercise blocks: coloured by kind ---------- */
 .block { --kind: var(--blue); }
@@ -352,37 +391,45 @@ body { background: var(--bg); }
 .kind-vocab { --kind: var(--k-vocab); }
 
 .block {
+    background: #ffffff;
     border: 1px solid var(--line);
-    border-left: 6px solid var(--kind);
-    border-radius: 14px;
-    margin-bottom: 1.6rem;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 12px 28px -20px rgba(15, 23, 42, 0.35);
+    border-top: 5px solid var(--kind);
+    border-radius: 16px;
+    margin-bottom: 1.8rem;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 16px 32px -24px rgba(15, 23, 42, 0.45);
 }
 .block-head {
-    background: color-mix(in srgb, var(--kind) 9%, #ffffff);
-    border-bottom: 1px solid color-mix(in srgb, var(--kind) 18%, #ffffff);
+    background: color-mix(in srgb, var(--kind) 10%, #ffffff);
+    border-bottom: 1px solid color-mix(in srgb, var(--kind) 20%, #ffffff);
     padding: 0.75rem 1rem;
 }
 .block-number { background: var(--kind); box-shadow: 0 4px 10px -4px var(--kind); }
 .kind-icon { color: var(--kind); font-size: 1.05rem; width: 1.2rem; text-align: center; }
-.block-head select { background: #ffffff; border-color: color-mix(in srgb, var(--kind) 25%, #ffffff); font-weight: 600; }
+.block-head select { background: #ffffff; border-color: color-mix(in srgb, var(--kind) 30%, #ffffff); font-weight: 600; }
 .block-head strong { color: color-mix(in srgb, var(--kind) 70%, #0f172a); }
-.block-body { background: color-mix(in srgb, var(--kind) 2.5%, #ffffff); border-radius: 0 0 14px 0; }
-.block-body label { color: #5b6b82; }
+.block-body { background: color-mix(in srgb, var(--kind) 4%, #f8fafc); border-radius: 0 0 16px 16px; }
+.block-body label { color: #475569; }
 
-/* ---------- Questions inside a block: coloured by question type ---------- */
+/* ---------- Questions: white cards on the tinted block ---------- */
+.questions { gap: 0.8rem; }
 .question {
     --q: var(--kind);
     background: #ffffff;
     border: 1px solid var(--line);
-    border-left: 4px solid var(--q);
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    border-left: 5px solid var(--q);
+    border-radius: 12px;
+    padding: 0.85rem 0.9rem;
+    box-shadow: 0 6px 16px -14px rgba(15, 23, 42, 0.5);
 }
 .q-type-mc { --q: #2563eb; }
 .q-type-short { --q: #0d9488; }
 .q-type-open { --q: #7c3aed; }
-.question .q-num { color: var(--q); font-weight: 800; }
-.question:hover { border-color: color-mix(in srgb, var(--q) 35%, var(--line)); border-left-color: var(--q); }
+.question .q-num {
+    color: #ffffff; background: var(--q);
+    width: 1.8rem; height: 1.8rem; border-radius: 8px;
+    display: grid; place-items: center; padding: 0; font-size: 0.85rem;
+}
+.question textarea { font-size: 0.97rem; line-height: 1.5; }
 
 /* ---------- Add buttons in each kind's colour ---------- */
 .add-row .btn-outline.add-questions { --kind: var(--k-questions); }
@@ -395,27 +442,28 @@ body { background: var(--bg); }
     background: #ffffff;
 }
 .add-row .btn-outline[class*="add-"]:hover { background: color-mix(in srgb, var(--kind) 8%, #ffffff); border-color: var(--kind); }
-.kind-vocab ~ .add-row .btn-outline, section > .add-row .btn-outline { border-color: var(--line); }
 
 /* ---------- Paste (copied exercise) ---------- */
-.btn-paste {
-    background: #fffbeb; color: #92400e;
-    border: 1.5px dashed #f59e0b;
-    flex-wrap: wrap; text-align: left;
-}
+.btn-paste { background: #fffbeb; color: #92400e; border: 1.5px dashed #f59e0b; flex-wrap: wrap; text-align: left; }
 .btn-paste:hover { background: #fef3c7; }
 .btn-paste small { font-weight: 500; color: #b45309; font-size: 0.78rem; }
 
 /* ---------- Several audio files ---------- */
 .audio-list { display: grid; gap: 0.35rem; align-content: start; }
-.audio-label { font-size: 0.85rem; font-weight: 600; color: #5b6b82; }
+.audio-label { font-size: 0.85rem; font-weight: 600; color: #475569; }
 .audio-row { display: flex; gap: 0.3rem; align-items: center; }
 .audio-row input { font-size: 0.85rem; }
 .audio-add { justify-self: start; padding: 0.2rem 0.4rem; font-size: 0.85rem; }
 
 /* ---------- Other sections ---------- */
-.course-admin { --kind: var(--blue); }
-.student-form { --kind: var(--blue); }
-.empty { background: #ffffff; border-color: var(--line); }
-.data-table, .rec-table { box-shadow: 0 12px 28px -22px rgba(15, 23, 42, 0.35); }
+.course-admin, .student-form { --kind: var(--blue); }
+.empty { background: rgba(255, 255, 255, 0.7); border-color: var(--line); }
+.data-table, .rec-table { box-shadow: 0 12px 28px -22px rgba(15, 23, 42, 0.4); }
+.data-table input[type="number"], .rec-table input { background: var(--field); }
 .paste-details { background: #ffffff; }
+.login { background: transparent; }
+
+/* Wider editor and wider options box */
+.editor { max-width: 1120px; }
+.q-fields .q-row + .q-row { grid-template-columns: 1fr 1fr; }
+@media (max-width: 800px) { .q-fields .q-row + .q-row { grid-template-columns: 1fr; } }

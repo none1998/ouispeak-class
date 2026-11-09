@@ -151,6 +151,24 @@ function renderSidebar() {
     $("recordingsBtn").disabled = !state.courseId;
     $("recordingsBtn").classList.toggle("active", state.view === "recordings");
 
+    // Course list (replaces the dropdown)
+    $("courseList").replaceChildren(...state.courses.map((c) => {
+        const isDelf = /delf/i.test(c.name);
+        return h("button", {
+            class: "course-item" + (c.id === state.courseId ? " active" : "") + (isDelf ? " delf" : ""),
+            "aria-pressed": c.id === state.courseId ? "true" : "false",
+            onclick: () => {
+                if (c.id === state.courseId) return;
+                select.value = c.id;
+                select.dispatchEvent(new Event("change"));
+            }
+        },
+            h("span", { class: "course-badge" }, c.level || (c.name.match(/\b(A1|A2|B1|B2|C1)\b/) || [""])[0] || "?"),
+            h("span", { class: "course-item-text" },
+                h("span", { class: "course-item-name" }, c.name),
+                h("small", {}, `${c.weeks.length} weeks${c.isLocked ? " · 🔒" : ""}`)));
+    }));
+
     const course = currentCourse();
     const list = $("weekList");
     if (!course) { list.replaceChildren(); return; }
@@ -1420,3 +1438,18 @@ function renderPasteButton(kind, add) {
         }
     }, h("i", { class: "fa-solid fa-paste" }), `Paste: ${clip.label}`, h("small", {}, clip.from));
 }
+
+// =====================================================================
+// Text boxes grow with their text, so long questions are fully visible
+// =====================================================================
+function autosize(el) {
+    if (!el || el.tagName !== "TEXTAREA") return;
+    el.style.height = "auto";
+    el.style.height = el.scrollHeight + 2 + "px";
+}
+function autosizeAll() {
+    document.querySelectorAll("#editor textarea").forEach(autosize);
+}
+new MutationObserver(() => requestAnimationFrame(autosizeAll)).observe($("editor"), { childList: true });
+document.addEventListener("input", (e) => { if (e.target.matches && e.target.matches("#editor textarea")) autosize(e.target); });
+window.addEventListener("resize", () => requestAnimationFrame(autosizeAll));

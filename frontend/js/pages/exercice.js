@@ -701,65 +701,71 @@
             return new Promise(resolve => setTimeout(resolve, ms));
         }
 
-        async function aiPostToGemini(model, promptText, thinkingOff) {
-            // Logged-in student's session token is used so only signed-in students can use the correction
+        // ---------- One robust way to ask the AI ----------
+        // - every attempt has a time limit (a stuck request no longer blocks for minutes)
+        // - on overload / time-out it switches to the other model straight away
+        // - when Gemini says "too many requests", it waits as long as Gemini asks
+        const AI_ENDPOINT = `${SUPABASE_URL}/functions/v1/gemini-delf`;
+
+        async function aiRequest(promptText, { audio = [], thinking = "off", timeoutMs = 40000, maxTotalMs = 120000 } = {}) {
             let token = SUPABASE_ANON_KEY;
             try {
                 const { data } = await _supabase.auth.getSession();
                 if (data && data.session && data.session.access_token) token = data.session.access_token;
             } catch (e) { /* fall back to the anon key */ }
 
-            return fetch(AI_CORRECTION_ENDPOINT, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "apikey": SUPABASE_ANON_KEY,
-                    "Authorization": `Bearer ${token}`
-                },
-                body: JSON.stringify({ model, prompt: promptText, thinkingOff })
-            });
-        }
+            const started = Date.now();
+            const models = [AI_CORRECTION_MODELS[0], AI_CORRECTION_MODELS[1], AI_CORRECTION_MODELS[0], AI_CORRECTION_MODELS[1]];
+            let lastError = new Error("AI request failed");
 
-        async function aiCallGemini(promptText) {
-            let lastError = new Error("Gemini request failed");
+            for (let attempt = 0; attempt < models.length; attempt++) {
+                const timeLeft = maxTotalMs - (Date.now() - started);
+                if (timeLeft < 5000) break;
+                const limit = Math.min(timeoutMs, timeLeft);
+                const controller = new AbortController();
+                const timer = setTimeout(() => controller.abort(), limit);
+                try {
+                    const response = await fetch(AI_ENDPOINT, {
+                        method: "POST",
+                        signal: controller.signal,
+                        headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${token}` },
+                        body: JSON.stringify({ model: models[attempt], prompt: promptText, audio, thinking, timeoutMs: limit - 3000 })
+                    });
 
-            for (const model of AI_CORRECTION_MODELS) {
-                for (let attempt = 1; attempt <= 2; attempt++) {
-                    try {
-                        // "Thinking" is switched off for speed; if the model rejects that setting, retry without it
-                        let response = await aiPostToGemini(model, promptText, true);
-                        if (response.status === 400) response = await aiPostToGemini(model, promptText, false);
-
-                        // Model name not available -> go to the next model
-                        if (response.status === 404) {
-                            lastError = new Error(`Gemini API error 404 (${model})`);
-                            break;
-                        }
-                        // Temporary overload / rate limit -> short wait, retry, then next model
-                        if ([429, 500, 502, 503, 504].includes(response.status)) {
-                            lastError = new Error(`Gemini API error ${response.status} (${model})`);
-                            await aiSleep(attempt * 1000);
-                            continue;
-                        }
-                        // Real errors (bad key, forbidden, ...) -> stop immediately
-                        if (!response.ok) throw new Error(`Gemini API error ${response.status}`);
-
-                        const data = await response.json();
-                        const parts = data?.candidates?.[0]?.content?.parts || [];
-                        const raw = parts.map(p => p.text || "").join("").replace(/```json|```/g, "").trim();
-                        return JSON.parse(raw);
-                    } catch (err) {
-                        // Network hiccup or unreadable reply -> retry; anything else -> stop
-                        if (err instanceof TypeError || err instanceof SyntaxError) {
-                            lastError = err;
-                            await aiSleep(attempt * 1000);
-                            continue;
-                        }
-                        throw err;
+                    if (response.status === 429) {
+                        lastError = new Error("Gemini 429: too many requests");
+                        const wait = Math.min(Number(response.headers.get("retry-after")) * 1000 || 5000 * (attempt + 1), 20000);
+                        await aiSleep(wait);
+                        continue;
                     }
+                    if ([404, 500, 502, 503, 504].includes(response.status)) {
+                        lastError = new Error(`Gemini ${response.status} (${models[attempt]})`);
+                        await aiSleep(800);
+                        continue;
+                    }
+                    if (!response.ok) throw new Error(`Gemini error ${response.status}`);
+
+                    const data = await response.json();
+                    const parts = data?.candidates?.[0]?.content?.parts || [];
+                    const raw = parts.filter(p => !p.thought).map(p => p.text || "").join("").replace(/```json|```/g, "").trim();
+                    return JSON.parse(raw);
+                } catch (err) {
+                    // time-out, network hiccup or unreadable reply -> try again (other model)
+                    if (err.name === "AbortError" || err instanceof TypeError || err instanceof SyntaxError) {
+                        lastError = err.name === "AbortError" ? new Error(`AI time-out after ${Math.round(limit / 1000)}s`) : err;
+                        continue;
+                    }
+                    throw err;
+                } finally {
+                    clearTimeout(timer);
                 }
             }
             throw lastError;
+        }
+
+        // Short tasks (translations): no "thinking", quick time limit
+        async function aiCallGemini(promptText) {
+            return aiRequest(promptText, { thinking: "off", timeoutMs: 40000, maxTotalMs: 120000 });
         }
 
         function aiBuildTranslationPrompt(instruction, items) {
@@ -779,6 +785,31 @@ Reply ONLY with JSON in this exact shape, with one object per item and the same 
 
 Items:
 ${JSON.stringify(items)}`;
+        }
+
+        // All translation sentences of the week in ONE prompt, grouped by exercise
+        function aiBuildMultiTranslationPrompt(items) {
+            const groups = [];
+            items.forEach(it => {
+                let g = groups.find(x => x.block === it.block);
+                if (!g) groups.push(g = { block: it.block, instruction: it.instruction, items: [] });
+                g.items.push({ id: it.id, source: it.source, student_answer: it.student_answer });
+            });
+            return `You are a kind but precise French teacher for Georgian-speaking students.
+Below are translation exercises. For each exercise, work out the translation direction (Georgian -> French or French -> Georgian) from its instruction (in Georgian) and its sentences.
+"source" is the sentence to translate, "student_answer" is the student's translation.
+
+For EACH item decide whether the student's translation is correct. Check grammar, conjugation, agreement, articles, word order, spelling and accents, and meaning.
+- Accept any natural, correct alternative translation (it does not have to match a single reference).
+- Ignore a missing or different final punctuation mark and capital letter at the start.
+- If it is correct: is_correct = true, errors = "", correct = "".
+- If it is wrong: is_correct = false, "errors" = a SHORT explanation IN GEORGIAN (max 2 short sentences) of exactly what is wrong (quote the wrong word/form and give the correct form, e.g. "viennet (ორთოგრაფია: viennent)"), and "correct" = the full correct translation in the target language.
+
+Reply ONLY with JSON in this exact shape, with one object per item and the same "id" values:
+{"results":[{"id":0,"is_correct":true,"errors":"","correct":""}]}
+
+Exercises:
+${JSON.stringify(groups.map(g => ({ instruction: g.instruction, items: g.items })))}`;
         }
 
         function aiBuildEssayPrompt(instruction, text) {
@@ -857,7 +888,7 @@ Reply ONLY with JSON in this exact shape:
             if (!studentCourse || !subject) return;
 
             const tasks = [];
-            const chunkSize = 5;
+            const translationItems = [];   // all translation sentences of the week, checked together
 
             for (let b = 1; b <= getBlockCount(); b++) {
                 const blockData = dataset[studentCourse]?.[subject]?.[b];
@@ -935,27 +966,26 @@ Reply ONLY with JSON in this exact shape:
                         const source = q.text.split("_________________")[0].replace(/<br>/g, " ").trim();
                         items.push({ index, source, student_answer: answer, raw, key });
                     });
-                    for (let i = 0; i < items.length; i += chunkSize) {
-                        const chunk = items.slice(i, i + chunkSize);
-                        tasks.push(async () => {
-                            const promptItems = chunk.map(it => ({ index: it.index, source: it.source, student_answer: it.student_answer }));
-                            const result = await aiCallGemini(aiBuildTranslationPrompt(blockData.instruction, promptItems));
-                            const list = Array.isArray(result.results) ? result.results : [];
-                            chunk.forEach(it => {
-                                const r = list.find(x => Number(x.index) === it.index);
-                                if (!r) return;
-                                aiCorrectionCache[it.key] = {
-                                    answer: it.raw,
-                                    res: {
-                                        is_correct: r.is_correct === true,
-                                        errors: r.errors || "",
-                                        correct: r.correct || ""
-                                    }
-                                };
-                            });
-                        });
-                    }
+                    items.forEach(it => translationItems.push({ ...it, block: b, instruction: blockData.instruction }));
                 }
+            }
+
+            // Few big requests are much faster than many small ones (and avoid Gemini's per-minute limits)
+            const TRANSLATIONS_PER_REQUEST = 40;
+            for (let i = 0; i < translationItems.length; i += TRANSLATIONS_PER_REQUEST) {
+                const chunk = translationItems.slice(i, i + TRANSLATIONS_PER_REQUEST).map((it, n) => ({ ...it, id: n }));
+                tasks.push(async () => {
+                    const result = await aiCallGemini(aiBuildMultiTranslationPrompt(chunk));
+                    const list = Array.isArray(result.results) ? result.results : [];
+                    chunk.forEach(it => {
+                        const r = list.find(x => Number(x.id) === it.id);
+                        if (!r) return;
+                        aiCorrectionCache[it.key] = {
+                            answer: it.raw,
+                            res: { is_correct: r.is_correct === true, errors: r.errors || "", correct: r.correct || "" }
+                        };
+                    });
+                });
             }
 
             if (tasks.length === 0) return;
@@ -1860,43 +1890,13 @@ Reply ONLY with JSON in this exact shape:
 
         // ---------- Calling the AI (text + optional audio) ----------
         async function delfCallGemini(promptText, audio) {
-            let token = SUPABASE_ANON_KEY;
-            try {
-                const { data } = await _supabase.auth.getSession();
-                if (data && data.session && data.session.access_token) token = data.session.access_token;
-            } catch (e) { /* anon key */ }
-
-            let lastError = new Error("DELF grading failed");
-            for (const model of AI_CORRECTION_MODELS) {
-                for (let attempt = 1; attempt <= 2; attempt++) {
-                    try {
-                        const response = await fetch(DELF_ENDPOINT, {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${token}` },
-                            body: JSON.stringify({ model, prompt: promptText, audio })
-                        });
-                        if (response.status === 404) { lastError = new Error(`Gemini 404 (${model})`); break; }
-                        if ([429, 500, 502, 503, 504].includes(response.status)) {
-                            lastError = new Error(`Gemini ${response.status} (${model})`);
-                            await aiSleep(attempt * 1500);
-                            continue;
-                        }
-                        if (!response.ok) throw new Error(`Gemini error ${response.status}`);
-                        const data = await response.json();
-                        const parts = data?.candidates?.[0]?.content?.parts || [];
-                        const raw = parts.map(p => p.text || "").join("").replace(/```json|```/g, "").trim();
-                        return JSON.parse(raw);
-                    } catch (err) {
-                        if (err instanceof TypeError || err instanceof SyntaxError) {
-                            lastError = err;
-                            await aiSleep(attempt * 1500);
-                            continue;
-                        }
-                        throw err;
-                    }
-                }
-            }
-            throw lastError;
+            const hasAudio = Array.isArray(audio) && audio.length > 0;
+            return aiRequest(promptText, {
+                audio: audio || [],
+                thinking: "low",
+                timeoutMs: hasAudio ? 90000 : 60000,
+                maxTotalMs: hasAudio ? 200000 : 150000
+            });
         }
 
         // Recordings → small mono WAV files (a format the AI can listen to), as base64

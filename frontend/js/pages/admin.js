@@ -395,8 +395,84 @@ function renderBlock(block, i) {
                                 block.questions.push({ type: t.value, text: "", options: t.value === "mc" ? ["", "", "", ""] : null, answer: "" });
                                 markUnsaved(); renderEditor();
                             }
-                        }, h("i", { class: "fa-solid fa-plus" }), t.label.replace(/ \(.*\)/, ""))))))
+                        }, h("i", { class: "fa-solid fa-plus" }), t.label.replace(/ \(.*\)/, "")))),
+                    renderQuestionPasteBox(block)))
     );
+}
+
+// ---------- Add many questions at once ----------
+// One question per line:
+//   question = answer                       → short answer (small box, checked against the answer)
+//   question | A | *B | C                    → multiple choice (* marks the correct option)
+//   question                                 → open answer (long box, corrected by AI)
+const GAP = "_________________";
+
+function parseQuestionList(text) {
+    const questions = [];
+    const errors = [];
+    text.split("\n").forEach((rawLine, i) => {
+        const line = rawLine.trim();
+        if (!line) return;
+        const lineNo = i + 1;
+
+        if (line.includes("|")) {
+            const parts = line.split("|").map((x) => x.trim()).filter(Boolean);
+            const question = parts[0] || "";
+            const options = parts.slice(1);
+            const correct = options.filter((o) => o.startsWith("*"));
+            if (!question || options.length < 2) { errors.push(`Line ${lineNo}: a multiple choice needs a question and at least 2 options.`); return; }
+            if (correct.length !== 1) { errors.push(`Line ${lineNo}: mark exactly ONE correct option with * (e.g. *B) suis tombé).`); return; }
+            const clean = options.map((o) => o.replace(/^\*\s*/, ""));
+            questions.push({ type: "mc", text: question, options: clean, answer: correct[0].replace(/^\*\s*/, "") });
+        } else if (line.includes("=")) {
+            const at = line.indexOf("=");
+            const question = line.slice(0, at).trim();
+            const answer = line.slice(at + 1).trim();
+            if (!question || !answer) { errors.push(`Line ${lineNo}: write it as  question = answer`); return; }
+            questions.push({ type: "", text: question.replace(/_{3,}/g, GAP), options: null, answer });
+        } else {
+            questions.push({ type: "open", text: line.replace(/_{3,}/g, GAP), options: null, answer: "" });
+        }
+    });
+    return { questions, errors };
+}
+
+function renderQuestionPasteBox(block) {
+    const box = h("textarea", {
+        rows: 5,
+        "aria-label": "Paste questions",
+        placeholder: "Je ____ étudiant. = suis\nJe ____ dans l'escalier. | A) ai tombé | *B) suis tombé | C) suis tomber\nმე ვარ სტუდენტი."
+    });
+    const preview = h("p", { class: "q-note" });
+    const updatePreview = () => {
+        const { questions, errors } = parseQuestionList(box.value);
+        const count = (t) => questions.filter((q) => q.type === t).length;
+        preview.textContent = errors.length ? "⚠ " + errors[0]
+            : questions.length ? `Ready: ${count("mc")} multiple choice, ${count("")} short answer, ${count("open")} open answer.` : "";
+        preview.classList.toggle("paste-error", errors.length > 0);
+    };
+    box.addEventListener("input", updatePreview);
+
+    return h("details", { class: "paste-details" },
+        h("summary", {}, h("i", { class: "fa-solid fa-paste" }), " Add many questions at once"),
+        h("div", { class: "paste-box" },
+            h("div", { class: "paste-help" },
+                h("div", {}, h("code", {}, "question = answer"), " → short answer (small box)"),
+                h("div", {}, h("code", {}, "question | A | *B | C"), " → multiple choice, ", h("b", {}, "*"), " marks the correct option"),
+                h("div", {}, h("code", {}, "question"), " (nothing else) → open answer, corrected by AI"),
+                h("div", {}, "One question per line. Write the gap with a few underscores: ", h("code", {}, "____"))),
+            box,
+            preview,
+            h("div", {}, h("button", {
+                class: "btn btn-outline", onclick: () => {
+                    const { questions, errors } = parseQuestionList(box.value);
+                    if (errors.length) { toast(errors[0], true); return; }
+                    if (questions.length === 0) { toast("Nothing to add.", true); return; }
+                    block.questions.push(...questions);
+                    markUnsaved(); renderEditor();
+                    toast(`${questions.length} questions added. Don't forget to save.`);
+                }
+            }, "Add these questions"))));
 }
 
 // Matching block: each question = one pair (text = French, answer = Georgian)
@@ -453,7 +529,28 @@ function renderSpeakingPrompts(block) {
                     prompts.push({ type: "", text: "", answer: "" });
                     markUnsaved(); renderEditor();
                 }
-            }, h("i", { class: "fa-solid fa-plus" }), "Add prompt")));
+            }, h("i", { class: "fa-solid fa-plus" }), "Add prompt")),
+        renderPromptPasteBox(prompts));
+}
+
+function renderPromptPasteBox(prompts) {
+    const box = h("textarea", { rows: 4, "aria-label": "Paste prompts", placeholder: "Présentez-vous.\nDécrivez votre ville.\nQu'est-ce que vous avez fait le week-end dernier ?" });
+    return h("details", { class: "paste-details" },
+        h("summary", {}, h("i", { class: "fa-solid fa-paste" }), " Add many prompts at once"),
+        h("div", { class: "paste-box" },
+            h("p", { class: "q-note" }, "One prompt per line."),
+            box,
+            h("div", {}, h("button", {
+                class: "btn btn-outline", onclick: () => {
+                    const lines = box.value.split("\n").map((l) => l.trim()).filter(Boolean);
+                    if (lines.length === 0) { toast("Nothing to add.", true); return; }
+                    // replace the empty prompt that a new speaking block starts with
+                    for (let i = prompts.length - 1; i >= 0; i--) if (!(prompts[i].text || "").trim()) prompts.splice(i, 1);
+                    prompts.push(...lines.map((text) => ({ type: "", text, answer: "" })));
+                    markUnsaved(); renderEditor();
+                    toast(`${lines.length} prompts added. Don't forget to save.`);
+                }
+            }, "Add these prompts"))));
 }
 
 function renderQuestion(block, q, j) {

@@ -275,3 +275,12 @@ label.check small { color: var(--muted); font-weight: 400; }
     .course-grid { grid-template-columns: 1fr 1fr; }
     .course-grid .span-2 { grid-column: span 2; }
 }
+
+/* ---------- Add many at once ---------- */
+.paste-details { margin-top: 0.4rem; border: 1px dashed var(--line); border-radius: 10px; background: #fbfcfe; }
+.paste-details summary { cursor: pointer; padding: 0.65rem 0.9rem; font-weight: 600; color: var(--blue); }
+.paste-details[open] summary { border-bottom: 1px dashed var(--line); }
+.paste-details .paste-box { padding: 0.8rem 0.9rem; }
+.paste-help { display: grid; gap: 0.25rem; font-size: 0.85rem; color: var(--muted); }
+.paste-help code { background: var(--blue-soft); color: var(--blue); padding: 0.05rem 0.35rem; border-radius: 4px; font-size: 0.82rem; }
+.paste-error { color: var(--red); font-weight: 600; }

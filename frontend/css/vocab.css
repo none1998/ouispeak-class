@@ -1,0 +1,1047 @@
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Georgian:wght@400;500;600;700;800&display=swap');
+
+        th:first-child, td:first-child {
+            width: 40px;
+            white-space: nowrap;
+        }
+
+        :root {
+            --primary: #0055a5;
+            --secondary: #ef4135;
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 10px 30px -10px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 20px 40px -15px rgba(0, 0, 0, 0.15);
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            --course-gradient: linear-gradient(135deg, #0055a5 0%, #0077e6 100%);
+            --course-color: #0055a5;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans Georgian', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Premium Brand Wrapper Box */
+        .premium-container-box {
+            max-width: 1200px;
+            margin: 0.5rem auto;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 24px;
+            box-shadow: var(--shadow-lg), 0 4px 30px rgba(0, 0, 0, 0.03);
+            box-sizing: border-box;
+        }
+
+        /* Modernized Header */
+        header {
+            background-color: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: var(--shadow-sm);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            border-radius: var(--radius-md) var(--radius-md) 0 0;
+        }
+
+        .header-container {
+            max-width: 1140px;
+            margin: 0 auto;
+            padding: 0.85rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand-wrapper {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .brand-wrapper:hover {
+            opacity: 0.9;
+        }
+
+        .brand-logo {
+            height: 42px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .nav-links {
+            display: flex;
+            flex-wrap: wrap; /* 👈 This forces items to the next line when there's no room */
+            gap: 2rem;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: var(--transition);
+            position: relative;
+            padding: 0.25rem 0;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .logout-btn {
+            background-color: #fee2e2;
+            color: #ef4135;
+            border: none;
+            padding: 0.5rem 1.25rem;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: none;
+        }
+
+        .logout-btn:hover {
+            background-color: #fca5a5;
+        }
+
+        /* Clean Glassmorphism Auth Section */
+        #authSection {
+            max-width: 420px;
+            margin: 5rem auto;
+            padding: 3rem 2.5rem;
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            display: block !important;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.88rem;
+            color: #475569;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            box-sizing: border-box;
+            font-size: 0.95rem;
+            background-color: #f8fafc;
+            color: var(--text-main);
+            transition: var(--transition);
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            background-color: #fff;
+            box-shadow: 0 0 0 4px rgba(0, 85, 165, 0.1);
+        }
+
+        .auth-btn {
+            width: 100%;
+            background-color: var(--text-main);
+            color: white;
+            padding: 0.9rem;
+            border: none;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 0.5rem;
+        }
+
+        .auth-btn:hover {
+            background-color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .auth-error {
+            background-color: #fff1f2;
+            color: #e11d48;
+            border: 1px solid #ffe4e6;
+            padding: 0.85rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 1.5rem;
+            display: none;
+            font-size: 0.9rem;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        #protectedContent {
+            display: none;
+        }
+
+        /* Modern Hero Typography */
+        .intro-section {
+            max-width: 800px;
+            margin: 4rem auto 2.5rem auto;
+            text-align: center;
+            padding: 0 1.5rem;
+            position: relative;
+        }
+
+        .intro-section h1 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--text-main) 30%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+            letter-spacing: -0.03em;
+        }
+
+        .intro-section::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+
+        main {
+            max-width: 1140px;
+            margin: 0 auto 5rem auto;
+            padding: 0 1.5rem;
+        }
+
+        /* Vocabulary Interface Layout Window Settings */
+        .subject-selector-wrapper {
+            max-width: 500px;
+            margin: 0 auto 2rem auto;
+            text-align: center;
+        }
+
+        .subject-select {
+            width: 100%;
+            padding: 0.85rem 1.25rem;
+            border-radius: 30px;
+            border: 1px solid var(--border-color);
+            font-size: 1rem;
+            color: var(--text-main);
+            background-color: var(--bg-card);
+            box-shadow: var(--shadow-sm);
+            outline: none;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1.25rem center;
+            background-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .subject-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(0, 85, 165, 0.1);
+        }
+
+        .exercise-window {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            margin-bottom: 4rem;
+        }
+
+        .exercise-layout-body {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            min-height: 500px;
+        }
+
+        .exercise-sidebar {
+            background: #fafafa;
+            border-right: 1px solid var(--border-color);
+            padding: 1.5rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .sidebar-item {
+            background: transparent;
+            border: none;
+            padding: 0.85rem 1.25rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            text-align: left;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .sidebar-item:hover {
+            background: #f1f5f9;
+            color: var(--course-color, var(--primary));
+            padding-left: 1.5rem;
+        }
+
+        .sidebar-item.active {
+            background: #e6f0fa;
+            color: var(--course-color, var(--primary));
+            font-weight: 600;
+        }
+
+        .exercise-viewarea {
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background: var(--bg-card);
+        }
+
+        /* Ultra Modern Instruction Box with Enhanced Shadows */
+        .instruction-box {
+            background: #ffffff;
+            padding: 1.4rem 2rem;
+            margin-bottom: 2.5rem;
+            font-weight: 800;
+            font-size: 1.2rem;
+            text-align: center;
+            letter-spacing: -0.01em;
+            color: #0f172a;
+            border-radius: 20px;
+            position: relative;
+            /* Multi-layered shadow for clean, strong visibility */
+            box-shadow: 
+                0 15px 35px -5px rgba(0, 85, 165, 0.12), 
+                0 5px 15px rgba(0, 0, 0, 0.06), 
+                inset 0 1px 1px rgba(255, 255, 255, 1);
+            border: 1px solid transparent;
+            background-clip: padding-box;
+        }
+
+        /* Sophisticated glowing gradient line border */
+        .instruction-box::after {
+            content: '';
+            position: absolute;
+            top: -1px; bottom: -1px; left: -1px; right: -1px;
+            background: linear-gradient(135deg, var(--primary) 0%, #00d2ff 50%, var(--secondary) 100%);
+            z-index: -1;
+            border-radius: 20px;
+            opacity: 0.85;
+        }
+
+        /* --- ULTRA MODERN FLIP CARDS CSS --- */
+
+        /* Section 1: Side-by-side Ultra Modern Phrase Cards */
+        .flashcard-grid-two-up {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            perspective: 1500px;
+            margin-bottom: 1.5rem;
+        }
+
+        .premium-flip-card {
+            background-color: transparent;
+            height: 250px;
+            cursor: pointer;
+        }
+
+        .premium-flip-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-style: preserve-3d;
+        }
+
+        .premium-flip-card.flipped .premium-flip-inner {
+            transform: rotateY(180deg);
+        }
+
+        .premium-card-front, .premium-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            box-sizing: border-box;
+            transition: all 0.4s ease;
+        }
+
+        /* Front Side: Clean Premium Stark White */
+        .premium-card-front {
+            background: #ffffff;
+            color: #0f172a;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+        }
+
+        .premium-flip-card:hover .premium-card-front {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px rgba(0, 85, 165, 0.15);
+            border-color: var(--course-color, var(--primary));
+        }
+
+        .premium-card-front .french-text-display {
+            font-size: 1.9rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+            color: #0f172a;
+        }
+
+        .premium-card-front .card-hint {
+            font-size: 0.75rem;
+            color: #ffffff;
+            font-weight: 700;
+            background: var(--course-gradient, linear-gradient(90deg, var(--primary), #0077e6));
+            padding: 0.45rem 1rem;
+            border-radius: 30px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            box-shadow: 0 4px 15px rgba(0, 85, 165, 0.3);
+        }
+
+        /* Back Side: Balanced Vibrant Premium Light Blue Gradient */
+        .premium-card-back {
+            background: var(--course-gradient, linear-gradient(135deg, #0055a5 0%, #0077e6 100%));
+            color: #ffffff;
+            transform: rotateY(180deg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 15px 35px rgba(0, 85, 165, 0.25);
+        }
+
+        .premium-card-back .georgian-text-display {
+            font-size: 1.45rem;
+            font-weight: 700;
+            line-height: 1.5;
+            letter-spacing: -0.01em;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+        }
+
+
+        /* Section 2: Compact 5x4 Grid Layout for Vocabulary Words */
+        .words-grid-compact {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1.25rem;
+            perspective: 1200px;
+            margin-bottom: 1.5rem;
+        }
+
+        .compact-flip-card {
+            background-color: transparent;
+            height: 90px;
+            cursor: pointer;
+        }
+
+        .compact-flip-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-style: preserve-3d;
+        }
+
+        .compact-flip-card.flipped .compact-flip-inner {
+            transform: rotateY(180deg);
+        }
+
+        .compact-card-front, .compact-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.8rem;
+            box-sizing: border-box;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Front Side: Minimal Stark Glossy White */
+        .compact-card-front {
+            background: #ffffff;
+            color: #0f172a;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        }
+
+        .compact-flip-card:hover .compact-card-front {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0, 85, 165, 0.12);
+            border-color: var(--course-color, var(--primary));
+        }
+
+        .compact-card-front .french-word-display {
+            font-size: 1.05rem;
+            font-weight: 700;
+            word-break: break-word;
+            letter-spacing: -0.01em;
+            color: #0f172a;
+        }
+
+        /* Back Side: Balanced Vibrant Premium Blue Gradient */
+        .compact-card-back {
+            background: var(--course-gradient, linear-gradient(135deg, #0055a5 0%, #0077e6 100%));
+            color: #ffffff;
+            transform: rotateY(180deg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 20px rgba(0, 85, 165, 0.2);
+        }
+
+        .compact-card-back .georgian-word-display {
+            font-size: 0.95rem;
+            font-weight: 600;
+            line-height: 1.4;
+            word-break: break-word;
+            text-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Style for the newly added Download Button */
+        .download-btn-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 2.5rem;
+        }
+
+        .download-vocab-btn {
+            background: var(--course-gradient, linear-gradient(135deg, var(--primary) 0%, #0077e6 100%));
+            color: white;
+            border: none;
+            padding: 0.9rem 2.5rem;
+            font-size: 1.05rem;
+            font-weight: 700;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 10px 20px -5px rgba(0, 85, 165, 0.3);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .download-vocab-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 25px -5px rgba(0, 85, 165, 0.4);
+            opacity: 0.9;
+        }
+
+        .download-vocab-btn:active {
+            transform: translateY(-1px);
+        }
+
+        Modern Stylish Footer Styling
+        footer {
+            margin-top: 5rem;
+            padding: 2rem 1.5rem 0.5rem 1.5rem;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2.5rem;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+
+        .footer-links a:hover {
+            color: var(--primary);
+        }
+
+        .footer-copyright {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 768px) {
+            .premium-container-box { padding: 0.75rem; border-radius: var(--radius-lg); }
+            .header-container { flex-direction: column; gap: 1.25rem; text-align: center; padding: 1.25rem 1rem; }
+            nav { width: 100%; justify-content: center; flex-direction: column; gap: 1rem; }
+
+            /* Update this part to ensure wrapped links center perfectly on phones */
+            .nav-links { 
+                gap: 1.25rem; 
+                justify-content: center; 
+            }
+
+            #authSection { margin: 2rem auto; padding: 2rem 1.5rem; }
+            .modal-content { padding: 1.5rem; }
+            .modal-header-container { flex-direction: column; gap: 1rem; align-items: flex-start; }
+            .download-btn { width: 100%; justify-content: center; }
+            footer { flex-direction: column; text-align: center; gap: 1.25rem; padding-top: 1.5rem; }
+            .footer-links { justify-content: center; gap: 1.5rem; }
+
+            /* 👇 ONLY BODY RESPONSIVE PATCH ADDED BELOW HERE 👇 */
+            .intro-section h1 {
+                font-size: 1.8rem;
+            }
+            .exercise-layout-body {
+                grid-template-columns: 1fr;
+            }
+            .exercise-sidebar {
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+                flex-direction: row;
+                overflow-x: auto;
+                padding: 0.75rem;
+            }
+            .sidebar-item {
+                white-space: nowrap;
+            }
+            .exercise-viewarea {
+                padding: 1.25rem 0.75rem;
+            }
+            .flashcard-grid-two-up {
+                grid-template-columns: 1fr;
+                gap: 1.25rem;
+            }
+            .premium-flip-card {
+                height: 200px;
+            }
+            .premium-card-front .french-text-display {
+                font-size: 1.5rem;
+            }
+            .words-grid-compact {
+                grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+                gap: 0.75rem;
+            }
+            .compact-flip-card {
+                height: 85px;
+            }
+            .compact-card-front .french-word-display {
+                font-size: 0.95rem;
+            }
+            .compact-card-back .georgian-word-display {
+                font-size: 0.85rem;
+            }
+            /* 👆 END OF RESPONSIVE PATCH 👆 */
+        }
+        .nav-links a .header-student-score {
+    display: none;
+    margin-left: 0.5rem;
+    background: #eff6ff;
+    color: var(--primary);
+    padding: 0.1rem 0.6rem;
+    border-radius: 100px;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+        /* =========================================================
+           VOCABULARY PAGE REDESIGN (styles only, same design as the other pages)
+           Everything below only ADDS styles; nothing above was removed.
+           The per-course colours (--course-color / --course-gradient) are kept.
+           ========================================================= */
+
+        /* Header: name and score are hidden from the menu */
+        #headerStudentName,
+        #headerStudentScoreBox { display: none !important; }
+        #scoresNavLink::after { content: "შეფასებები"; }
+
+        /* ---------- Login box ---------- */
+        #authSection {
+            position: relative;
+            overflow: hidden;
+            border-radius: 22px;
+        }
+
+        #authSection::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary) 0 33.33%, #ffffff 33.33% 66.66%, var(--secondary) 66.66% 100%);
+        }
+
+        .auth-btn { background-color: var(--primary); }
+        .auth-btn:hover { background-color: #003f7d; }
+
+        /* ---------- Title banner (centered, like the other pages) ---------- */
+        .intro-section {
+            max-width: 1140px;
+            width: calc(100% - 3rem);
+            margin: 2rem auto 0 auto;
+            padding: 2.75rem 2rem 4rem 2rem;
+            box-sizing: border-box;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            background: #082c55;
+            border-radius: 22px;
+        }
+
+        .intro-section::before {
+            content: '';
+            display: block;
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 10px; height: auto;
+            transform: none;
+            margin: 0;
+            border-radius: 0;
+            background: linear-gradient(180deg, var(--primary) 0 33.33%, #ffffff 33.33% 66.66%, var(--secondary) 66.66% 100%);
+        }
+
+        .intro-section::after {
+            content: '';
+            position: absolute;
+            right: -140px; top: -180px;
+            width: 440px; height: 440px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 85, 165, 0.6) 0%, rgba(0, 85, 165, 0) 70%);
+            pointer-events: none;
+        }
+
+        .intro-section h1 {
+            position: relative;
+            z-index: 1;
+            font-size: clamp(1.6rem, 3vw, 2.3rem);
+            line-height: 1.25;
+            letter-spacing: -0.02em;
+            margin: 0;
+            background: none;
+            -webkit-text-fill-color: #ffffff;
+            color: #ffffff;
+        }
+
+        .intro-section h1::before {
+            content: "\f518";
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            display: block;
+            width: 56px; height: 56px;
+            line-height: 56px;
+            margin: 0 auto 1rem auto;
+            border-radius: 50%;
+            background: #ffffff;
+            color: var(--secondary);
+            -webkit-text-fill-color: var(--secondary);
+            font-size: 1.3rem;
+            box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.15);
+        }
+
+        /* ---------- Week picker, sitting on the banner's bottom edge ---------- */
+        .subject-selector-wrapper {
+            position: relative;
+            z-index: 2;
+            max-width: 420px;
+            margin: -1.9rem auto 2rem auto;
+        }
+
+        .subject-select {
+            height: 3.8rem;
+            padding: 0 3rem 0 3.4rem;
+            border-radius: 16px;
+            border: 2px solid #ffffff;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--primary);
+            box-shadow: 0 18px 36px -16px rgba(8, 44, 85, 0.55);
+            background-image:
+                url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230055a5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3crect x='3' y='4' width='18' height='18' rx='2'/%3e%3cline x1='16' y1='2' x2='16' y2='6'/%3e%3cline x1='8' y1='2' x2='8' y2='6'/%3e%3cline x1='3' y1='10' x2='21' y2='10'/%3e%3c/svg%3e"),
+                url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230055a5' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat, no-repeat;
+            background-position: left 1.2rem center, right 1.25rem center;
+            background-size: 1.25rem, 1rem;
+        }
+
+        .subject-select:hover { border-color: #eaf2fb; }
+
+        .subject-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 18px 36px -16px rgba(8, 44, 85, 0.55), 0 0 0 4px rgba(0, 85, 165, 0.15);
+        }
+
+        /* ---------- Vocabulary window ---------- */
+        .exercise-window {
+            border-radius: 22px;
+            box-shadow: 0 24px 48px -30px rgba(8, 44, 85, 0.45);
+        }
+
+        /* When no week is chosen yet (sidebar hidden), let the content use the full width */
+        .exercise-layout-body:has(> .exercise-sidebar[style*="none"]) {
+            grid-template-columns: 1fr;
+        }
+
+        /* Sidebar: numbered sections */
+        .exercise-sidebar {
+            background: #f4f8fd;
+            counter-reset: vocabpart;
+            padding: 1.5rem 1rem;
+            gap: 0.6rem;
+        }
+
+        .sidebar-item {
+            counter-increment: vocabpart;
+            justify-content: flex-start;
+            gap: 0.85rem;
+            padding: 0.6rem 0.85rem 0.6rem 0.6rem;
+            border-radius: 14px;
+            background: #ffffff;
+            border: 1px solid #dde8f4;
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .sidebar-item::before {
+            content: counter(vocabpart);
+            flex: 0 0 auto;
+            width: 34px; height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: #eaf2fb;
+            color: var(--course-color, var(--primary));
+            font-size: 1rem;
+            font-weight: 800;
+            transition: var(--transition);
+        }
+
+        .sidebar-item:hover {
+            background: #ffffff;
+            border-color: var(--course-color, var(--primary));
+            color: var(--course-color, var(--primary));
+            padding-left: 0.6rem;
+            transform: translateX(3px);
+        }
+
+        .sidebar-item.active {
+            background: var(--course-gradient, linear-gradient(135deg, #0055a5 0%, #082c55 100%));
+            border-color: transparent;
+            color: #ffffff;
+            box-shadow: 0 14px 28px -16px rgba(8, 44, 85, 0.7);
+        }
+
+        .sidebar-item.active::before {
+            background: #ffffff;
+            color: var(--secondary);
+        }
+
+        .sidebar-item:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+
+        /* ---------- Section title ---------- */
+        .instruction-box {
+            background: #eaf2fb;
+            color: #082c55;
+            border: none;
+            border-left: 5px solid var(--course-color, var(--primary));
+            border-radius: 14px;
+            box-shadow: none;
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-align: left;
+            padding: 1.15rem 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .instruction-box::after { display: none; }
+
+        /* ---------- Phrase flip cards ---------- */
+        .flashcard-grid-two-up { gap: 1.5rem; }
+
+        .premium-card-front,
+        .premium-card-back { border-radius: 20px; }
+
+        .premium-card-front {
+            overflow: hidden;
+            background:
+                radial-gradient(circle at 100% 0%, #eaf2fb 0%, rgba(234, 242, 251, 0) 45%),
+                #ffffff;
+            box-shadow: 0 14px 30px -22px rgba(8, 44, 85, 0.45);
+        }
+
+        /* Big quotation mark in the corner of each phrase card */
+        .premium-card-front::before {
+            content: "“";
+            position: absolute;
+            top: 0.4rem;
+            left: 1.2rem;
+            font-size: 5rem;
+            font-weight: 800;
+            line-height: 1;
+            color: var(--course-color, var(--primary));
+            opacity: 0.15;
+            pointer-events: none;
+        }
+
+        /* Thin tricolore line along the bottom of each phrase card */
+        .premium-card-front::after {
+            content: '';
+            position: absolute;
+            left: 0; right: 0; bottom: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary) 0 33.33%, #ffffff 33.33% 66.66%, var(--secondary) 66.66% 100%);
+        }
+
+        .premium-flip-card:hover .premium-card-front {
+            transform: translateY(-5px);
+            box-shadow: 0 22px 40px -22px rgba(8, 44, 85, 0.55);
+        }
+
+        .premium-card-front .card-hint {
+            text-transform: none;
+            letter-spacing: 0;
+            font-size: 0.8rem;
+            border-radius: 10px;
+            box-shadow: none;
+        }
+
+        .premium-card-front .card-hint::before {
+            content: "\f2f1";
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            margin-right: 0.45rem;
+        }
+
+        .premium-card-back { box-shadow: 0 20px 40px -20px rgba(8, 44, 85, 0.6); }
+
+        /* ---------- Word flip cards ---------- */
+        .words-grid-compact { gap: 1rem; }
+
+        .compact-card-front,
+        .compact-card-back { border-radius: 14px; }
+
+        .compact-card-front {
+            overflow: hidden;
+            box-shadow: 0 10px 22px -18px rgba(8, 44, 85, 0.45);
+        }
+
+        /* Coloured strip on the left edge of each word card */
+        .compact-card-front::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 5px;
+            background: var(--course-color, var(--primary));
+        }
+
+        .compact-flip-card:hover .compact-card-front {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 28px -18px rgba(8, 44, 85, 0.55);
+        }
+
+        /* ---------- Download button ---------- */
+        .download-vocab-btn {
+            border-radius: 12px;
+            padding: 0.9rem 2rem;
+        }
+
+        .download-vocab-btn:hover { opacity: 1; filter: brightness(1.1); }
+
+        /* ---------- Footer (same as the other pages) ---------- */
+        footer {
+            margin-top: 5rem;
+            padding: 2rem 1.5rem 0.5rem 1.5rem;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .intro-section {
+                width: calc(100% - 1rem);
+                margin: 1.25rem auto 0 auto;
+                padding: 2rem 1.25rem 3.5rem 1.5rem;
+            }
+            .intro-section h1 { font-size: 1.4rem; }
+            .intro-section h1::before { width: 46px; height: 46px; line-height: 46px; font-size: 1.05rem; }
+            main { padding: 0 0.5rem; }
+            .subject-selector-wrapper { margin: -1.9rem 1rem 1.5rem 1rem; }
+            .exercise-sidebar { gap: 0.5rem; padding: 0.85rem; }
+            .sidebar-item {
+                flex: 1 1 0;
+                justify-content: center;
+                padding: 0.45rem 0.5rem;
+                font-size: 0.85rem;
+                gap: 0.5rem;
+            }
+            .sidebar-item::before { width: 26px; height: 26px; font-size: 0.85rem; border-radius: 8px; }
+            .sidebar-item:hover { transform: none; padding-left: 0.5rem; }
+            .instruction-box { font-size: 1rem; padding: 1rem 1.15rem; margin-bottom: 1.25rem; }
+            .premium-card-front::before { font-size: 4rem; }
+            footer { flex-direction: column; text-align: center; gap: 1.25rem; padding-top: 1.5rem; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .sidebar-item:hover,
+            .premium-flip-card:hover .premium-card-front,
+            .compact-flip-card:hover .compact-card-front { transform: none; }
+        }
+
+        /* Download button now gives a PDF: show the PDF icon instead of the Word icon */
+        .download-vocab-btn .fa-file-word::before { content: "\f1c1"; }
+

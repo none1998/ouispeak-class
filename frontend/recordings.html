@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OuiSpeak - ლექციების ჩანაწერები</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="css/recordings.css">
+</head>
+<body>
+
+    <div class="premium-container-box">
+
+        <header>
+            <div class="header-container">
+                <a href="index.html" class="brand-wrapper">
+                    <img src="images/logo.png" alt="Lingono Logo" class="brand-logo">
+                </a>
+                <nav>
+                    <ul class="nav-links">
+                        <li><a href="index.html">კურსები</a></li>
+                        <li><a href="exercice.html">სავარჯიშოები</a></li>
+                        <li><a href="vocab.html">ლექსიკა</a></li>
+                        <li><a href="recordings.html" class="active">ჩანაწერები</a></li>
+                        <li><a href="scores.html" id="scoresNavLink"><span id="headerStudentName">შეფასებები</span><span class="header-student-score" id="headerStudentScoreBox"><span id="headerStudentScore">0</span>/100</span></a></li>
+                    </ul>
+                    <button class="logout-btn" id="logoutBtn" onclick="handleLogout()">გამოსვლა</button>
+                </nav>
+            </div>
+        </header>
+
+        <section class="intro-section">
+            <div class="course-badge" id="userCourseBadge" style="display: none;">კურსის ძებნა...</div>
+            <h1>ონლაინ შეხვედრების ჩანაწერები</h1>
+            <p>აირჩიეთ სასურველი კვირა მიმდინარე გაკვეთილების სანახავად</p>
+        </section>
+
+        <main style="max-width: 1140px; margin: 0 auto; padding: 0 1.5rem;">
+            <div class="weeks-grid" id="weeksGrid"></div>
+        </main>
+
+        <footer>
+            <div class="footer-copyright">
+                &copy; 2026 OuiSpeak. ყველა უფლება დაცულია.
+            </div>
+            <ul class="footer-links">
+                <li><a href="contact.html">კონტაქტი</a></li>
+                <li><a href="policy.html">კონფიდენციალურობის პოლიტიკა</a></li>
+                <li><a href="code.html">აკადემიური კეთილსინდისიერების კოდექსი</a></li>
+            </ul>
+        </footer>
+
+    </div>
+
+    <div class="glacial-overlay" id="glacialOverlay" onclick="closeModal(event)">
+        <div class="glacial-modal" onclick="event.stopPropagation()">
+            <button class="modal-close-btn" onclick="hideModal()"><i class="fa-solid fa-xmark"></i></button>
+            <h2 style="text-align: center; margin: 0 0 1.5rem 0; font-weight: 800; letter-spacing: -0.02em;" id="modalWeekTitle">კვირა X</h2>
+            
+            <div class="lessons-container">
+                <div class="lesson-card" onclick="playLesson(1)">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    <h3>გაკვეთილი 1</h3>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0;">ვიდეოს გახსნა ახალ ჩანართში</p>
+                </div>
+                <div class="lesson-card" onclick="playLesson(2)">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    <h3>გაკვეთილი 2</h3>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0;">ვიდეოს გახსნა ახალ ჩანართში</p>
+                </div>
+            </div>
+
+            <div class="download-materials-section">
+                <div class="download-title">გადმოწერეთ სასწავლო მასალები</div>
+                <a href="#" id="modalDownloadBtn" class="premium-download-btn" download>
+                    <i class="fa-solid fa-cloud-arrow-down"></i> გადმოწერა
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/pages/recordings.js"></script>
+</body>
+</html>

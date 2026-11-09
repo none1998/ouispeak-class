@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OuiSpeak - სავარჯიშოები</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="css/exercice.css">
+</head>
+<body>
+
+    <div class="premium-container-box">
+
+        <header>
+            <div class="header-container">
+                <a href="index.html" class="brand-wrapper">
+                    <img src="images/logo.png" alt="Lingone Logo" class="brand-logo">
+                </a>
+                <nav>
+                    <ul class="nav-links">
+                        <li><a href="index.html">კურსები</a></li>
+                        <li><a href="exercice.html" style="color: var(--primary); font-weight: 600;">სავარჯიშოები</a></li>
+                        <li><a id="vocabNavLink" href="vocab.html" style="cursor: pointer;">ლექსიკა</a></li>
+                        <li><a href="recordings.html">ჩანაწერები</a></li>
+                        <li><a href="scores.html" id="scoresNavLink"><span id="headerStudentName">შეფასებები</span><span class="header-student-score" id="headerStudentScoreBox"><span id="headerStudentScore">0</span>/100</span></a></li>
+                    </ul>
+                    <button class="logout-btn" id="logoutBtn" onclick="handleLogout()">გამოსვლა</button>
+                </nav>
+            </div>
+        </header>
+
+        <section id="authSection">
+            <h2 id="authTitle" style="text-align: center; margin-bottom: 2rem; font-weight: 800; letter-spacing: -0.02em;">სავარჯიშოებზე წვდომა</h2>
+            <div class="auth-error" id="authError"></div>
+            
+            <form id="authForm" onsubmit="submitForm(event)">
+                <div class="form-group" id="studentIdGroup">
+                    <label>სტუდენტის ID (Student ID)</label>
+                    <input type="text" id="studentIdInput" required>
+                </div>
+                <div class="form-group" id="emailGroup">
+                    <label>ელ-ფოსტა (Email)</label>
+                    <input type="email" id="emailInput" required>
+                </div>
+                <div class="form-group" id="passwordGroup">
+                    <label>პაროლი (Password)</label>
+                    <input type="password" id="passwordInput" required minlength="6">
+                </div>
+                <button type="submit" class="auth-btn">შესვლა</button>
+            </form>
+        </section>
+
+        <div id="protectedContent">
+            <div class="intro-section">
+                <h1 id="exerciseTitle">ონლაინ სავარჯიშოები</h1>
+            </div>
+
+            <main>
+                <div class="subject-selector-wrapper">
+                    <select id="subjectSelect" class="subject-select" onchange="handleSubjectChange()">
+                        <option value="" disabled selected>აირჩიეთ კვირა</option>
+                        <option value="kvira_1">კვირა 1</option>
+                        <option value="kvira_2">კვირა 2</option>
+                        <option value="kvira_3">კვირა 3</option>
+                        <option value="kvira_4">კვირა 4</option>
+                        <option value="kvira_5">კვირა 5</option>
+                        <option value="kvira_6">კვირა 6</option>
+                        <option value="kvira_7">კვირა 7</option>
+                        <option value="kvira_8">კვირა 8</option>
+                        <option value="kvira_9">კვირა 9</option>
+                        <option value="kvira_10">კვირა 10</option>
+                        <option value="kvira_11">კვირა 11</option>
+                        <option value="kvira_12">კვირა 12</option>
+                        <option value="kvira_13">კვირა 13</option>
+                        <option value="kvira_14">კვირა 14</option>
+                        <option value="kvira_15">კვირა 15</option>
+                        <option value="kvira_16">კვირა 16</option>
+                        <option value="kvira_17">კვირა 17</option>
+                        <option value="kvira_18">კვირა 18</option>
+                        <option value="kvira_19">კვირა 19</option>
+                        <option value="kvira_20">კვირა 20</option>
+                        <option value="kvira_21">კვირა 21</option>
+                        <option value="kvira_22">კვირა 22</option>
+                        <option value="kvira_23">კვირა 23</option>
+                        <option value="kvira_24">კვირა 24</option>
+                        <option value="kvira_25">კვირა 25</option>
+                        <option value="kvira_26">კვირა 26</option>
+                    </select>
+                </div>
+
+                <div class="exercise-window">
+                    <div class="exercise-layout-body">
+                        <aside class="exercise-sidebar" id="exerciseSidebar" style="display: none;">
+                            <button class="sidebar-item active" onclick="loadExerciseBlock(1)">Exercice 1</button>
+                            <button class="sidebar-item" onclick="loadExerciseBlock(2)">Exercice 2</button>
+                            <button class="sidebar-item" onclick="loadExerciseBlock(3)">Exercice 3</button>
+                            <button class="sidebar-item" onclick="loadExerciseBlock(4)">Exercice 4</button>
+                            <button class="sidebar-item" onclick="loadExerciseBlock(5)">Exercice 5</button>
+                            <button class="sidebar-item" onclick="loadExerciseBlock(6)">Exercice 6</button>
+                        </aside>
+
+                        <div class="exercise-viewarea">
+                            <div>
+                                <div id="exerciseQuestionsContainer">
+                                    </div>
+                            </div>
+
+                            <div class="action-buttons-wrapper">
+                                <button id="saveProgressBtn" class="save-progress-btn" onclick="saveProgressToBrowser()" style="display: none;">
+                                    <i class="fa-solid fa-floppy-disk"></i> შენახვა
+                                </button>
+                                <span id="saveProgressStatus" style="font-size: 0.9rem; font-weight: 600; color: #10b981;"></span>
+                                <button id="downloadWordBtn" class="download-btn download-pdf-btn" onclick="downloadAnswersPdf()" style="display: none;">
+                                    <i class="fa-solid fa-file-pdf"></i> პასუხების გადმოწერა
+                                </button>
+                                <button class="send-answers-btn" onclick="sendAnswersToEmail()" style="display: none;">
+                                    <i class="fa-solid fa-paper-plane"></i> პასუხების გაგზავნა
+                                </button>
+                                <div class="result-feedback" id="resultFeedback"></div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <footer>
+            <div class="footer-copyright">© 2026 OuiSpeak. ყველა უფლება დაცულია.</div>
+            <ul class="footer-links">
+                <li><a href="contact.html">კონტაქტი</a></li>
+                <li><a href="policy.html">კონფიდენციალურობის პოლიტიკა</a></li>
+                <li><a href="code.html">აკადემიური კეთილსინდისიერების კოდექსი</a></li>
+            </ul>
+        </footer>
+
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/content-loader.js"></script>
+    <script src="js/pages/exercice.js"></script>
+</body>
+</html>

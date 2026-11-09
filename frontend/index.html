@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OuiSpeak - ფრანგული ენის სკოლა</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="css/index.css">
+    <!-- =========================================================
+         OUIBOT – daily French robot friend (added block)
+         Opens as a window on top of this page. All names start
+         with "ob-", so no existing style or script is changed.
+         ========================================================= -->
+    <link rel="stylesheet" href="css/ouibot.css">
+</head>
+<body>
+
+    <div class="premium-container-box">
+
+        <header>
+            <div class="header-container">
+                <a href="#" class="brand-wrapper">
+                    <img src="images/logo.png" alt="Lingone Logo" class="brand-logo">
+                </a>
+                <nav>
+                    <ul class="nav-links">
+                        <li><a href="index.html">კურსები</a></li>
+                        <li><a id="exercisesNavLink" style="cursor: pointer;">სავარჯიშოები</a></li>
+                        <li><a id="vocabNavLink" style="cursor: pointer;">ლექსიკა</a></li>
+                        <li><a href="recordings.html">ჩანაწერები</a></li>
+                        <li><a href="scores.html" id="scoresNavLink"><span id="headerStudentName">შეფასებები</span><span class="header-student-score" id="headerStudentScoreBox"><span id="headerStudentScore">0</span>/100</span></a></li>
+                    </ul>
+                    <button class="logout-btn" id="logoutBtn" onclick="handleLogout()">გამოსვლა</button>
+                </nav>
+            </div>
+        </header>
+
+        <section id="authSection">
+            <h2 id="authTitle" style="text-align: center; margin-bottom: 2rem; font-weight: 800; letter-spacing: -0.02em;">შესვლა სისტემაში</h2>
+            <div class="auth-error" id="authError"></div>
+            
+            <form id="authForm" onsubmit="handleAuthSubmit(event)">
+                <div class="form-group" id="firstNameGroup" style="display: none;">
+                    <label>სახელი (First Name)</label>
+                    <input type="text" id="firstNameInput">
+                </div>
+                <div class="form-group" id="lastNameGroup" style="display: none;">
+                    <label>გვარი (Last Name)</label>
+                    <input type="text" id="lastNameInput">
+                </div>
+                <div class="form-group" id="courseGroup" style="display: none;">
+                    <label>აირჩიეთ კურსი (Select Course)</label>
+                    <select id="courseInput">
+                        <option value="" disabled selected>აირჩიეთ სასურველი კურსი</option>
+                        <option value="A1 - სასაუბრო კურსი">A1 - სასაუბრო კურსი</option>
+                        <option value="A2 - სასაუბრო კურსი">A2 - სასაუბრო კურსი</option>
+                        <!-- <option value="B1 - სასაუბრო კურსი">B1 - სასაუბრო კურსი</option> -->
+                        <option value="DELF A2 - კურსი">DELF A2 - კურსი</option>
+                        <option value="DELF B1 - კურსი">DELF B1 - კურსი</option>
+                    </select>
+                </div>
+                 <div class="form-group" id="studentIdGroup">
+                    <label>სტუდენტის ID (Student ID)</label>
+                    <input type="text" id="studentIdInput" required>
+                </div>
+                <div class="form-group" id="emailGroup">
+                    <label>ელ-ფოსტა (Email)</label>
+                    <input type="email" id="emailInput" required>
+                </div>
+                <div id="birthdayGroup" class="form-group" style="display: none;">
+                    <label>დაბადების თარიღი (Birthday):</label>
+                    <input type="date" id="birthdayInput">
+                </div>
+                <div class="form-group" id="passwordGroup">
+                    <label>პაროლი (Password)</label>
+                    <input type="password" id="passwordInput" required minlength="6">
+                </div>
+                
+                <span class="forgot-pass-link" id="forgotPasswordLink" onclick="toggleForgotPasswordMode(true)">დაგავიწყდათ პაროლი?</span>
+
+                <button type="submit" class="auth-btn" id="authSubmitBtn">შესვლა</button>
+            </form>
+
+            <form id="updatePasswordForm" style="display: none;" onsubmit="handleUpdatePassword(event)">
+                <div class="form-group">
+                    <label>ახალი პაროლი (New Password)</label>
+                    <input type="password" id="newPasswordInput" required minlength="6">
+                </div>
+                <button type="submit" class="auth-btn">პაროლის განახლება</button>
+            </form>
+
+            <div class="auth-switch" id="authSwitchContainer">
+                არ გაქვთ ანგარიში? <span onclick="toggleAuthMode(true)">რეგისტრაცია</span>
+            </div>
+        </section>
+
+        <div id="protectedContent">
+            <section id="coursesSection">
+                <!-- Student info card (display only, filled by the script at the bottom) -->
+                <div class="student-panel" id="studentPanel">
+                    <div class="student-card">
+                        <div class="student-identity">
+                            <div class="student-avatar" id="spAvatar" aria-hidden="true">–</div>
+                            <div>
+                                <p class="student-kicker">მოგესალმებით 👋</p>
+                                <h2 class="student-name" id="spName">იტვირთება…</h2>
+                                <dl class="student-meta">
+                                    <div><dt>სტუდენტის ID</dt><dd id="spId">—</dd></div>
+                                    <div><dt>კურსი</dt><dd id="spCourse">—</dd></div>
+                                </dl>
+                            </div>
+                        </div>
+
+                        <a class="student-score" id="spScoreTile" href="scores.html" aria-label="ჯამური ქულა, დეტალურად ნახვა">
+                            <div class="score-ring">
+                                <svg viewBox="0 0 128 128" aria-hidden="true">
+                                    <defs>
+                                        <linearGradient id="scoreGradient" x1="0" y1="0" x2="1" y2="1">
+                                            <stop offset="0%" stop-color="#0055a5"/>
+                                            <stop offset="100%" stop-color="#ef4135"/>
+                                        </linearGradient>
+                                    </defs>
+                                    <circle class="ring-track" cx="64" cy="64" r="52"/>
+                                    <circle class="ring-fill" id="spRing" cx="64" cy="64" r="52"/>
+                                </svg>
+                                <div class="score-value">
+                                    <strong id="spScore">—</strong>
+                                    <span>100-დან</span>
+                                </div>
+                            </div>
+                            <div class="score-text">
+                                <b>ჯამური ქულა</b>
+                                <small id="spScoreNote">შეფასება ჯერ არ არის</small>
+                                <em>დეტალურად ნახვა</em>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="intro-section">
+                    <h1>OuiSpeak სკოლის 2026 წლის სასწავლო პროგრამების ჩამონათვალი</h1>
+                    <p>ამ გვერდზე თქვენ შეგიძლიათ გაეცნოთ კურსების სასწავლო პროგრამებს დეტალურად. დავალებების, ლექსიკისა
+                        თუ შეფასებების სანახავად გადადით შესაბამის ჩანართში
+                    </p>
+                </div>
+                <main>
+                    <div class="grid">
+                        <div class="card success-card" id="card_A1_-_სასაუბრო_კურსი">
+                            <div>
+                                <div class="level-mark" aria-hidden="true">A1<small>სასაუბრო</small></div>
+                                <h2>A1 - სასაუბრო კურსი</h2>
+                                <p>კურსის განმავლობაში თქვენ ძალიან სწრაფად ისწავლით ფრანგულად კითხვას...</p>
+                            </div>
+                            <button class="btn syllabus-link" data-course="3"><i class="fa-solid fa-download"></i>სილაბუსის ნახვა</button>
+                        </div>
+
+                        <div class="card" id="card_A2_-_სასაუბრო_კურსი">
+                            <div>
+                                <div class="level-mark" aria-hidden="true">A2<small>სასაუბრო</small></div>
+                                <h2>A2 - სასაუბრო კურსი</h2>
+                                <p>სასაუბრო პრაქტიკა და ენობრივი უნარების გაუმჯობესება A2 დონეზე...</p>
+                            </div>
+                            <button class="btn syllabus-link" data-course="4"><i class="fa-solid fa-download"></i>სილაბუსის ნახვა</button>
+                        </div>
+
+                        <div class="card" id="card_B1_-_სასაუბრო_კურსი">
+                            <div>
+                                <div class="level-mark" aria-hidden="true">B1<small>სასაუბრო</small></div>
+                                <h2>B1 - სასაუბრო კურსი</h2>
+                                <p>სასაუბრო პრაქტიკა და ენობრივი უნარების გაუმჯობესება B1 დონეზე...</p>
+                            </div>
+                            <button class="btn syllabus-link" data-course="5"><i class="fa-solid fa-download"></i>სილაბუსის ნახვა</button>
+                        </div>
+
+                        <div class="card" id="card_DELF_A2_-_კურსი">
+                            <div>
+                                <div class="level-mark" aria-hidden="true">A2<small>DELF</small></div>
+                                <h2>DELF A2 - კურსი</h2>
+                                <p>ინტენსიური 26-კვირიანი მოსამზადებელი კურსი, DELF-ის გამოცდისთვის A2 დონეზე...</p>
+                            </div>
+                            <button class="btn syllabus-link" data-course="1"><i class="fa-solid fa-download"></i>სილაბუსის ნახვა</button>
+                        </div>
+
+                        <div class="card" id="card_DELF_B1_-_კურსი">
+                            <div>
+                                <div class="level-mark" aria-hidden="true">B1<small>DELF</small></div>
+                                <h2>DELF B1 - კურსი</h2>
+                                <p>ინტენსიური 26-კვირიანი მოსამზადებელი კურსი, DELF-ის გამოცდისთვის B1 დონეზე...</p>
+                            </div>
+                            <button class="btn syllabus-link" data-course="2"><i class="fa-solid fa-download"></i>სილაბუსის ნახვა</button>
+                        </div>
+                    </div>
+                </main>
+            </section>
+
+            <section id="exercisesSection" style="display: none; max-width: 800px; margin: 0 auto; padding: 2rem 1.5rem;">
+                <h2>ხელმისაწვდომი სავარჯიშოები</h2>
+                <div id="exercisesContainer"></div>
+            </section>
+        </div>
+
+        <footer>
+            <div class="footer-copyright">
+                &copy; 2026 OuiSpeak. ყველა უფლება დაცულია.
+            </div>
+            <ul class="footer-links">
+                <li><a href="contact.html">კონტაქტი</a></li>
+                <li><a href="policy.html">კონფიდენციალურობის პოლიტიკა</a></li>
+                <li><a href="code.html">აკადემიური კეთილსინდისიერების კოდექსი</a></li>
+            </ul>
+        </footer>
+
+    </div> <div id="previewModal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+            <div class="modal-header-container">
+                <h2 id="modalNavTitle">სილაბუსის გადახედვა</h2>
+                <button class="download-btn" id="downloadPdfBtn">📥 ჩამოტვირთვა (PDF)</button>
+            </div>
+            
+            <div id="pdfContainer">
+                <div class="header-section">
+                    <span class="badge" id="pdfBadge">Cours de français</span>
+                    <h1 id="pdfMainTitle">სასწავლო პროგრამა</h1>
+                    <p class="subtitle" id="pdfSubtitle">ინტენსიური სასწავლო კურსი</p>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="border-top-left-radius: 6px;">კვირა</th>
+                            <th>სასწავლო მასალა</th>
+                            <th style="border-top-right-radius: 6px; padding-left: 16px;">ლექსიკა და გრამატიკა</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modalBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/pages/index.js"></script>
+
+    <script src="js/pages/index-student-card.js"></script>
+    <!-- =========================================================
+         OUIBOT – robot friend window (added block)
+         ========================================================= -->
+    <!-- Button to call the robot friend (bottom-right corner, visible only for logged-in students) -->
+    <button type="button" class="ob-launcher" id="obLauncher" hidden>
+        <span class="ob-launcher-bot" id="obLauncherBot" aria-hidden="true"></span>
+        <span class="ob-launcher-text">
+            <span class="ob-launcher-name" id="obLauncherName"></span>
+            <span class="ob-launcher-sub" id="obLauncherSub">დაუძახე მეგობარს</span>
+        </span>
+        <span class="ob-launcher-dot" id="obLauncherDot" hidden></span>
+    </button>
+
+    <div class="ob-overlay" id="obOverlay" hidden>
+
+        <!-- First visit: create the robot -->
+        <div class="ob-window ob-setup" id="obSetup" role="dialog" aria-modal="true" aria-labelledby="obSetupTitle">
+            <div class="ob-titlebar">
+                <div class="ob-titlebar-text">
+                    <h2 class="ob-title" id="obSetupTitle">შექმენი შენი ფრანგი მეგობარი</h2>
+                    <p class="ob-subtitle">ნაბიჯი <span id="obStepNum">1</span> / 10</p>
+                </div>
+                <button type="button" class="ob-close ob-mute" data-ob-kamute aria-pressed="false" aria-label="ხმა"><svg class="ob-ico-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg><svg class="ob-ico-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16.5 9.5l5 5M21.5 9.5l-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+                <button type="button" class="ob-close" data-ob-close aria-label="დახურვა"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></button>
+            </div>
+            <div class="ob-body">
+                <div class="ob-stage">
+                    <div class="ob-say" aria-live="polite">
+                        <p class="ob-say-fr" id="obSetupSayFr"></p>
+                        <p class="ob-say-ka" id="obSetupSayKa"></p>
+                    </div>
+                    <div class="ob-robot" id="obSetupRobot"></div>
+                    <div class="ob-stage-text">
+                        <p class="ob-plate" id="obSetupPlate">???</p>
+                        <p class="ob-plate-sub">შენი ფრანგი მეგობარი</p>
+                    </div>
+                </div>
+                <div class="ob-main">
+                    <div class="ob-scroll">
+                        <p class="ob-lead">ეს რობოტი ყოველდღე გესაუბრება ფრანგულად, შენი დონის მიხედვით, როგორც ნამდვილი მეგობარი.</p>
+                        <ol class="ob-steps" aria-hidden="true"><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li></ol>
+
+                        <div class="ob-step" data-step="1">
+                            <div class="ob-field">
+                                <label class="ob-label" for="obNameInput">რა დავარქვათ შენს მეგობარს?</label>
+                                <input class="ob-input" id="obNameInput" type="text" maxlength="20" autocomplete="off" placeholder="მაგ. Léa, Noah, Chloé, Adam…">
+                                <p class="ob-hint">მაქსიმუმ 20 სიმბოლო.</p>
+                            </div>
+                        </div>
+
+                        <div class="ob-step" data-step="2">
+                            <fieldset class="ob-field">
+                                <legend>გოგოა თუ ბიჭი?</legend>
+                                <div class="ob-options" id="obGenderOpts">
+                                    <button type="button" class="ob-chip ob-chip-big" data-gender="f" aria-pressed="false"><i class="fa-solid fa-venus"></i>გოგო</button>
+                                    <button type="button" class="ob-chip ob-chip-big" data-gender="m" aria-pressed="false"><i class="fa-solid fa-mars"></i>ბიჭი</button>
+                                </div>
+                                <p class="ob-hint">ამის მიხედვით ის ფრანგულად სწორ ფორმებს გამოიყენებს (content / contente).</p>
+                            </fieldset>
+                        </div>
+
+                        <div class="ob-step" data-step="3">
+                            <fieldset class="ob-field">
+                                <legend>კანის ფერი</legend>
+                                <div class="ob-options" id="obSkinOpts"></div>
+                            </fieldset>
+                        </div>
+
+                        <div class="ob-step" data-step="4">
+                            <fieldset class="ob-field">
+                                <legend>ვარცხნილობა</legend>
+                                <div class="ob-options ob-tiles" id="obHairOpts"></div>
+                            </fieldset>
+                            <fieldset class="ob-field">
+                                <legend>თმის ფერი</legend>
+                                <div class="ob-options" id="obHairColorOpts"></div>
+                            </fieldset>
+                        </div>
+
+                        <div class="ob-step" data-step="5">
+                            <fieldset class="ob-field">
+                                <legend>თვალების ფერი</legend>
+                                <div class="ob-options ob-tiles" id="obEyeOpts"></div>
+                            </fieldset>
+                        </div>
+
+                        <div class="ob-step" data-step="6">
+                            <fieldset class="ob-field">
+                                <legend>სხეულის ფერი</legend>
+                                <div class="ob-options" id="obShellOpts"></div>
+                            </fieldset>
+                            <fieldset class="ob-field">
+                                <legend>სახსრების ფერი</legend>
+                                <div class="ob-options" id="obJointOpts"></div>
+                            </fieldset>
+                            <fieldset class="ob-field">
+                                <legend>მკერდის სინათლე</legend>
+                                <div class="ob-options ob-tiles" id="obEmblemOpts"></div>
+                            </fieldset>
+                        </div>
+
+                        <div class="ob-step" data-step="7">
+                            <fieldset class="ob-field">
+                                <legend>ტანსაცმელი (სურვილისამებრ)</legend>
+                                <div class="ob-options ob-tiles" id="obOutfitOpts"></div>
+                            </fieldset>
+                            <fieldset class="ob-field">
+                                <legend>ტანსაცმლის ფერი</legend>
+                                <div class="ob-options" id="obOutfitColorOpts"></div>
+                            </fieldset>
+                        </div>
+
+                        <div class="ob-step" data-step="8">
+                            <fieldset class="ob-field">
+                                <legend>თავზე</legend>
+                                <div class="ob-options ob-tiles" id="obAccOpts"></div>
+                            </fieldset>
+                            <fieldset class="ob-field">
+                                <legend>სათვალე</legend>
+                                <div class="ob-options ob-tiles" id="obGlassesOpts"></div>
+                            </fieldset>
+                            <fieldset class="ob-field">
+                                <legend>სამკაულები</legend>
+                                <div class="ob-options ob-tiles" id="obJewelOpts"></div>
+                            </fieldset>
+                        </div>
+
+                        <div class="ob-step" data-step="9">
+                            <fieldset class="ob-field">
+                                <legend>ანდროიდის დეტალი</legend>
+                                <div class="ob-options ob-tiles" id="obAndroidOpts"></div>
+                            </fieldset>
+                        </div>
+
+                        <div class="ob-step" data-step="10">
+                            <div class="ob-summary">
+                                <div class="ob-summary-bot" id="obSummaryBot"></div>
+                                <div>
+                                    <p class="ob-summary-name" id="obSummaryName"></p>
+                                    <p class="ob-summary-meta" id="obSummaryMeta"></p>
+                                </div>
+                            </div>
+                            <div class="ob-warn">
+                                <i class="fa-solid fa-lock"></i>
+                                <p><strong>ყურადღება:</strong> სახელს, გარეგნობას და სქესს მერე ვეღარ შეცვლი. ეს შენი მეგობარია სამუდამოდ.</p>
+                            </div>
+                        </div>
+
+                        <p class="ob-err" id="obSetupErr" role="alert"></p>
+                    </div>
+                    <div class="ob-actions">
+                        <button type="button" class="ob-btn ob-btn-ghost" id="obBackBtn" hidden>უკან</button>
+                        <button type="button" class="ob-btn ob-btn-main" id="obNextBtn">შემდეგი</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Daily chat -->
+        <div class="ob-window ob-chat" id="obChat" role="dialog" aria-modal="true" aria-labelledby="obChatName">
+            <div class="ob-titlebar">
+                <div class="ob-mini" id="obChatMini" aria-hidden="true"></div>
+                <div class="ob-titlebar-text">
+                    <h2 class="ob-title" id="obChatName"></h2>
+                    <p class="ob-subtitle ob-status">ონლაინ · უპასუხე ფრანგულად</p>
+                </div>
+                <button type="button" class="ob-close" data-ob-close aria-label="დახურვა"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></button>
+            </div>
+            <div class="ob-body">
+                <div class="ob-stage">
+                    <div class="ob-robot" id="obChatRobot"></div>
+                    <div class="ob-stage-text">
+                        <p class="ob-plate" id="obChatPlate"></p>
+                        <p class="ob-plate-sub">შენი ფრანგი მეგობარი</p>
+                    </div>
+                </div>
+                <div class="ob-main">
+                    <div class="ob-log" id="obLog" aria-live="polite"></div>
+                    <form class="ob-compose" id="obCompose" autocomplete="off">
+                        <button type="button" class="ob-round ob-mic" id="obMicBtn" aria-label="ხმით პასუხი" hidden><i class="fa-solid fa-microphone"></i></button>
+                        <input class="ob-input" id="obAnswer" type="text" maxlength="300" placeholder="დაწერე პასუხი ფრანგულად…" aria-label="შენი პასუხი">
+                        <button type="submit" class="ob-round ob-send" id="obSendBtn" aria-label="გაგზავნა"><i class="fa-solid fa-paper-plane"></i></button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Introduction: the robot comes to the middle of the screen and introduces itself -->
+        <div class="ob-hero" id="obHero" hidden>
+            <div class="ob-hero-grid" aria-hidden="true"></div>
+            <div class="ob-hero-inner">
+                <div class="ob-hero-stage">
+                    <span class="ob-hero-halo" aria-hidden="true"></span>
+                    <div class="ob-hero-bot" id="obHeroBot"></div>
+                </div>
+                <div class="ob-hero-card" id="obHeroCaption" aria-live="polite" lang="fr">
+                    <div class="ob-hero-head">
+                        <span class="ob-hero-dot" aria-hidden="true"></span>
+                        <span class="ob-hero-name" id="obHeroName"></span>
+                        <span class="ob-hero-tag">androïde · en ligne</span>
+                    </div>
+                    <div class="ob-hero-lines" id="obHeroLines"></div>
+                    <div class="ob-hero-foot">
+                        <div class="ob-hero-progress" aria-hidden="true"><span id="obHeroBar"></span></div>
+                        <button type="button" class="ob-close ob-mute ob-hero-mute" data-ob-kamute aria-pressed="false" aria-label="ხმა"><svg class="ob-ico-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg><svg class="ob-ico-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16.5 9.5l5 5M21.5 9.5l-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+                        <button type="button" class="ob-hero-skip" id="obHeroSkip">Passer <span aria-hidden="true">⟶</span></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/pages/ouibot.js"></script>
+</body>
+</html>

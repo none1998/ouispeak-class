@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <title>Admin - Lingono</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+    <!-- Login -->
+    <main id="loginView" class="login" hidden>
+        <form id="loginForm" class="login-card">
+            <img src="images/logo.png" alt="Lingono" class="login-logo">
+            <h1>Course editor</h1>
+            <p class="muted">Sign in with an admin account.</p>
+            <label>Email <input type="email" id="loginEmail" required autocomplete="username"></label>
+            <label>Password <input type="password" id="loginPassword" required autocomplete="current-password"></label>
+            <button type="submit" class="btn btn-primary" id="loginBtn">Sign in</button>
+            <p id="loginError" class="error" role="alert"></p>
+        </form>
+    </main>
+
+    <!-- Editor -->
+    <div id="appView" class="app" hidden>
+        <aside class="sidebar">
+            <div class="sidebar-top">
+                <img src="images/logo.png" alt="Lingono" class="sidebar-logo">
+                <button class="icon-btn" id="logoutBtn" title="Sign out"><i class="fa-solid fa-right-from-bracket"></i></button>
+            </div>
+
+            <label class="field-label" for="courseSelect">Course</label>
+            <select id="courseSelect"></select>
+            <div class="row-actions">
+                <button class="btn btn-ghost" id="addCourseBtn"><i class="fa-solid fa-plus"></i> New course</button>
+                <button class="btn btn-ghost danger" id="deleteCourseBtn"><i class="fa-solid fa-trash"></i></button>
+            </div>
+
+            <button class="week-item recordings-link" id="recordingsBtn">
+                <span><i class="fa-solid fa-video"></i> Lesson recordings</span>
+            </button>
+
+            <div class="weeks-head">
+                <span class="field-label">Weeks</span>
+                <button class="btn btn-ghost" id="addWeekBtn"><i class="fa-solid fa-plus"></i> Add week</button>
+            </div>
+            <nav id="weekList" class="week-list"></nav>
+        </aside>
+
+        <main class="editor" id="editor"></main>
+    </div>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/pages/admin.js"></script>
+</body>
+</html>

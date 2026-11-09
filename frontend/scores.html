@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OuiSpeak - შეფასებები</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="css/scores.css">
+</head>
+<body>
+
+    <div class="premium-container-box">
+        <header>
+            <div class="header-container">
+                <a href="index.html" class="brand-wrapper">
+                    <img src="images/logo.png" alt="Lingono Logo" class="brand-logo">
+                </a>
+                <nav>
+                    <ul class="nav-links">
+                        <li><a href="index.html">კურსები</a></li>
+                        <li><a id="exercisesNavLink" style="cursor: pointer;">სავარჯიშოები</a></li>
+                        <li><a id="vocabNavLink" style="cursor: pointer;">ლექსიკა</a></li>
+                        <li><a href="recordings.html">ჩანაწერები</a></li>
+                        <li><a href="scores.html" class="active" id="scoresNavLink"><span id="headerStudentName">შეფასებები</span><span class="header-student-score" id="headerStudentScoreBox"><span id="headerStudentScore">0</span>/100</span></a></li>
+                    </ul>
+                    <button class="logout-btn" id="logoutBtn" onclick="handleLogout()">გამოსვლა</button>
+                </nav>
+            </div>
+        </header>
+
+        <section id="authRequiredMessage">
+            <i class="fas fa-lock" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1.5rem;"></i>
+            <h2>ავტორიზაცია საჭიროა</h2>
+            <p>გთხოვთ, გაიაროთ ავტორიზაცია მთავარ გვერდზე თქვენი ქულების სანახავად.</p>
+            <a href="index.html" class="logout-btn" style="display: inline-block; text-decoration: none; background: var(--text-main); color: white; margin-top: 1rem;">მთავარზე გადასვლა</a>
+        </section>
+
+        <div id="protectedContent">
+            <!-- Student info card (same design as the main page) -->
+            <div class="student-panel" id="scoreDashboard">
+                <div class="student-card">
+                    <div class="student-identity">
+                        <div class="student-avatar" id="spAvatar" aria-hidden="true">–</div>
+                        <div>
+                            <p class="student-kicker">მოგესალმებით 👋</p>
+                            <h2 class="student-name" id="studentName">სტუდენტი</h2>
+                            <dl class="student-meta">
+                                <div><dt>სტუდენტის ID</dt><dd id="spId">—</dd></div>
+                                <div><dt>კურსი</dt><dd id="spCourse">—</dd></div>
+                            </dl>
+                            <!-- The original elements the page logic writes into; shown above through spId / spCourse -->
+                            <div hidden>
+                                <p id="studentCourse"><i class="fas fa-graduation-cap"></i> კურსი: იტვირთება...</p>
+                                <p id="studentIdDisplay"><i class="fas fa-id-card"></i> ID: --</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="student-score" id="spScoreTile">
+                        <div class="score-ring">
+                            <svg viewBox="0 0 128 128" aria-hidden="true">
+                                <defs>
+                                    <linearGradient id="scoreGradient" x1="0" y1="0" x2="1" y2="1">
+                                        <stop offset="0%" stop-color="#0055a5"/>
+                                        <stop offset="100%" stop-color="#ef4135"/>
+                                    </linearGradient>
+                                </defs>
+                                <circle class="ring-track" cx="64" cy="64" r="52"/>
+                                <circle class="ring-fill" id="spRing" cx="64" cy="64" r="52"/>
+                            </svg>
+                            <div class="score-value">
+                                <strong id="spScore">—</strong>
+                                <span>100-დან</span>
+                            </div>
+                        </div>
+                        <div class="score-text">
+                            <b>ჯამური ქულა</b>
+                            <small id="spScoreNote">შეფასება ჯერ არ არის</small>
+                        </div>
+                        <span id="totalScore" hidden>0</span>
+                    </div>
+                </div>
+            </div>
+
+            <section class="intro-section">
+                <h1>შეფასებები კურსის განმავლობაში</h1>
+            </section>
+
+            <main>
+                <div class="scores-grid" id="scoresGrid">
+                    <div class="score-card" data-max="25">
+                        <div class="score-strip">
+                            <div class="score-points"><span id="score_homework">0</span><span class="score-max">/25</span></div>
+                            <div class="score-icon"><i class="fas fa-book-open"></i></div>
+                        </div>
+                        <div class="score-name">დავალებები</div>
+                        <div class="score-bar"><span></span></div>
+                    </div>
+                    <div class="score-card" data-max="15">
+                        <div class="score-strip">
+                            <div class="score-points"><span id="score_vocab1">0</span><span class="score-max">/15</span></div>
+                            <div class="score-icon"><i class="fas fa-spell-check"></i></div>
+                        </div>
+                        <div class="score-name">ლექსიკა 1</div>
+                        <div class="score-bar"><span></span></div>
+                    </div>
+                    <div class="score-card" data-max="15">
+                        <div class="score-strip">
+                            <div class="score-points"><span id="score_vocab2">0</span><span class="score-max">/15</span></div>
+                            <div class="score-icon"><i class="fas fa-language"></i></div>
+                        </div>
+                        <div class="score-name">ლექსიკა 2</div>
+                        <div class="score-bar"><span></span></div>
+                    </div>
+                    <div class="score-card" data-max="25">
+                        <div class="score-strip">
+                            <div class="score-points"><span id="score_writing">0</span><span class="score-max">/25</span></div>
+                            <div class="score-icon"><i class="fas fa-pen-fancy"></i></div>
+                        </div>
+                        <div class="score-name">წერა</div>
+                        <div class="score-bar"><span></span></div>
+                    </div>
+                    <div class="score-card" data-max="20">
+                        <div class="score-strip">
+                            <div class="score-points"><span id="score_speaking">0</span><span class="score-max">/20</span></div>
+                            <div class="score-icon"><i class="fas fa-comments"></i></div>
+                        </div>
+                        <div class="score-name">საუბარი</div>
+                        <div class="score-bar"><span></span></div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <footer>
+            <div class="footer-copyright">
+                &copy; 2026 OuiSpeak. ყველა უფლება დაცულია.
+            </div>
+            <ul class="footer-links">
+                <li><a href="contact.html">კონტაქტი</a></li>
+                <li><a href="policy.html">კონფიდენციალურობის პოლიტიკა</a></li>
+                <li><a href="code.html">აკადემიური კეთილსინდისიერების კოდექსი</a></li>
+            </ul>
+        </footer>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/pages/scores.js"></script>
+    <script src="js/pages/scores-cards.js"></script>
+</body>
+</html>

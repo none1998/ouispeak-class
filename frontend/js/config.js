@@ -9,4 +9,4 @@ const SUPABASE_ANON_KEY = "sb_publishable_xlmbZTsExgJWyjN9IdC8xA_NaILka38";
 // Address of your C# API. Local while developing, your real server once deployed.
 const API_URL = (location.hostname === "localhost" || location.hostname === "127.0.0.1")
     ? "http://localhost:5080"
-    : "https://YOUR-API.onrender.com";
+    : "https://ouispeak-class.onrender.com";

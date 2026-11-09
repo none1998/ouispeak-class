@@ -1826,3 +1826,11 @@
     .listen-intro-text { font-size: 1.12rem; }
 }
 @media (prefers-reduced-motion: reduce) { .listen-intro { animation: none; } .listen-intro-text .lw { transition: none; } }
+
+/* No pause, announcement and 30-second countdown */
+.la-btn:disabled { opacity: 1; }
+.limited-audio.la-active .la-btn:disabled { background: linear-gradient(135deg, var(--primary), #003f7d); cursor: default; }
+.limited-audio.la-waiting { border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15); background: #fffbeb; }
+.limited-audio.la-waiting .la-bar span { background: #f59e0b; transition: width 1s linear; }
+.limited-audio.la-waiting .la-btn:disabled { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.la-btn.la-count i { font-style: normal; font-weight: 800; font-size: 1.05rem; font-family: inherit; }

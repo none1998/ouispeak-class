@@ -2378,7 +2378,12 @@ Reply ONLY with JSON in this exact shape:
             playBtn.focus();
         }
 
-        // ---------- Exercise audio player (max 2 listenings) ----------
+        // ---------- Exercise audio player (max 2 listenings, no pause) ----------
+        // 1st listening (student clicks) → announcement (warning_2.mp3) → 30 s countdown
+        // → 2nd listening starts by itself → locked.
+        const AUDIO_SECOND_WARNING_SRC = "audios/warning_2.mp3";
+        const AUDIO_GAP_SECONDS = 30;
+
         function createLimitedAudioPlayer(src, labelText, blockKey) {
             const box = document.createElement('div');
             box.className = "audio-player-container limited-audio";
@@ -2387,7 +2392,7 @@ Reply ONLY with JSON in this exact shape:
                 <div class="la-row">
                     <button type="button" class="la-btn" aria-label="მოსმენა"><i class="fa-solid fa-play"></i></button>
                     <div class="la-main">
-                        <div class="la-status"></div>
+                        <div class="la-status" aria-live="polite"></div>
                         <div class="la-bar"><span></span></div>
                     </div>
                     <div class="la-time">0:00</div>
@@ -2404,12 +2409,24 @@ Reply ONLY with JSON in this exact shape:
             const audio = new Audio();
             audio.preload = "metadata";
             audio.src = src;
-            let mode = "idle";   // idle | playing | paused
+            const announce = new Audio(AUDIO_SECOND_WARNING_SRC);
 
+            let mode = "idle";          // idle | playing | announce | countdown
+            let secondsLeft = 0;
+            let countdownTimer = null;
+            let stoppedByPage = false;
+
+            // Called when the student leaves this exercise: everything stops
             const player = {
                 pause() {
-                    if (mode === "playing") { audio.pause(); mode = "paused"; }
+                    stoppedByPage = true;
+                    clearInterval(countdownTimer);
+                    audio.pause();
+                    announce.pause();
+                    mode = "idle";
+                    bar.style.width = "0%";
                     draw();
+                    stoppedByPage = false;
                 }
             };
 
@@ -2421,47 +2438,52 @@ Reply ONLY with JSON in this exact shape:
                 const icon = btn.querySelector('i');
                 box.classList.toggle('la-locked', remaining === 0 && mode === "idle");
                 box.classList.toggle('la-active', mode !== "idle");
+                box.classList.toggle('la-waiting', mode === "announce" || mode === "countdown");
+                btn.classList.toggle('la-count', mode === "countdown");
 
                 if (mode === "playing") {
-                    icon.className = "fa-solid fa-pause";
-                    status.textContent = `მოსმენა ${used} / ${AUDIO_MAX_PLAYS}`;
-                } else if (mode === "paused") {
-                    icon.className = "fa-solid fa-play";
-                    status.textContent = `პაუზა — მოსმენა ${used} / ${AUDIO_MAX_PLAYS}`;
+                    icon.className = "fa-solid fa-volume-high";
+                    status.textContent = `მიმდინარეობს მოსმენა ${used} / ${AUDIO_MAX_PLAYS}`;
+                } else if (mode === "announce") {
+                    icon.className = "fa-solid fa-bullhorn";
+                    status.textContent = "⚠ ყურადღება…";
+                } else if (mode === "countdown") {
+                    icon.className = "";
+                    icon.textContent = secondsLeft;
+                    status.textContent = `მეორე მოსმენა ავტომატურად დაიწყება ${secondsLeft} წამში`;
                 } else if (remaining === 0) {
                     icon.className = "fa-solid fa-lock";
                     status.textContent = "აუდიოს მოსმენა შეგიძლიათ მხოლოდ 2-ჯერ. ლიმიტი ამოიწურა.";
                 } else {
                     icon.className = "fa-solid fa-play";
                     status.textContent = used === 0
-                        ? `დააჭირეთ, როცა მზად იქნებით (მხოლოდ ${AUDIO_MAX_PLAYS}-ჯერ)`
+                        ? `დააჭირეთ, როცა მზად იქნებით (მხოლოდ ${AUDIO_MAX_PLAYS}-ჯერ, პაუზის გარეშე)`
                         : `დარჩა ${remaining} მოსმენა`;
                 }
-                btn.disabled = remaining === 0 && mode === "idle";
+                if (mode !== "countdown") icon.textContent = "";
+                // no pause: the button only works to START a listening
+                btn.disabled = mode !== "idle" || remaining === 0;
             }
 
-            btn.addEventListener('click', () => {
-                if (mode === "playing") { player.pause(); return; }
-                if (audioActivePlayer && audioActivePlayer !== player) audioActivePlayer.pause();
-                audioActivePlayer = player;
-
-                if (mode === "paused") { mode = "playing"; audio.play(); draw(); return; }
-
+            // Starts one listening (counted on the server)
+            function startListening() {
                 const used = audioGetPlays(src);
-                if (used >= AUDIO_MAX_PLAYS) { draw(); return; }
+                if (used >= AUDIO_MAX_PLAYS) { mode = "idle"; draw(); return; }
                 audioSetPlays(src, used + 1);
                 audio.currentTime = 0;
+                bar.style.width = "0%";
                 mode = "playing";
                 audio.play().catch(() => { audioSetPlays(src, used); mode = "idle"; draw(); });
                 draw();
 
-                // The server has the final word (the play starts right away so the browser allows the sound)
                 api("/api/listening/start", { method: "POST", body: JSON.stringify({ key: audioPlaysKey(src) }) })
                     .then(r => {
                         audioServerOk = true;
                         audioSetPlays(src, r.count);
                         if (!r.allowed) {
+                            stoppedByPage = true;
                             audio.pause();
+                            stoppedByPage = false;
                             audio.currentTime = 0;
                             mode = "idle";
                             bar.style.width = "0%";
@@ -2469,19 +2491,68 @@ Reply ONLY with JSON in this exact shape:
                         draw();
                     })
                     .catch(err => console.warn("Listening not counted on the server:", err));
+            }
+
+            function startCountdown() {
+                mode = "countdown";
+                secondsLeft = AUDIO_GAP_SECONDS;
+                bar.style.width = "0%";
+                draw();
+                clearInterval(countdownTimer);
+                countdownTimer = setInterval(() => {
+                    secondsLeft--;
+                    bar.style.width = `${((AUDIO_GAP_SECONDS - secondsLeft) / AUDIO_GAP_SECONDS) * 100}%`;
+                    if (secondsLeft <= 0) {
+                        clearInterval(countdownTimer);
+                        startListening();
+                    } else {
+                        draw();
+                    }
+                }, 1000);
+            }
+
+            btn.addEventListener('click', () => {
+                if (mode !== "idle") return;
+                if (audioGetPlays(src) >= AUDIO_MAX_PLAYS) { draw(); return; }
+                if (audioActivePlayer && audioActivePlayer !== player) audioActivePlayer.pause();
+                audioActivePlayer = player;
+
+                // Unlock the announcement now (some phones only allow sound that starts from a click)
+                announce.muted = true;
+                announce.play().then(() => { announce.pause(); announce.currentTime = 0; announce.muted = false; })
+                    .catch(() => { announce.muted = false; });
+
+                startListening();
+            });
+
+            // No pausing (also not with headphone buttons or the phone's media controls)
+            audio.addEventListener('pause', () => {
+                if (mode === "playing" && !stoppedByPage && !audio.ended) audio.play().catch(() => {});
             });
 
             audio.addEventListener('timeupdate', () => {
-                if (mode === "idle") return;
+                if (mode !== "playing") return;
                 if (audio.duration) bar.style.width = `${(audio.currentTime / audio.duration) * 100}%`;
                 time.textContent = `${audioFmt(audio.currentTime)} / ${audioFmt(audio.duration)}`;
             });
             audio.addEventListener('loadedmetadata', () => { if (mode === "idle") time.textContent = audioFmt(audio.duration); });
+
             audio.addEventListener('ended', () => {
-                mode = "idle";
+                if (mode !== "playing") return;
                 bar.style.width = "100%";
-                draw();
+                if (audioGetPlays(src) < AUDIO_MAX_PLAYS) {
+                    // announce the second listening, then wait 30 seconds
+                    mode = "announce";
+                    draw();
+                    announce.currentTime = 0;
+                    announce.play().catch(() => startCountdown());
+                } else {
+                    mode = "idle";
+                    draw();
+                }
             });
+            announce.addEventListener('ended', () => { if (mode === "announce") startCountdown(); });
+            announce.addEventListener('error', () => { if (mode === "announce") startCountdown(); });
 
             draw();
             audioLoadCounts().then(() => { if (mode === "idle") draw(); });

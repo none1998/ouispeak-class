@@ -32,6 +32,13 @@
                 <button class="icon-btn" id="logoutBtn" title="Sign out"><i class="fa-solid fa-right-from-bracket"></i></button>
             </div>
 
+            <nav class="section-nav" id="sectionNav" aria-label="Admin sections">
+                <button class="section-btn active" data-section="content"><i class="fa-solid fa-book-open"></i> Course content</button>
+                <button class="section-btn" data-section="courses"><i class="fa-solid fa-layer-group"></i> Courses (home page)</button>
+                <button class="section-btn" data-section="students"><i class="fa-solid fa-user-graduate"></i> Students &amp; scores</button>
+            </nav>
+
+            <div id="contentTools" class="content-tools">
             <label class="field-label" for="courseSelect">Course</label>
             <select id="courseSelect"></select>
             <div class="row-actions">
@@ -48,6 +55,7 @@
                 <button class="btn btn-ghost" id="addWeekBtn"><i class="fa-solid fa-plus"></i> Add week</button>
             </div>
             <nav id="weekList" class="week-list"></nav>
+            </div>
         </aside>
 
         <main class="editor" id="editor"></main>

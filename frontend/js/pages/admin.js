@@ -10,6 +10,7 @@ const state = {
     weekId: null,
     week: null,        // { id, number, courseName, blocks: [...], vocabSections: [...] }
     tab: "exercises",
+    section: "content", // "content" | "courses" | "students"
     view: "week",      // "week" = exercises/vocab of one week, "recordings" = lesson videos
     rec: null,         // { all: [{ group, week, lesson, url }], group: 1, links: { "3_1": "https://..." } }
     unsaved: false
@@ -235,6 +236,9 @@ async function openWeek(id, skipConfirm = false) {
 
 function renderEditor() {
     const editor = $("editor");
+
+    if (state.section === "courses") { editor.replaceChildren(renderCoursesManager()); renderSaveState(); return; }
+    if (state.section === "students") { editor.replaceChildren(renderStudentsManager()); renderSaveState(); return; }
 
     if (state.courses.length === 0) {
         editor.replaceChildren(h("div", { class: "empty" },
@@ -839,3 +843,407 @@ async function importOldData() {
 }
 
 start();
+
+
+// =====================================================================
+// SECTIONS: Course content / Courses (home page) / Students & scores
+// =====================================================================
+document.querySelectorAll(".section-btn").forEach((btn) => btn.addEventListener("click", () => openSection(btn.dataset.section)));
+
+async function openSection(section) {
+    if (section === state.section) return;
+    if (!confirmLeave()) return;
+    state.unsaved = false;
+    state.section = section;
+    document.querySelectorAll(".section-btn").forEach((b) => b.classList.toggle("active", b.dataset.section === section));
+    $("contentTools").hidden = section !== "content";
+
+    try {
+        if (section === "courses") {
+            await loadCourses();
+            state.coursesDraft = state.courses.map(courseToDraft);
+        }
+        if (section === "students") await loadStudentsAndScores();
+    } catch (err) { toast(err.message, true); }
+
+    renderSidebar();
+    renderEditor();
+}
+
+// =====================================================================
+// COURSES (HOME PAGE): add, edit, reorder, lock, hide, delete
+// =====================================================================
+function courseToDraft(c) {
+    return {
+        id: c.id, name: c.name, level: c.level || "", tag: c.tag || "", description: c.description || "",
+        syllabusUrl: c.syllabusUrl || "", isLocked: !!c.isLocked, isVisible: c.isVisible !== false,
+        original: JSON.stringify([c.name, c.level || "", c.tag || "", c.description || "", c.syllabusUrl || "", !!c.isLocked, c.isVisible !== false, c.sortOrder])
+    };
+}
+
+function draftSignature(d, index) {
+    return JSON.stringify([d.name, d.level, d.tag, d.description, d.syllabusUrl, d.isLocked, d.isVisible, index + 1]);
+}
+
+function renderCoursesManager() {
+    const drafts = state.coursesDraft || [];
+    const check = (d, key, label, hint) => h("label", { class: "check" },
+        h("input", { type: "checkbox", checked: d[key], onchange: (e) => { d[key] = e.target.checked; markUnsaved(); renderEditor(); } }),
+        h("span", {}, label), hint ? h("small", {}, hint) : null);
+
+    return h("section", {},
+        h("div", { class: "editor-head" },
+            h("div", {}, h("p", { class: "course-name" }, "Home page"), h("h1", {}, "Courses")),
+            h("div", { class: "head-actions" },
+                h("span", { id: "saveState", class: "save-state" }),
+                h("button", { class: "btn btn-outline", onclick: addCourseFromManager }, h("i", { class: "fa-solid fa-plus" }), "New course"),
+                h("button", { class: "btn btn-primary", id: "saveBtn", onclick: saveCourses }, h("i", { class: "fa-solid fa-floppy-disk" }), "Save changes"))),
+        h("p", { class: "rec-note" },
+            "These are the course cards on the home page, in this order. ",
+            h("b", {}, "Locked"), " courses show a 🔒 and can't be chosen when registering. ",
+            h("b", {}, "Hidden"), " courses disappear from the home page, but their content and students are kept. ",
+            "The course name must be exactly the one in the Students table; renaming a course here also renames it for its students."),
+        drafts.length === 0 ? h("div", { class: "empty" }, h("h2", {}, "No courses yet"), h("p", {}, "Click “New course” to add one.")) : null,
+        drafts.map((d, i) => {
+            const isDelf = /delf/i.test(d.name);
+            return h("article", { class: "block course-admin" + (d.isVisible ? "" : " is-hidden") },
+                h("div", { class: "block-head" },
+                    h("span", { class: "course-preview" + (isDelf ? " delf" : "") }, d.level || "?", h("small", {}, d.tag)),
+                    h("strong", { class: "course-title" }, d.name || "Untitled course"),
+                    d.isLocked ? h("span", { class: "pill pill-lock" }, "🔒 Locked") : null,
+                    !d.isVisible ? h("span", { class: "pill" }, "Hidden") : null,
+                    h("span", { class: "spacer" }),
+                    h("button", { class: "icon-btn", title: "Move up", disabled: i === 0, onclick: () => move(drafts, i, -1) }, h("i", { class: "fa-solid fa-arrow-up" })),
+                    h("button", { class: "icon-btn", title: "Move down", disabled: i === drafts.length - 1, onclick: () => move(drafts, i, 1) }, h("i", { class: "fa-solid fa-arrow-down" })),
+                    h("button", { class: "icon-btn danger", title: "Delete course", onclick: () => deleteCourseFromManager(d) }, h("i", { class: "fa-solid fa-trash" }))),
+                h("div", { class: "block-body" },
+                    h("div", { class: "course-grid" },
+                        h("label", { class: "span-2" }, "Course name (exactly as in the Students table)", boundInput(d, "name")),
+                        h("label", {}, "Big letters", boundInput(d, "level", { placeholder: "e.g. A2" })),
+                        h("label", {}, "Small word", boundInput(d, "tag", { placeholder: "e.g. სასაუბრო or DELF" }))),
+                    h("label", {}, "Short description", boundInput(d, "description", { multiline: true, rows: 2 })),
+                    h("label", {}, "Syllabus PDF", boundInput(d, "syllabusUrl", { placeholder: "e.g. pdfs/delf_a2_syllabus.pdf or https://…" })),
+                    h("div", { class: "check-row" },
+                        check(d, "isVisible", "Show on home page"),
+                        check(d, "isLocked", "Locked 🔒", "students can't register for it"))));
+        }));
+}
+
+async function addCourseFromManager() {
+    if (!confirmLeave()) return;
+    const name = prompt('Name of the new course (e.g. "B2 - სასაუბრო კურსი"):');
+    if (!name || !name.trim()) return;
+    try {
+        await api("/api/admin/courses", { method: "POST", body: JSON.stringify({ name }) });
+        state.unsaved = false;
+        await loadCourses();
+        state.coursesDraft = state.courses.map(courseToDraft);
+        renderSidebar(); renderEditor();
+        toast("Course created. It starts locked 🔒: fill in its card, unlock it and save.");
+    } catch (err) { toast(err.message, true); }
+}
+
+async function deleteCourseFromManager(d) {
+    const typed = prompt(`This deletes "${d.name}" with ALL its weeks, exercises, vocabulary and recordings.\nTo only remove it from the home page, untick “Show on home page” instead.\n\nType DELETE to confirm:`);
+    if (typed !== "DELETE") return;
+    try {
+        await api("/api/admin/courses/" + d.id, { method: "DELETE" });
+        state.unsaved = false;
+        await loadCourses();
+        state.coursesDraft = state.courses.map(courseToDraft);
+        renderSidebar(); renderEditor();
+        toast("Course deleted");
+    } catch (err) { toast(err.message, true); }
+}
+
+async function saveCourses() {
+    const drafts = state.coursesDraft;
+    const empty = drafts.find((d) => !d.name.trim());
+    if (empty) { toast("Every course needs a name.", true); return; }
+    const names = drafts.map((d) => d.name.trim());
+    if (new Set(names).size !== names.length) { toast("Two courses have the same name.", true); return; }
+
+    $("saveBtn").disabled = true;
+    try {
+        for (const [i, d] of drafts.entries()) {
+            if (draftSignature(d, i) === d.original) continue;
+            await api("/api/admin/courses/" + d.id, {
+                method: "PUT",
+                body: JSON.stringify({
+                    name: d.name.trim(), level: d.level, tag: d.tag, description: d.description,
+                    syllabusUrl: d.syllabusUrl, isLocked: d.isLocked, isVisible: d.isVisible, sortOrder: i + 1
+                })
+            });
+        }
+        state.unsaved = false;
+        await loadCourses();
+        state.coursesDraft = state.courses.map(courseToDraft);
+        renderSidebar(); renderEditor();
+        toast("Saved. The home page shows the changes right away.");
+    } catch (err) {
+        toast("Not saved: " + err.message, true);
+        renderSaveState();
+    }
+}
+
+// =====================================================================
+// STUDENTS & SCORES (public."Students" and public."Scores")
+// =====================================================================
+const SCORE_FIELDS = [
+    { key: "homework", label: "Homework" },
+    { key: "vocab1", label: "Vocab 1" },
+    { key: "vocab2", label: "Vocab 2" },
+    { key: "writing", label: "Writing" },
+    { key: "speaking", label: "Speaking" }
+];
+
+const studentsUi = { tab: "students", search: "", course: "", group: "", edit: null, scoresDraft: {}, scoresOriginal: {} };
+
+async function loadStudentsAndScores() {
+    const [students, scores] = await Promise.all([api("/api/admin/students"), api("/api/admin/scores")]);
+    state.students = students || [];
+    studentsUi.scoresOriginal = {};
+    (scores || []).forEach((s) => { studentsUi.scoresOriginal[String(s.student_id)] = s; });
+    studentsUi.scoresDraft = {};
+    state.students.forEach((st) => {
+        const sc = studentsUi.scoresOriginal[String(st.id)] || {};
+        studentsUi.scoresDraft[String(st.id)] = Object.fromEntries(SCORE_FIELDS.map((f) => [f.key, sc[f.key] ?? ""]));
+    });
+    if (!state.courses.length) await loadCourses();
+}
+
+function studentName(st) {
+    return `${st.firstName || ""} ${st.lastName || ""}`.trim() || "(no name)";
+}
+
+function filteredStudents() {
+    const q = studentsUi.search.trim().toLowerCase();
+    return state.students.filter((st) => {
+        if (studentsUi.course && (st.course || "").trim() !== studentsUi.course) return false;
+        if (studentsUi.group && String(st.group_number ?? 1) !== studentsUi.group) return false;
+        if (!q) return true;
+        return [st.id, st.firstName, st.lastName, st.email].some((v) => String(v ?? "").toLowerCase().includes(q));
+    });
+}
+
+function scoreTotal(draft) {
+    return SCORE_FIELDS.reduce((sum, f) => sum + (parseFloat(draft[f.key]) || 0), 0);
+}
+
+function renderStudentsManager() {
+    const isScores = studentsUi.tab === "scores";
+    const courseNames = [...new Set([...state.courses.map((c) => c.name), ...state.students.map((s) => (s.course || "").trim()).filter(Boolean)])];
+    const groups = [...new Set(state.students.map((s) => String(s.group_number ?? 1)))].sort((a, b) => a - b);
+    const list = filteredStudents();
+
+    const toolbar = h("div", { class: "student-toolbar" },
+        h("input", {
+            type: "search", placeholder: "Search name, email or ID…", "aria-label": "Search students", value: studentsUi.search,
+            oninput: (e) => { studentsUi.search = e.target.value; redrawStudentTable(); }
+        }),
+        h("select", { "aria-label": "Filter by course", onchange: (e) => { studentsUi.course = e.target.value; redrawStudentTable(); } },
+            h("option", { value: "" }, "All courses"),
+            courseNames.map((n) => h("option", { value: n, selected: n === studentsUi.course }, n))),
+        h("select", { "aria-label": "Filter by group", onchange: (e) => { studentsUi.group = e.target.value; redrawStudentTable(); } },
+            h("option", { value: "" }, "All groups"),
+            groups.map((g) => h("option", { value: g, selected: g === studentsUi.group }, "Group " + g))),
+        !isScores ? h("button", { class: "btn btn-outline", onclick: () => startEditStudent(null) }, h("i", { class: "fa-solid fa-user-plus" }), "Add student") : null);
+
+    return h("section", {},
+        h("div", { class: "editor-head" },
+            h("div", {}, h("p", { class: "course-name" }, `${state.students.length} students`), h("h1", {}, "Students & scores")),
+            h("div", { class: "head-actions" },
+                isScores ? h("span", { id: "saveState", class: "save-state" }) : null,
+                isScores ? h("button", { class: "btn btn-primary", id: "saveBtn", onclick: saveAllScores }, h("i", { class: "fa-solid fa-floppy-disk" }), "Save scores") : null)),
+        h("div", { class: "tabs", role: "tablist" },
+            ["students", "scores"].map((t) => h("button", {
+                class: "tab" + (studentsUi.tab === t ? " active" : ""), role: "tab", "aria-selected": studentsUi.tab === t ? "true" : "false",
+                onclick: () => { if (t !== studentsUi.tab && confirmLeave()) { state.unsaved = false; studentsUi.tab = t; studentsUi.edit = null; renderEditor(); } }
+            }, t === "students" ? "Students" : "Scores (evaluation)"))),
+        !isScores && studentsUi.edit ? renderStudentForm(courseNames) : null,
+        toolbar,
+        h("div", { id: "studentTableWrap", class: "table-scroll" }, isScores ? renderScoresTable(list) : renderStudentsTable(list)));
+}
+
+function redrawStudentTable() {
+    const wrap = $("studentTableWrap");
+    if (!wrap) return;
+    const list = filteredStudents();
+    wrap.replaceChildren(studentsUi.tab === "scores" ? renderScoresTable(list) : renderStudentsTable(list));
+}
+
+function renderStudentsTable(list) {
+    if (list.length === 0) return h("div", { class: "empty" }, h("h2", {}, "No students found"), h("p", {}, "Change the filters or add a student."));
+    return h("table", { class: "data-table" },
+        h("thead", {}, h("tr", {}, ["ID", "Name", "Email", "Course", "Group", "Birthday", "Account", "Active", ""].map((t) => h("th", {}, t)))),
+        h("tbody", {}, list.map((st) => h("tr", { class: st.is_active === false ? "inactive" : "" },
+            h("td", { class: "mono" }, st.id),
+            h("td", {}, h("strong", {}, studentName(st))),
+            h("td", {}, st.email || ""),
+            h("td", {}, st.course || ""),
+            h("td", {}, st.group_number ?? 1),
+            h("td", {}, st.birthday || ""),
+            h("td", {}, st.auth_id ? h("span", { class: "pill pill-ok", title: st.auth_id }, "Registered") : h("span", { class: "pill" }, "Not yet")),
+            h("td", {}, h("input", {
+                type: "checkbox", checked: st.is_active !== false, "aria-label": `Active: ${studentName(st)}`,
+                onchange: (e) => quickToggleActive(st, e.target)
+            })),
+            h("td", {}, h("button", { class: "btn btn-ghost", onclick: () => startEditStudent(st) }, h("i", { class: "fa-solid fa-pen" }), "Edit"))))));
+}
+
+async function quickToggleActive(st, checkbox) {
+    const value = checkbox.checked;
+    checkbox.disabled = true;
+    try {
+        const row = await api(`/api/admin/students/${encodeURIComponent(st.id)}`, { method: "PUT", body: JSON.stringify({ is_active: value }) });
+        Object.assign(st, row);
+        toast(`${studentName(st)}: ${value ? "access enabled" : "access blocked"}`);
+        redrawStudentTable();
+    } catch (err) {
+        checkbox.checked = !value;
+        toast(err.message, true);
+    } finally { checkbox.disabled = false; }
+}
+
+function startEditStudent(st) {
+    if (studentsUi.edit && !confirmLeave()) return;
+    state.unsaved = false;
+    studentsUi.edit = st
+        ? { isNew: false, originalId: String(st.id), data: { ...st, group_number: st.group_number ?? 1, is_active: st.is_active !== false } }
+        : { isNew: true, data: { id: String(Math.floor(1000000000 + Math.random() * 9000000000)), firstName: "", lastName: "", email: "", birthday: "", course: studentsUi.course || "", group_number: 1, is_active: true, auth_id: "" } };
+    renderEditor();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function renderStudentForm(courseNames) {
+    const ed = studentsUi.edit;
+    const d = ed.data;
+    const field = (label, key, attrs = {}) => h("label", {}, label, h("input", {
+        ...attrs, value: d[key] ?? "",
+        oninput: (e) => { d[key] = attrs.type === "number" ? (e.target.value === "" ? "" : Number(e.target.value)) : e.target.value; markUnsaved(); }
+    }));
+    const birthdayIsIso = !d.birthday || /^\d{4}-\d{2}-\d{2}/.test(String(d.birthday));
+    if (birthdayIsIso && d.birthday) d.birthday = String(d.birthday).slice(0, 10);
+
+    return h("article", { class: "block student-form" },
+        h("div", { class: "block-head" },
+            h("strong", {}, ed.isNew ? "New student" : `Edit: ${studentName(d)}`),
+            h("span", { class: "spacer" }),
+            h("button", { class: "icon-btn", title: "Close", onclick: () => { if (confirmLeave()) { state.unsaved = false; studentsUi.edit = null; renderEditor(); } } }, h("i", { class: "fa-solid fa-xmark" }))),
+        h("div", { class: "block-body" },
+            h("div", { class: "course-grid" },
+                field("Student ID", "id", { readonly: !ed.isNew, title: ed.isNew ? "" : "The ID can't be changed (the scores are linked to it)" }),
+                field("First name", "firstName"),
+                field("Last name", "lastName"),
+                field("Email", "email", { type: "email" }),
+                field("Birthday", "birthday", { type: birthdayIsIso ? "date" : "text" }),
+                h("label", {}, "Course", h("select", {
+                    onchange: (e) => { d.course = e.target.value; markUnsaved(); }
+                },
+                    h("option", { value: "", selected: !d.course }, "— no course —"),
+                    [...new Set([...courseNames, (d.course || "").trim()].filter(Boolean))]
+                        .map((n) => h("option", { value: n, selected: (d.course || "").trim() === n }, n)))),
+                field("Group", "group_number", { type: "number", min: 1, step: 1 }),
+                h("label", { class: "check check-inline" },
+                    h("input", { type: "checkbox", checked: d.is_active !== false, onchange: (e) => { d.is_active = e.target.checked; markUnsaved(); } }),
+                    h("span", {}, "Active (can use the website)"))),
+            h("label", {}, "Account link (auth_id)",
+                h("input", { value: d.auth_id ?? "", placeholder: "Filled automatically when the student registers", oninput: (e) => { d.auth_id = e.target.value; markUnsaved(); } }),
+                h("small", { class: "q-note" }, "Empty it to unlink the account (for example if the student registered with the wrong email).")),
+            h("div", { class: "add-row" },
+                h("button", { class: "btn btn-primary", onclick: saveStudent }, h("i", { class: "fa-solid fa-floppy-disk" }), ed.isNew ? "Add student" : "Save student"),
+                !ed.isNew ? h("button", { class: "btn btn-ghost danger", onclick: deleteStudent }, h("i", { class: "fa-solid fa-trash" }), "Delete student") : null)));
+}
+
+async function saveStudent() {
+    const ed = studentsUi.edit;
+    const d = ed.data;
+    if (!String(d.id || "").trim()) { toast("The student needs an ID.", true); return; }
+    if (!String(d.email || "").trim()) { toast("The student needs an email.", true); return; }
+    const body = {
+        id: /^\d+$/.test(String(d.id).trim()) ? Number(String(d.id).trim()) : String(d.id).trim(),
+        firstName: (d.firstName || "").trim(), lastName: (d.lastName || "").trim(), email: (d.email || "").trim().toLowerCase(),
+        birthday: d.birthday || null, course: d.course || null,
+        group_number: d.group_number === "" ? 1 : Number(d.group_number), is_active: d.is_active !== false,
+        auth_id: (d.auth_id || "").trim() || null
+    };
+    if (!ed.isNew) delete body.id;
+    try {
+        if (ed.isNew) await api("/api/admin/students", { method: "POST", body: JSON.stringify(body) });
+        else await api(`/api/admin/students/${encodeURIComponent(ed.originalId)}`, { method: "PUT", body: JSON.stringify(body) });
+        state.unsaved = false;
+        studentsUi.edit = null;
+        await loadStudentsAndScores();
+        renderEditor();
+        toast(ed.isNew ? "Student added" : "Student saved");
+    } catch (err) { toast("Not saved: " + err.message, true); }
+}
+
+async function deleteStudent() {
+    const ed = studentsUi.edit;
+    if (!confirm(`Delete ${studentName(ed.data)} and their scores?\n(Their login account stays in Supabase → Authentication.)`)) return;
+    try {
+        await api(`/api/admin/students/${encodeURIComponent(ed.originalId)}`, { method: "DELETE" });
+        state.unsaved = false;
+        studentsUi.edit = null;
+        await loadStudentsAndScores();
+        renderEditor();
+        toast("Student deleted");
+    } catch (err) { toast(err.message, true); }
+}
+
+function renderScoresTable(list) {
+    if (list.length === 0) return h("div", { class: "empty" }, h("h2", {}, "No students found"), h("p", {}, "Change the filters."));
+    return h("table", { class: "data-table scores-table" },
+        h("thead", {}, h("tr", {},
+            h("th", {}, "Student"), h("th", {}, "Course"), h("th", {}, "Group"),
+            SCORE_FIELDS.map((f) => h("th", { class: "num" }, f.label)),
+            h("th", { class: "num" }, "Total / 100"))),
+        h("tbody", {}, list.map((st) => {
+            const key = String(st.id);
+            const draft = studentsUi.scoresDraft[key] || (studentsUi.scoresDraft[key] = {});
+            const totalCell = h("td", { class: "num total" });
+            const showTotal = () => {
+                const t = scoreTotal(draft);
+                totalCell.textContent = Math.round(t * 10) / 10;
+                totalCell.classList.toggle("over", t > 100);
+            };
+            showTotal();
+            return h("tr", { class: st.is_active === false ? "inactive" : "" },
+                h("td", {}, h("strong", {}, studentName(st)), h("div", { class: "mono small" }, st.id)),
+                h("td", {}, st.course || ""),
+                h("td", {}, st.group_number ?? 1),
+                SCORE_FIELDS.map((f) => h("td", { class: "num" }, h("input", {
+                    type: "number", min: 0, step: "0.5", value: draft[f.key] ?? "", "aria-label": `${f.label}: ${studentName(st)}`,
+                    oninput: (e) => { draft[f.key] = e.target.value; showTotal(); markUnsaved(); }
+                }))),
+                totalCell);
+        })));
+}
+
+async function saveAllScores() {
+    const changed = state.students.filter((st) => {
+        const key = String(st.id);
+        const draft = studentsUi.scoresDraft[key] || {};
+        const orig = studentsUi.scoresOriginal[key] || {};
+        return SCORE_FIELDS.some((f) => String(draft[f.key] ?? "") !== String(orig[f.key] ?? ""));
+    });
+    if (changed.length === 0) { toast("Nothing changed."); return; }
+
+    $("saveBtn").disabled = true;
+    try {
+        for (const st of changed) {
+            const draft = studentsUi.scoresDraft[String(st.id)];
+            const body = { Name: studentName(st) };
+            SCORE_FIELDS.forEach((f) => { body[f.key] = draft[f.key] === "" ? null : Number(draft[f.key]); });
+            await api(`/api/admin/scores/${encodeURIComponent(st.id)}`, { method: "PUT", body: JSON.stringify(body) });
+        }
+        state.unsaved = false;
+        await loadStudentsAndScores();
+        renderEditor();
+        toast(`Saved scores of ${changed.length} student(s). They see them right away.`);
+    } catch (err) {
+        toast("Not saved: " + err.message, true);
+        renderSaveState();
+    }
+}

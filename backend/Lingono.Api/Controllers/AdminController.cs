@@ -19,11 +19,18 @@ public class AdminController(AppDbContext db) : ControllerBase
 
     [HttpGet("courses")]
     public async Task<IActionResult> GetCourses() => Ok(await db.Courses
-        .OrderBy(c => c.Name)
+        .OrderBy(c => c.SortOrder).ThenBy(c => c.Name)
         .Select(c => new
         {
             c.Id,
             c.Name,
+            c.Level,
+            c.Tag,
+            c.Description,
+            c.SyllabusUrl,
+            c.IsLocked,
+            c.IsVisible,
+            c.SortOrder,
             Weeks = c.Weeks.OrderBy(w => w.Number).Select(w => new
             {
                 w.Id,
@@ -34,6 +41,41 @@ public class AdminController(AppDbContext db) : ControllerBase
         })
         .ToListAsync());
 
+    /// <summary>Changes how a course appears on the home page (and its name everywhere).</summary>
+    [HttpPut("courses/{id:int}")]
+    public async Task<IActionResult> UpdateCourse(int id, CourseSettingsDto dto)
+    {
+        var course = await db.Courses.FindAsync(id);
+        if (course == null) return NotFound();
+
+        var name = dto.Name.Trim();
+        if (name == "") return BadRequest("Course name is required.");
+        if (name != course.Name && await db.Courses.AnyAsync(c => c.Name == name))
+            return BadRequest("Another course already has this name.");
+
+        await using var transaction = await db.Database.BeginTransactionAsync();
+
+        // Renaming: students of this course follow the new name automatically
+        if (name != course.Name)
+        {
+            await db.Database.ExecuteSqlInterpolatedAsync(
+                $"UPDATE public.\"Students\" SET course = {name} WHERE trim(course) = {course.Name}");
+            course.Name = name;
+        }
+
+        course.Level = (dto.Level ?? "").Trim();
+        course.Tag = (dto.Tag ?? "").Trim();
+        course.Description = (dto.Description ?? "").Trim();
+        course.SyllabusUrl = string.IsNullOrWhiteSpace(dto.SyllabusUrl) ? null : dto.SyllabusUrl.Trim();
+        course.IsLocked = dto.IsLocked;
+        course.IsVisible = dto.IsVisible;
+        course.SortOrder = dto.SortOrder;
+
+        await db.SaveChangesAsync();
+        await transaction.CommitAsync();
+        return NoContent();
+    }
+
     [HttpPost("courses")]
     public async Task<IActionResult> CreateCourse(NewCourseDto dto)
     {
@@ -41,7 +83,15 @@ public class AdminController(AppDbContext db) : ControllerBase
         if (name == "") return BadRequest("Course name is required.");
         if (await db.Courses.AnyAsync(c => c.Name == name)) return BadRequest("This course already exists.");
 
-        var course = new Course { Name = name };
+        var level = System.Text.RegularExpressions.Regex.Match(name, @"\b(A1|A2|B1|B2|C1|C2)\b").Value;
+        var course = new Course
+        {
+            Name = name,
+            Level = level,
+            Tag = name.Contains("DELF", StringComparison.OrdinalIgnoreCase) ? "DELF" : "",
+            SortOrder = (await db.Courses.MaxAsync(c => (int?)c.SortOrder) ?? 0) + 1,
+            IsLocked = true      // new courses start locked until you are ready
+        };
         db.Courses.Add(course);
         await db.SaveChangesAsync();
         return Ok(new { course.Id, course.Name });

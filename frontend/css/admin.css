@@ -210,3 +210,68 @@ input:focus, select:focus, textarea:focus { border-color: var(--blue); outline: 
     .media-row, .q-row { grid-template-columns: 1fr; }
     .editor-head { position: static; }
 }
+
+/* ---------- Sections (sidebar) ---------- */
+.section-nav { display: grid; gap: 2px; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--line); }
+.section-btn {
+    display: flex; align-items: center; gap: 0.6rem;
+    padding: 0.6rem 0.7rem; border-radius: 8px; border: none; background: transparent;
+    font-weight: 600; color: var(--muted); text-align: left; cursor: pointer;
+}
+.section-btn i { width: 1.1rem; text-align: center; }
+.section-btn:hover { background: var(--bg); color: var(--ink); }
+.section-btn.active { background: var(--blue); color: #fff; }
+.content-tools { display: flex; flex-direction: column; gap: 0.6rem; }
+
+/* ---------- Courses (home page) ---------- */
+.course-admin.is-hidden { opacity: 0.65; }
+.course-preview {
+    flex: none; display: inline-flex; align-items: baseline; gap: 0.3rem;
+    padding: 0.25rem 0.6rem; border-radius: 8px;
+    background: #eaf2fb; color: var(--blue); font-weight: 800; font-size: 1.05rem;
+}
+.course-preview small { font-size: 0.7rem; font-weight: 700; }
+.course-preview.delf { background: #fdeeed; color: var(--red); }
+.course-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.course-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.6rem 0.75rem; }
+.course-grid .span-2 { grid-column: span 2; }
+.check-row { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; }
+.block-body label.check, label.check {
+    display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+    font-size: 0.92rem; font-weight: 600; color: var(--ink); cursor: pointer;
+}
+label.check input { width: 1.1rem; height: 1.1rem; accent-color: var(--blue); }
+label.check small { color: var(--muted); font-weight: 400; }
+.check-inline { align-self: end; padding-bottom: 0.6rem; }
+.pill {
+    flex: none; font-size: 0.75rem; font-weight: 700; padding: 0.15rem 0.55rem; border-radius: 99px;
+    background: var(--bg); color: var(--muted); border: 1px solid var(--line); white-space: nowrap;
+}
+.pill-lock { background: #fff4e0; color: #92400e; border-color: #fde3b8; }
+.pill-ok { background: #ecfdf5; color: var(--green); border-color: #c6f0dd; }
+
+/* ---------- Students & scores ---------- */
+.student-toolbar { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 1rem; }
+.student-toolbar input[type="search"] { flex: 1 1 240px; width: auto; }
+.student-toolbar select { width: auto; min-width: 160px; }
+.student-form { border-color: var(--blue); }
+
+.data-table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; font-size: 0.9rem; }
+.data-table th { text-align: left; font-size: 0.78rem; color: var(--muted); font-weight: 600; padding: 0.65rem 0.7rem; background: #fbfcfe; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.data-table td { padding: 0.5rem 0.7rem; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: #fafcff; }
+.data-table tr.inactive td { color: var(--muted); }
+.data-table tr.inactive td strong { text-decoration: line-through; }
+.data-table input[type="checkbox"] { width: 1.1rem; height: 1.1rem; accent-color: var(--blue); }
+.data-table .mono, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.82rem; }
+.data-table .small { font-size: 0.75rem; color: var(--muted); }
+.data-table .num { text-align: right; }
+.scores-table input[type="number"] { width: 5rem; text-align: right; padding: 0.4rem 0.5rem; }
+.scores-table .total { font-weight: 800; font-size: 1rem; font-variant-numeric: tabular-nums; }
+.scores-table .total.over { color: var(--red); }
+
+@media (max-width: 800px) {
+    .course-grid { grid-template-columns: 1fr 1fr; }
+    .course-grid .span-2 { grid-column: span 2; }
+}

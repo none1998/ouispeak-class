@@ -7,6 +7,15 @@ public class Course
 {
     public int Id { get; set; }
     public string Name { get; set; } = "";          // must match Students.course exactly, e.g. "A2 - სასაუბრო კურსი"
+
+    // How the course card looks on the home page
+    public string Level { get; set; } = "";         // big letters on the card, e.g. "A2"
+    public string Tag { get; set; } = "";           // small word next to it, e.g. "სასაუბრო" or "DELF"
+    public string Description { get; set; } = "";
+    public string? SyllabusUrl { get; set; }         // e.g. "pdfs/delf_a2_syllabus.pdf" or a full https:// link
+    public bool IsLocked { get; set; }               // shown with a lock, students can't register for it
+    public bool IsVisible { get; set; } = true;      // false = hidden from the home page (content is kept)
+    public int SortOrder { get; set; }               // position on the home page
     public List<Week> Weeks { get; set; } = new();
     public List<Recording> Recordings { get; set; } = new();
 }

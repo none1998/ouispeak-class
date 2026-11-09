@@ -6,6 +6,8 @@ public record BlockDto(string Instruction, string? Type, string? TextFile, strin
 public record WordDto(string French, string Georgian);
 public record SectionDto(string Instruction, List<WordDto> Words);
 public record NewCourseDto(string Name);
+public record CourseSettingsDto(string Name, string? Level, string? Tag, string? Description, string? SyllabusUrl,
+                                bool IsLocked, bool IsVisible, int SortOrder);
 public record NewWeekDto(int Number);
 public record RecordingDto(int Group, int Week, int Lesson, string Url);
 public record RecordingLinkDto(int Week, int Lesson, string Url);

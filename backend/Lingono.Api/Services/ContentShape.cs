@@ -54,6 +54,7 @@ public static class ContentShape
         if (q.Options != null) json["options"] = q.Options;
         json["answer"] = q.Answer;
         if (q.Type != null) json["type"] = q.Type;
+        if (q.Audio != null) json["audio"] = q.Audio;
         return json;
     }
 

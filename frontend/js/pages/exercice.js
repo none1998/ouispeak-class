@@ -390,6 +390,9 @@
             // General Questions Render Loop
             const questions = blockData.questions || [];
             questions.forEach((q, index) => {
+                // An audio can be placed before a question: it belongs to it and the next ones (until the next audio)
+                if (q.audio) container.appendChild(buildQuestionGroupAudio(q.audio, index, questions));
+
                 const questionDiv = document.createElement('div');
                 questionDiv.className = "exercise-sentence-item";
                 const cachedAnswerValue = userAnswersCache[`${cacheKeyPrefix}_q_${index}`] || "";
@@ -2219,4 +2222,24 @@ Reply ONLY with JSON in this exact shape:
             if (f.kind === "writing" && res.errors) lines.push(`შეცდომები:\n${res.errors}`);
             if (f.kind === "writing" && res.correct) lines.push(`შესწორებული ტექსტი:\n${res.correct}`);
             return lines.join("\n");
+        }
+
+        // Audio for a group of questions (e.g. audio 1 → questions 1-3, audio 2 → questions 4-5)
+        function buildQuestionGroupAudio(src, index, questions) {
+            let last = questions.length - 1;
+            for (let k = index + 1; k < questions.length; k++) {
+                if (questions[k].audio) { last = k - 1; break; }
+            }
+            const box = document.createElement('div');
+            box.className = "audio-player-container question-group-audio";
+            const label = document.createElement('div');
+            label.className = "audio-player-label";
+            label.textContent = last > index ? `🎧 აუდიო — კითხვები ${index + 1}–${last + 1}` : `🎧 აუდიო — კითხვა ${index + 1}`;
+            const audio = document.createElement('audio');
+            audio.controls = true;
+            audio.preload = "none";
+            audio.src = src;
+            box.appendChild(label);
+            box.appendChild(audio);
+            return box;
         }

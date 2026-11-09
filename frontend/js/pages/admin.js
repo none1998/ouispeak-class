@@ -617,12 +617,38 @@ function renderQuestion(block, q, j) {
         fields.push(h("label", {}, "Correct answer", boundInput(q, "answer", { placeholder: "e.g. étudie" })));
     }
 
-    return h("div", { class: `question q-type-${q.type || "short"}` },
+    const audioBar = q.audio != null ? renderQuestionAudioBar(block, q, j) : null;
+    return h("div", { class: "question-wrap" }, audioBar, h("div", { class: `question q-type-${q.type || "short"}` },
         h("span", { class: "q-num" }, j + 1 + "."),
         h("div", { class: "q-fields" }, fields),
         h("div", {},
             h("button", { class: "icon-btn", title: "Move up", disabled: j === 0, onclick: () => move(questions, j, -1) }, h("i", { class: "fa-solid fa-arrow-up" })),
-            h("button", { class: "icon-btn danger", title: "Delete question", onclick: () => removeAt(questions, j, "question") }, h("i", { class: "fa-solid fa-xmark" }))));
+            q.audio == null ? h("button", {
+                class: "icon-btn audio-here", title: "Add an audio before this question (for it and the next ones)",
+                onclick: () => { q.audio = ""; markUnsaved(); renderEditor(); }
+            }, h("i", { class: "fa-solid fa-headphones" })) : null,
+            h("button", { class: "icon-btn danger", title: "Delete question", onclick: () => removeAt(questions, j, "question") }, h("i", { class: "fa-solid fa-xmark" })))));
+}
+
+// Audio placed before question j: it plays for question j and the next ones, until the next audio
+function renderQuestionAudioBar(block, q, j) {
+    const questions = block.questions;
+    let last = questions.length - 1;
+    for (let k = j + 1; k < questions.length; k++) {
+        if (questions[k].audio != null) { last = k - 1; break; }
+    }
+    const range = last > j ? `questions ${j + 1}–${last + 1}` : `question ${j + 1}`;
+    return h("div", { class: "q-audio-bar" },
+        h("i", { class: "fa-solid fa-headphones" }),
+        h("span", { class: "q-audio-range" }, `Audio for ${range}`),
+        h("input", {
+            value: q.audio || "", placeholder: "e.g. audio/a2_week3_part1.mp3", "aria-label": `Audio for ${range}`,
+            oninput: (e) => { q.audio = e.target.value; markUnsaved(); }
+        }),
+        h("button", {
+            class: "icon-btn danger", title: "Remove this audio",
+            onclick: () => { q.audio = null; markUnsaved(); renderEditor(); }
+        }, h("i", { class: "fa-solid fa-xmark" })));
 }
 
 // ---------- Vocabulary ----------
@@ -749,6 +775,7 @@ async function saveWeek() {
             : b.type === "match" ? (b.questions || []).map((q) => ({ type: null, text: q.text || "", options: null, answer: q.answer || "" }))
             : b.type === "speaking" ? (b.questions || []).filter((q) => (q.text || "").trim()).map((q) => ({ type: null, text: q.text, options: null, answer: "" }))
             : (b.questions || []).map((q) => ({
+            audio: (q.audio || "").trim() || null,
             type: q.type || null,
             text: q.text || "",
             options: q.type === "mc" ? (q.options || []) : null,
@@ -1412,7 +1439,7 @@ function copyToClipboard(kind, item) {
         ? {
             instruction: item.instruction || "", type: item.type || null,
             textFile: item.textFile || null, video: item.video || null, audio: item.audio || null,
-            questions: (item.questions || []).map((q) => ({ type: q.type || "", text: q.text || "", options: q.options ? [...q.options] : null, answer: q.answer || "" }))
+            questions: (item.questions || []).map((q) => ({ type: q.type || "", text: q.text || "", options: q.options ? [...q.options] : null, answer: q.answer || "", audio: q.audio ?? null }))
         }
         : { instruction: item.instruction || "", words: (item.words || []).map((w) => ({ french: w.french || "", georgian: w.georgian || "" })) };
     const label = kind === "block"

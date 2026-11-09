@@ -1733,3 +1733,7 @@
 
 /* Several audio files in one exercise */
 .audio-player-label { font-size: 0.85rem; font-weight: 700; color: var(--primary); margin-bottom: 0.35rem; }
+
+/* Audio for a group of questions */
+.question-group-audio { margin: 1.4rem 0 0.8rem; border-left: 4px solid var(--primary); }
+.question-group-audio:first-child { margin-top: 0; }

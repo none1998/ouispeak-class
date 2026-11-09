@@ -467,3 +467,18 @@ textarea { overflow: hidden; }
 .editor { max-width: 1120px; }
 .q-fields .q-row + .q-row { grid-template-columns: 1fr 1fr; }
 @media (max-width: 800px) { .q-fields .q-row + .q-row { grid-template-columns: 1fr; } }
+
+/* Audio for a group of questions */
+.question-wrap { display: grid; gap: 0.4rem; }
+.q-audio-bar {
+    display: flex; align-items: center; gap: 0.6rem;
+    padding: 0.55rem 0.7rem; margin-top: 0.4rem;
+    border-radius: 10px; background: #fff7ed; border: 1px solid #fed7aa;
+    color: #9a3412;
+}
+.q-audio-bar > i { font-size: 1rem; }
+.q-audio-range { font-weight: 700; font-size: 0.85rem; white-space: nowrap; }
+.q-audio-bar input { flex: 1; background: #ffffff; border-color: #fed7aa; }
+.icon-btn.audio-here { color: #ea580c; }
+.icon-btn.audio-here:hover { background: #fff7ed; color: #c2410c; }
+.question > div:last-child { display: flex; flex-direction: column; align-items: center; gap: 0.15rem; }

@@ -1737,3 +1737,41 @@
 /* Audio for a group of questions */
 .question-group-audio { margin: 1.4rem 0 0.8rem; border-left: 4px solid var(--primary); }
 .question-group-audio:first-child { margin-top: 0; }
+
+/* =========================================================
+   Exercise audio: limited to 2 listenings, no rewinding
+   ========================================================= */
+.limited-audio { background: #f4f8fd; border: 1px solid #d6e4f5; border-radius: var(--radius-md); padding: 0.9rem 1rem; }
+.limited-audio .audio-player-label { margin-bottom: 0.55rem; }
+.la-row { display: flex; align-items: center; gap: 0.85rem; }
+.la-btn {
+    flex: none; width: 3rem; height: 3rem; border-radius: 50%; border: none; cursor: pointer;
+    display: grid; place-items: center; font-size: 1.05rem; color: #ffffff;
+    background: linear-gradient(135deg, var(--primary), #003f7d);
+    box-shadow: 0 8px 18px -10px var(--primary);
+    transition: var(--transition);
+}
+.la-btn:hover:not(:disabled) { transform: scale(1.06); }
+.la-btn:disabled { background: #cbd5e1; box-shadow: none; cursor: not-allowed; }
+.la-btn:focus-visible { outline: 3px solid rgba(0, 85, 165, 0.35); outline-offset: 3px; }
+.la-main { flex: 1; min-width: 0; display: grid; gap: 0.4rem; }
+.la-status { font-size: 0.88rem; font-weight: 600; color: var(--text-main); }
+.la-bar { height: 6px; border-radius: 99px; background: #dbe6f3; overflow: hidden; }
+.la-bar span { display: block; height: 100%; width: 0; background: var(--primary); border-radius: 99px; transition: width 0.25s linear; }
+.la-time { flex: none; font-size: 0.82rem; color: var(--text-muted); font-variant-numeric: tabular-nums; min-width: 4.5rem; text-align: right; }
+.la-left {
+    flex: none; min-width: 2.6rem; text-align: center;
+    font-size: 0.82rem; font-weight: 800; padding: 0.25rem 0.5rem; border-radius: 99px;
+    background: #e8f1fb; color: var(--primary);
+}
+.limited-audio.la-active { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0, 85, 165, 0.12); }
+.limited-audio.la-locked { background: #f6f7f9; border-color: #e2e8f0; }
+.limited-audio.la-locked .la-status { color: var(--text-muted); }
+.limited-audio.la-locked .la-left { background: #fdeeed; color: var(--secondary); }
+@media (max-width: 600px) {
+    .la-row { flex-wrap: wrap; }
+    .la-main { flex-basis: calc(100% - 4rem); }
+    .la-time { min-width: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .la-bar span { transition: none; } .la-btn:hover:not(:disabled) { transform: none; } }
+.limited-audio { text-align: left; }

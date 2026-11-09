@@ -310,6 +310,8 @@
             const blockData = dataset[studentCourse][subject][currentActiveBlock]; 
             const instruction = blockData.instruction;
             const cacheKeyPrefix = `${subject}_block_${currentActiveBlock}`;
+            // stop an exercise audio that is still playing when the page changes exercise
+            if (typeof audioActivePlayer !== "undefined" && audioActivePlayer) { audioActivePlayer.pause(); audioActivePlayer = null; }
             
             container.innerHTML = `<div class="instruction-box">${instruction}</div>`;
 
@@ -333,19 +335,8 @@
             if (blockData.audio) {
                 const audioFiles = String(blockData.audio).split("\n").map(a => a.trim()).filter(Boolean);
                 audioFiles.forEach((src, n) => {
-                    const audioDiv = document.createElement('div');
-                    audioDiv.className = "audio-player-container";
-                    if (audioFiles.length > 1) {
-                        const label = document.createElement('div');
-                        label.className = "audio-player-label";
-                        label.textContent = `აუდიო ${n + 1}`;
-                        audioDiv.appendChild(label);
-                    }
-                    const audio = document.createElement('audio');
-                    audio.controls = true;
-                    audio.src = src;
-                    audioDiv.appendChild(audio);
-                    container.appendChild(audioDiv);
+                    const label = audioFiles.length > 1 ? `🎧 აუდიო ${n + 1}` : "🎧 აუდიო";
+                    container.appendChild(createLimitedAudioPlayer(src, label, cacheKeyPrefix));
                 });
             }
 
@@ -391,7 +382,7 @@
             const questions = blockData.questions || [];
             questions.forEach((q, index) => {
                 // An audio can be placed before a question: it belongs to it and the next ones (until the next audio)
-                if (q.audio) container.appendChild(buildQuestionGroupAudio(q.audio, index, questions));
+                if (q.audio) container.appendChild(buildQuestionGroupAudio(q.audio, index, questions, cacheKeyPrefix));
 
                 const questionDiv = document.createElement('div');
                 questionDiv.className = "exercise-sentence-item";
@@ -2225,21 +2216,175 @@ Reply ONLY with JSON in this exact shape:
         }
 
         // Audio for a group of questions (e.g. audio 1 → questions 1-3, audio 2 → questions 4-5)
-        function buildQuestionGroupAudio(src, index, questions) {
+        function buildQuestionGroupAudio(src, index, questions, blockKey) {
             let last = questions.length - 1;
             for (let k = index + 1; k < questions.length; k++) {
                 if (questions[k].audio) { last = k - 1; break; }
             }
+            const label = last > index ? `🎧 აუდიო — კითხვები ${index + 1}–${last + 1}` : `🎧 აუდიო — კითხვა ${index + 1}`;
+            const player = createLimitedAudioPlayer(src, label, blockKey);
+            player.classList.add("question-group-audio");
+            return player;
+        }
+
+        // =====================================================================
+        // ===== EXERCISE AUDIO: max 2 listenings + spoken warning first =====
+        // =====================================================================
+        // - Each exercise audio can be listened to only AUDIO_MAX_PLAYS times (no rewinding, pause is allowed).
+        // - The first time a student starts an audio in an exercise, the warning audio plays first,
+        //   then the exercise audio starts by itself.
+        // - The number of listenings is remembered in this browser (also after reloading the page).
+        const AUDIO_MAX_PLAYS = 2;
+        const AUDIO_WARNING_SRC = "audios/warning_audio.mp3";
+        const AUDIO_PLAYS_STORE = "ouispeak-audio-plays";
+        const audioWarnedBlocks = new Set();
+        let audioActivePlayer = null;   // only one audio at a time
+
+        function audioPlaysKey(src) {
+            const subject = document.getElementById('subjectSelect').value;
+            return `${studentCourse}|${subject}|${src}`;
+        }
+        function audioGetPlays(src) {
+            try { return (JSON.parse(localStorage.getItem(AUDIO_PLAYS_STORE) || "{}"))[audioPlaysKey(src)] || 0; }
+            catch (e) { return 0; }
+        }
+        function audioSetPlays(src, count) {
+            try {
+                const all = JSON.parse(localStorage.getItem(AUDIO_PLAYS_STORE) || "{}");
+                all[audioPlaysKey(src)] = count;
+                localStorage.setItem(AUDIO_PLAYS_STORE, JSON.stringify(all));
+            } catch (e) { /* storage blocked: the limit still works until the page is reloaded */ }
+        }
+        function audioFmt(sec) {
+            if (!isFinite(sec) || sec < 0) sec = 0;
+            const t = Math.floor(sec);
+            return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`;
+        }
+
+        function createLimitedAudioPlayer(src, labelText, blockKey) {
             const box = document.createElement('div');
-            box.className = "audio-player-container question-group-audio";
-            const label = document.createElement('div');
-            label.className = "audio-player-label";
-            label.textContent = last > index ? `🎧 აუდიო — კითხვები ${index + 1}–${last + 1}` : `🎧 აუდიო — კითხვა ${index + 1}`;
-            const audio = document.createElement('audio');
-            audio.controls = true;
-            audio.preload = "none";
+            box.className = "audio-player-container limited-audio";
+            box.innerHTML = `
+                <div class="audio-player-label"></div>
+                <div class="la-row">
+                    <button type="button" class="la-btn" aria-label="მოსმენა"><i class="fa-solid fa-play"></i></button>
+                    <div class="la-main">
+                        <div class="la-status"></div>
+                        <div class="la-bar"><span></span></div>
+                    </div>
+                    <div class="la-time">0:00</div>
+                    <div class="la-left"></div>
+                </div>`;
+            box.querySelector('.audio-player-label').textContent = labelText;
+
+            const btn = box.querySelector('.la-btn');
+            const status = box.querySelector('.la-status');
+            const bar = box.querySelector('.la-bar span');
+            const time = box.querySelector('.la-time');
+            const left = box.querySelector('.la-left');
+
+            const audio = new Audio();
+            audio.preload = "metadata";
             audio.src = src;
-            box.appendChild(label);
-            box.appendChild(audio);
+            const warning = new Audio(AUDIO_WARNING_SRC);
+            let mode = "idle";   // idle | warning | playing | paused
+
+            const player = {
+                pause() {
+                    if (mode === "warning") { warning.pause(); warning.currentTime = 0; mode = "idle"; }
+                    if (mode === "playing") { audio.pause(); mode = "paused"; }
+                    draw();
+                }
+            };
+
+            function draw() {
+                const used = audioGetPlays(src);
+                const remaining = Math.max(0, AUDIO_MAX_PLAYS - used);
+                left.textContent = `${remaining}/${AUDIO_MAX_PLAYS}`;
+                left.title = "დარჩენილი მოსმენები";
+                const icon = btn.querySelector('i');
+                box.classList.toggle('la-locked', remaining === 0 && mode === "idle");
+                box.classList.toggle('la-active', mode !== "idle");
+
+                if (mode === "warning") {
+                    icon.className = "fa-solid fa-stop";
+                    status.textContent = "⚠ ჯერ მოუსმინეთ ინსტრუქციას…";
+                } else if (mode === "playing") {
+                    icon.className = "fa-solid fa-pause";
+                    status.textContent = `მოსმენა ${used} / ${AUDIO_MAX_PLAYS}`;
+                } else if (mode === "paused") {
+                    icon.className = "fa-solid fa-play";
+                    status.textContent = `პაუზა — მოსმენა ${used} / ${AUDIO_MAX_PLAYS}`;
+                } else if (remaining === 0) {
+                    icon.className = "fa-solid fa-lock";
+                    status.textContent = "აუდიოს მოსმენა შეგიძლიათ მხოლოდ 2-ჯერ. ლიმიტი ამოიწურა.";
+                } else {
+                    icon.className = "fa-solid fa-play";
+                    status.textContent = used === 0
+                        ? `შეგიძლიათ მოუსმინოთ მხოლოდ ${AUDIO_MAX_PLAYS}-ჯერ`
+                        : `დარჩა ${remaining} მოსმენა`;
+                }
+                btn.disabled = remaining === 0 && mode === "idle";
+            }
+
+            function startListening() {
+                const used = audioGetPlays(src);
+                if (used >= AUDIO_MAX_PLAYS) { draw(); return; }
+                audioSetPlays(src, used + 1);
+                audio.currentTime = 0;
+                mode = "playing";
+                audio.play().catch(() => { mode = "idle"; draw(); });
+                draw();
+            }
+
+            btn.addEventListener('click', () => {
+                if (mode === "playing") { player.pause(); return; }
+                if (mode === "warning") { player.pause(); return; }
+
+                if (audioActivePlayer && audioActivePlayer !== player) audioActivePlayer.pause();
+                audioActivePlayer = player;
+
+                if (mode === "paused") { mode = "playing"; audio.play(); draw(); return; }
+                if (audioGetPlays(src) >= AUDIO_MAX_PLAYS) { draw(); return; }
+
+                // First audio of this exercise: the spoken warning plays first
+                if (!audioWarnedBlocks.has(blockKey)) {
+                    mode = "warning";
+                    warning.currentTime = 0;
+                    warning.play().catch(() => { audioWarnedBlocks.add(blockKey); startListening(); });
+                    draw();
+                    return;
+                }
+                startListening();
+            });
+
+            warning.addEventListener('timeupdate', () => {
+                if (mode === "warning" && warning.duration) bar.style.width = `${(warning.currentTime / warning.duration) * 100}%`;
+            });
+            warning.addEventListener('ended', () => {
+                if (mode !== "warning") return;
+                audioWarnedBlocks.add(blockKey);
+                bar.style.width = "0%";
+                startListening();
+            });
+            warning.addEventListener('error', () => {   // warning file missing: don't block the exercise
+                if (mode !== "warning") return;
+                audioWarnedBlocks.add(blockKey);
+                startListening();
+            });
+
+            audio.addEventListener('timeupdate', () => {
+                if (mode !== "playing" && mode !== "paused") return;
+                if (audio.duration) bar.style.width = `${(audio.currentTime / audio.duration) * 100}%`;
+                time.textContent = `${audioFmt(audio.currentTime)} / ${audioFmt(audio.duration)}`;
+            });
+            audio.addEventListener('loadedmetadata', () => { if (mode === "idle") time.textContent = audioFmt(audio.duration); });
+            audio.addEventListener('ended', () => {
+                mode = "idle";
+                bar.style.width = "100%";
+                draw();
+            });
+
+            draw();
             return box;
         }

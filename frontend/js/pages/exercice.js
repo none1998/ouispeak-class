@@ -329,11 +329,24 @@
             }
 
             // Inject audio player if present
+            // (several audio files can be given, one per line)
             if (blockData.audio) {
-                const audioDiv = document.createElement('div');
-                audioDiv.className = "audio-player-container";
-                audioDiv.innerHTML = `<audio controls src="${blockData.audio}"></audio>`;
-                container.appendChild(audioDiv);
+                const audioFiles = String(blockData.audio).split("\n").map(a => a.trim()).filter(Boolean);
+                audioFiles.forEach((src, n) => {
+                    const audioDiv = document.createElement('div');
+                    audioDiv.className = "audio-player-container";
+                    if (audioFiles.length > 1) {
+                        const label = document.createElement('div');
+                        label.className = "audio-player-label";
+                        label.textContent = `აუდიო ${n + 1}`;
+                        audioDiv.appendChild(label);
+                    }
+                    const audio = document.createElement('audio');
+                    audio.controls = true;
+                    audio.src = src;
+                    audioDiv.appendChild(audio);
+                    container.appendChild(audioDiv);
+                });
             }
 
             // Inject video player if present

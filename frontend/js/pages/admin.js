@@ -18,6 +18,8 @@ const state = {
 
 const RECORDING_WEEKS = 26;
 
+const KIND_ICONS = { questions: "fa-list-check", essay: "fa-pen-nib", match: "fa-link", speaking: "fa-microphone" };
+
 // Kinds of exercise blocks (what the student sees for the whole block)
 const BLOCK_KINDS = [
     { value: "", label: "Questions" },
@@ -333,31 +335,32 @@ function renderBlocks() {
         blocks.map((block, i) => renderBlock(block, i)),
         h("div", { class: "add-row" },
             h("button", {
-                class: "btn btn-outline", onclick: () => {
+                class: "btn btn-outline add-questions", onclick: () => {
                     blocks.push({ instruction: "", type: null, textFile: null, video: null, audio: null, questions: [] });
                     markUnsaved(); renderEditor();
                 }
-            }, h("i", { class: "fa-solid fa-plus" }), "Add exercise block"),
+            }, h("i", { class: "fa-solid fa-list-check" }), "Add exercise block"),
             h("button", {
-                class: "btn btn-outline", onclick: () => {
+                class: "btn btn-outline add-essay", onclick: () => {
                     blocks.push({ instruction: "", type: "essay", textFile: null, video: null, audio: null, questions: [] });
                     markUnsaved(); renderEditor();
                 }
             }, h("i", { class: "fa-solid fa-pen" }), "Add writing task"),
             h("button", {
-                class: "btn btn-outline", onclick: () => {
+                class: "btn btn-outline add-match", onclick: () => {
                     blocks.push({ instruction: "Associez chaque mot français à sa traduction géorgienne.", type: "match", textFile: null, video: null, audio: null,
                         questions: [{ type: "", text: "", answer: "" }, { type: "", text: "", answer: "" }] });
                     markUnsaved(); renderEditor();
                 }
             }, h("i", { class: "fa-solid fa-link" }), "Add matching"),
             h("button", {
-                class: "btn btn-outline", onclick: () => {
+                class: "btn btn-outline add-speaking", onclick: () => {
                     blocks.push({ instruction: "ჩაიწერეთ ხმა და უპასუხეთ კითხვებს ფრანგულად.", type: "speaking", textFile: null, video: null, audio: null,
                         questions: [{ type: "", text: "", answer: "" }] });
                     markUnsaved(); renderEditor();
                 }
-            }, h("i", { class: "fa-solid fa-microphone" }), "Add speaking")));
+            }, h("i", { class: "fa-solid fa-microphone" }), "Add speaking"),
+            renderPasteButton("block", (copy) => blocks.push(copy))));
 }
 
 function renderBlock(block, i) {
@@ -365,9 +368,11 @@ function renderBlock(block, i) {
     const isEssay = block.type === "essay";
     block.questions = block.questions || [];
 
-    return h("article", { class: "block" },
+    const kind = block.type || "questions";
+    return h("article", { class: `block kind-${kind}` },
         h("div", { class: "block-head" },
             h("span", { class: "block-number" }, i + 1),
+            h("span", { class: "kind-icon", "aria-hidden": "true" }, h("i", { class: `fa-solid ${KIND_ICONS[kind] || "fa-list-check"}` })),
             h("select", {
                 "aria-label": "Block kind",
                 onchange: (e) => { block.type = e.target.value || null; markUnsaved(); renderEditor(); }
@@ -376,13 +381,14 @@ function renderBlock(block, i) {
             h("span", { class: "spacer" }),
             h("button", { class: "icon-btn", title: "Move up", disabled: i === 0, onclick: () => move(blocks, i, -1) }, h("i", { class: "fa-solid fa-arrow-up" })),
             h("button", { class: "icon-btn", title: "Move down", disabled: i === blocks.length - 1, onclick: () => move(blocks, i, 1) }, h("i", { class: "fa-solid fa-arrow-down" })),
+            h("button", { class: "icon-btn", title: "Copy this exercise (to paste it in any week or course)", onclick: () => copyToClipboard("block", block) }, h("i", { class: "fa-regular fa-copy" })),
             h("button", { class: "icon-btn danger", title: "Delete block", onclick: () => removeAt(blocks, i, "block") }, h("i", { class: "fa-solid fa-trash" }))),
         h("div", { class: "block-body" },
             h("label", {}, "Instruction", boundInput(block, "instruction", { multiline: true, rows: 2 })),
             h("div", { class: "media-row" },
                 h("label", {}, "Reading text file", boundInput(block, "textFile", { placeholder: "e.g. texts/a2_text_1.txt" })),
                 h("label", {}, "Video", boundInput(block, "video", { placeholder: "e.g. videos/a2_video1.mp4" })),
-                h("label", {}, "Audio", boundInput(block, "audio", { placeholder: "e.g. audio/a2_audio1.mp3" }))),
+                renderAudioList(block)),
             isEssay
                 ? h("p", { class: "q-note" }, "Students write a free text for this block. No questions needed.")
                 : block.type === "match" ? renderMatchPairs(block)
@@ -593,7 +599,7 @@ function renderQuestion(block, q, j) {
         fields.push(h("label", {}, "Correct answer", boundInput(q, "answer", { placeholder: "e.g. étudie" })));
     }
 
-    return h("div", { class: "question" },
+    return h("div", { class: `question q-type-${q.type || "short"}` },
         h("span", { class: "q-num" }, j + 1 + "."),
         h("div", { class: "q-fields" }, fields),
         h("div", {},
@@ -616,20 +622,23 @@ function renderVocab() {
                     sections.push({ instruction: `კვირა ${state.week.number}`, words: [] });
                     markUnsaved(); renderEditor();
                 }
-            }, h("i", { class: "fa-solid fa-plus" }), "Add vocabulary section")));
+            }, h("i", { class: "fa-solid fa-plus" }), "Add vocabulary section"),
+            renderPasteButton("vocab", (copy) => sections.push(copy))));
 }
 
 function renderSection(section, i) {
     const sections = state.week.vocabSections;
     const pasteBox = h("textarea", { placeholder: "Un quartier = უბანი\nAnimé = ცოცხალი", "aria-label": "Paste words" });
 
-    return h("article", { class: "block" },
+    return h("article", { class: "block kind-vocab" },
         h("div", { class: "block-head" },
             h("span", { class: "block-number" }, i + 1),
+            h("span", { class: "kind-icon", "aria-hidden": "true" }, h("i", { class: "fa-solid fa-language" })),
             h("strong", {}, `${section.words.length} words`),
             h("span", { class: "spacer" }),
             h("button", { class: "icon-btn", title: "Move up", disabled: i === 0, onclick: () => move(sections, i, -1) }, h("i", { class: "fa-solid fa-arrow-up" })),
             h("button", { class: "icon-btn", title: "Move down", disabled: i === sections.length - 1, onclick: () => move(sections, i, 1) }, h("i", { class: "fa-solid fa-arrow-down" })),
+            h("button", { class: "icon-btn", title: "Copy this section (to paste it in any week or course)", onclick: () => copyToClipboard("vocab", section) }, h("i", { class: "fa-regular fa-copy" })),
             h("button", { class: "icon-btn danger", title: "Delete section", onclick: () => removeAt(sections, i, "section") }, h("i", { class: "fa-solid fa-trash" }))),
         h("div", { class: "block-body" },
             h("label", {}, "Title", boundInput(section, "instruction")),
@@ -717,7 +726,7 @@ async function saveWeek() {
         type: b.type || null,
         textFile: b.textFile || null,
         video: b.video || null,
-        audio: b.audio || null,
+        audio: (b.audio || "").split("\n").map((x) => x.trim()).filter(Boolean).join("\n") || null,
         questions: b.type === "essay" ? []
             : b.type === "match" ? (b.questions || []).map((q) => ({ type: null, text: q.text || "", options: null, answer: q.answer || "" }))
             : b.type === "speaking" ? (b.questions || []).filter((q) => (q.text || "").trim()).map((q) => ({ type: null, text: q.text, options: null, answer: "" }))
@@ -1343,4 +1352,71 @@ async function saveAllScores() {
         toast("Not saved: " + err.message, true);
         renderSaveState();
     }
+}
+
+// =====================================================================
+// SEVERAL AUDIO FILES PER EXERCISE (kept one per line in the same field)
+// =====================================================================
+function renderAudioList(block) {
+    const files = (block.audio || "").split("\n");
+    if (files.length === 0) files.push("");
+    const save = () => { block.audio = files.join("\n"); markUnsaved(); };
+
+    return h("div", { class: "audio-list" },
+        h("span", { class: "audio-label" }, files.filter((f) => f.trim()).length > 1 ? `Audio (${files.filter((f) => f.trim()).length} files)` : "Audio"),
+        files.map((file, k) => h("div", { class: "audio-row" },
+            h("input", {
+                value: file, placeholder: k === 0 ? "e.g. audio/a2_audio1.mp3" : "another audio file",
+                "aria-label": `Audio file ${k + 1}`,
+                oninput: (e) => { files[k] = e.target.value; save(); }
+            }),
+            files.length > 1 ? h("button", {
+                class: "icon-btn danger", title: "Remove this audio",
+                onclick: () => { files.splice(k, 1); save(); renderEditor(); }
+            }, h("i", { class: "fa-solid fa-xmark" })) : null)),
+        h("button", {
+            class: "btn btn-ghost audio-add", onclick: () => { files.push(""); block.audio = files.join("\n"); renderEditor(); }
+        }, h("i", { class: "fa-solid fa-plus" }), "Add audio file"));
+}
+
+// =====================================================================
+// COPY / PASTE an exercise (or a vocabulary section) between weeks and courses
+// The copy is kept in this browser until you copy something else.
+// =====================================================================
+const CLIPBOARD_KEY = "lingono-admin-clipboard";
+
+function readClipboard() {
+    try { return JSON.parse(localStorage.getItem(CLIPBOARD_KEY) || "null"); } catch (e) { return null; }
+}
+
+function copyToClipboard(kind, item) {
+    const data = kind === "block"
+        ? {
+            instruction: item.instruction || "", type: item.type || null,
+            textFile: item.textFile || null, video: item.video || null, audio: item.audio || null,
+            questions: (item.questions || []).map((q) => ({ type: q.type || "", text: q.text || "", options: q.options ? [...q.options] : null, answer: q.answer || "" }))
+        }
+        : { instruction: item.instruction || "", words: (item.words || []).map((w) => ({ french: w.french || "", georgian: w.georgian || "" })) };
+    const label = kind === "block"
+        ? (BLOCK_KINDS.find((k) => k.value === (item.type || ""))?.label || "Exercise")
+        : `Vocabulary (${data.words.length} words)`;
+    const from = `${state.week.courseName}, week ${state.week.number}`;
+    try {
+        localStorage.setItem(CLIPBOARD_KEY, JSON.stringify({ kind, data, label, from }));
+    } catch (e) { toast("Could not copy (browser storage is blocked).", true); return; }
+    renderEditor();
+    toast(`Copied. Open any week of any course and click “Paste”.`);
+}
+
+function renderPasteButton(kind, add) {
+    const clip = readClipboard();
+    if (!clip || clip.kind !== kind) return null;
+    return h("button", {
+        class: "btn btn-paste", title: `Copied from ${clip.from}`,
+        onclick: () => {
+            add(JSON.parse(JSON.stringify(clip.data)));
+            markUnsaved(); renderEditor();
+            toast(`Pasted from ${clip.from}. Don't forget to save.`);
+        }
+    }, h("i", { class: "fa-solid fa-paste" }), `Paste: ${clip.label}`, h("small", {}, clip.from));
 }

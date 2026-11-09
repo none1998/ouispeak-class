@@ -284,3 +284,138 @@ label.check small { color: var(--muted); font-weight: 400; }
 .paste-help { display: grid; gap: 0.25rem; font-size: 0.85rem; color: var(--muted); }
 .paste-help code { background: var(--blue-soft); color: var(--blue); padding: 0.05rem 0.35rem; border-radius: 4px; font-size: 0.82rem; }
 .paste-error { color: var(--red); font-weight: 600; }
+
+/* =========================================================
+   THEME — calmer colours, each kind of exercise has its own colour
+   ========================================================= */
+:root {
+    --bg: #eef2f8;
+    --line: #dce3ee;
+    --navy: #0b2545;
+    --k-questions: #2563eb;
+    --k-essay: #7c3aed;
+    --k-match: #0d9488;
+    --k-speaking: #ea580c;
+    --k-vocab: #16a34a;
+}
+
+body { background: var(--bg); }
+
+/* ---------- Sidebar: dark navy ---------- */
+.sidebar {
+    background: linear-gradient(180deg, #0b2545 0%, #112f57 100%);
+    border-right: none;
+    color: #dbe7f5;
+}
+.sidebar-top {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 0.55rem 0.6rem 0.55rem 0.8rem;
+    box-shadow: 0 6px 18px -10px rgba(0, 0, 0, 0.5);
+}
+.sidebar .field-label, .sidebar .muted { color: #8fa8c8; }
+.sidebar select { border-color: transparent; }
+.section-nav { border-bottom-color: rgba(255, 255, 255, 0.12); }
+.section-btn { color: #c3d3e8; }
+.section-btn:hover { background: rgba(255, 255, 255, 0.08); color: #ffffff; }
+.section-btn.active { background: #ffffff; color: var(--navy); box-shadow: 0 6px 16px -10px rgba(0, 0, 0, 0.6); }
+.sidebar .btn-ghost { color: #9cc3ff; }
+.sidebar .btn-ghost:hover { background: rgba(255, 255, 255, 0.08); }
+.sidebar .btn-ghost.danger { color: #ff9a90; }
+.sidebar .btn-ghost.danger:hover { background: rgba(255, 90, 80, 0.12); }
+.week-item { color: #dbe7f5; border-left: 3px solid transparent; }
+.week-item small { color: #8fa8c8; }
+.week-item:hover { background: rgba(255, 255, 255, 0.06); }
+.week-item.active { background: rgba(255, 255, 255, 0.14); color: #ffffff; border-left-color: #6fb1ff; }
+.week-item.active small { color: #c3d3e8; }
+.recordings-link { border-color: rgba(255, 255, 255, 0.18); }
+.recordings-link.active { border-left-color: #ffb36b; }
+.sidebar .icon-btn { color: var(--muted); }
+
+/* ---------- Header & tabs ---------- */
+.editor-head {
+    background: rgba(238, 242, 248, 0.92);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+.tabs { border-bottom: none; gap: 0.4rem; background: #e2e8f2; padding: 0.3rem; border-radius: 12px; width: fit-content; }
+.tab { border-bottom: none; margin-bottom: 0; border-radius: 9px; padding: 0.5rem 1rem; }
+.tab:hover { color: var(--ink); }
+.tab.active { background: #ffffff; color: var(--blue); border-bottom: none; box-shadow: 0 2px 8px -4px rgba(15, 23, 42, 0.25); }
+
+/* ---------- Exercise blocks: coloured by kind ---------- */
+.block { --kind: var(--blue); }
+.kind-questions { --kind: var(--k-questions); }
+.kind-essay { --kind: var(--k-essay); }
+.kind-match { --kind: var(--k-match); }
+.kind-speaking { --kind: var(--k-speaking); }
+.kind-vocab { --kind: var(--k-vocab); }
+
+.block {
+    border: 1px solid var(--line);
+    border-left: 6px solid var(--kind);
+    border-radius: 14px;
+    margin-bottom: 1.6rem;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 12px 28px -20px rgba(15, 23, 42, 0.35);
+}
+.block-head {
+    background: color-mix(in srgb, var(--kind) 9%, #ffffff);
+    border-bottom: 1px solid color-mix(in srgb, var(--kind) 18%, #ffffff);
+    padding: 0.75rem 1rem;
+}
+.block-number { background: var(--kind); box-shadow: 0 4px 10px -4px var(--kind); }
+.kind-icon { color: var(--kind); font-size: 1.05rem; width: 1.2rem; text-align: center; }
+.block-head select { background: #ffffff; border-color: color-mix(in srgb, var(--kind) 25%, #ffffff); font-weight: 600; }
+.block-head strong { color: color-mix(in srgb, var(--kind) 70%, #0f172a); }
+.block-body { background: color-mix(in srgb, var(--kind) 2.5%, #ffffff); border-radius: 0 0 14px 0; }
+.block-body label { color: #5b6b82; }
+
+/* ---------- Questions inside a block: coloured by question type ---------- */
+.question {
+    --q: var(--kind);
+    background: #ffffff;
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--q);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+.q-type-mc { --q: #2563eb; }
+.q-type-short { --q: #0d9488; }
+.q-type-open { --q: #7c3aed; }
+.question .q-num { color: var(--q); font-weight: 800; }
+.question:hover { border-color: color-mix(in srgb, var(--q) 35%, var(--line)); border-left-color: var(--q); }
+
+/* ---------- Add buttons in each kind's colour ---------- */
+.add-row .btn-outline.add-questions { --kind: var(--k-questions); }
+.add-row .btn-outline.add-essay { --kind: var(--k-essay); }
+.add-row .btn-outline.add-match { --kind: var(--k-match); }
+.add-row .btn-outline.add-speaking { --kind: var(--k-speaking); }
+.add-row .btn-outline[class*="add-"] {
+    color: var(--kind);
+    border-color: color-mix(in srgb, var(--kind) 35%, #ffffff);
+    background: #ffffff;
+}
+.add-row .btn-outline[class*="add-"]:hover { background: color-mix(in srgb, var(--kind) 8%, #ffffff); border-color: var(--kind); }
+.kind-vocab ~ .add-row .btn-outline, section > .add-row .btn-outline { border-color: var(--line); }
+
+/* ---------- Paste (copied exercise) ---------- */
+.btn-paste {
+    background: #fffbeb; color: #92400e;
+    border: 1.5px dashed #f59e0b;
+    flex-wrap: wrap; text-align: left;
+}
+.btn-paste:hover { background: #fef3c7; }
+.btn-paste small { font-weight: 500; color: #b45309; font-size: 0.78rem; }
+
+/* ---------- Several audio files ---------- */
+.audio-list { display: grid; gap: 0.35rem; align-content: start; }
+.audio-label { font-size: 0.85rem; font-weight: 600; color: #5b6b82; }
+.audio-row { display: flex; gap: 0.3rem; align-items: center; }
+.audio-row input { font-size: 0.85rem; }
+.audio-add { justify-self: start; padding: 0.2rem 0.4rem; font-size: 0.85rem; }
+
+/* ---------- Other sections ---------- */
+.course-admin { --kind: var(--blue); }
+.student-form { --kind: var(--blue); }
+.empty { background: #ffffff; border-color: var(--line); }
+.data-table, .rec-table { box-shadow: 0 12px 28px -22px rgba(15, 23, 42, 0.35); }
+.paste-details { background: #ffffff; }

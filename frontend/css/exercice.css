@@ -1730,3 +1730,6 @@
 .fb-title { font-size: 1.3rem; font-weight: 800; margin-top: 0.2rem; }
 .fb-box-weak { background: #fff4e0; color: #7c3a06; }
 .fb-card .delf-box:first-of-type { margin-top: 1.1rem; }
+
+/* Several audio files in one exercise */
+.audio-player-label { font-size: 0.85rem; font-weight: 700; color: var(--primary); margin-bottom: 0.35rem; }

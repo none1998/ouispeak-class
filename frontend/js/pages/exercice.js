@@ -2303,14 +2303,23 @@ Reply ONLY with JSON in this exact shape:
         }
 
         // ---------- The spoken instruction, shown word by word ----------
-        // Shown only ONCE per week (remembered in this browser), even if the week has several audio exercises
+        // Shown only ONCE per week of the dropdown, even if the week has several audio exercises.
+        // It is remembered on the server ("intro|course|kvira_N"), so when the admin gives
+        // listenings back, the instruction comes back too. If the server can't be reached,
+        // this browser's memory is used instead.
         const LISTEN_INTRO_SEEN = "ouispeak-listen-intro-seen";
+        const introKey = (weekKey) => `intro|${weekKey}`;
+
         function listenIntroSeen(weekKey) {
             if (audioWarnedBlocks.has(weekKey)) return true;
+            if (audioServerOk) return (audioServerCounts[introKey(weekKey)] || 0) > 0;
             try { return (JSON.parse(localStorage.getItem(LISTEN_INTRO_SEEN) || "[]")).includes(weekKey); } catch (e) { return false; }
         }
         function markListenIntroSeen(weekKey) {
             audioWarnedBlocks.add(weekKey);
+            audioServerCounts[introKey(weekKey)] = 1;
+            api("/api/listening/start", { method: "POST", body: JSON.stringify({ key: introKey(weekKey) }) })
+                .catch(err => console.warn("Instruction not saved on the server:", err));
             try {
                 const seen = JSON.parse(localStorage.getItem(LISTEN_INTRO_SEEN) || "[]");
                 if (!seen.includes(weekKey)) seen.push(weekKey);
@@ -2318,7 +2327,10 @@ Reply ONLY with JSON in this exact shape:
             } catch (e) { /* storage blocked: once per visit */ }
         }
 
-        function showListeningInstruction(blockKey) {
+        async function showListeningInstruction(blockKey) {
+            await audioLoadCounts();   // know first what the server remembers
+            const subjectNow = document.getElementById('subjectSelect').value;
+            if (blockKey !== `${studentCourse}|${subjectNow}`) return;   // the student already changed week
             if (listenIntroSeen(blockKey) || document.getElementById('listenIntro')) return;
 
             const overlay = document.createElement('div');

@@ -87,7 +87,7 @@ public class StudentsController(AppDbContext db) : ControllerBase
         if (authId == null) return Ok(new { Registered = false, Max = ListeningController.DefaultMaxPlays, Items = Array.Empty<object>() });
 
         var items = await db.AudioPlays
-            .Where(p => p.AuthId == authId)
+            .Where(p => p.AuthId == authId && !p.AudioKey.StartsWith("intro|"))
             .OrderByDescending(p => p.UpdatedAt)
             .Select(p => new { p.AudioKey, p.Count, p.UpdatedAt })
             .ToListAsync();
@@ -102,7 +102,13 @@ public class StudentsController(AppDbContext db) : ControllerBase
         if (authId == null) return NotFound("This student has no account yet.");
 
         var query = db.AudioPlays.Where(p => p.AuthId == authId);
-        if (!string.IsNullOrEmpty(key)) query = query.Where(p => p.AudioKey == key);
+        if (!string.IsNullOrEmpty(key))
+        {
+            // the audio itself + the spoken instruction of its week ("course|kvira_3|file" → "intro|course|kvira_3")
+            var parts = key.Split('|');
+            var introKey = parts.Length >= 2 ? $"intro|{parts[0]}|{parts[1]}" : "";
+            query = query.Where(p => p.AudioKey == key || p.AudioKey == introKey);
+        }
         var deleted = await query.ExecuteDeleteAsync();
         return Ok(new { Reset = deleted });
     }

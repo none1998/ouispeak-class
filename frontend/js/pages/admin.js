@@ -1606,12 +1606,16 @@ function fileField(obj, key, kind, placeholder) {
 function uploadButton(kind, onUploaded) {
     const k = UPLOAD_KINDS[kind];
     return h("button", {
-        class: "icon-btn upload-btn", type: "button", title: `Upload a ${k.label} (opens your ${k.folder} folder)`,
+        class: "icon-btn upload-btn", type: "button", title: `Upload ${k.label} (from your ${k.folder} folder)`,
         onclick: async (e) => {
             e.preventDefault();
             const btn = e.currentTarget;
             const file = await pickFile(kind);
             if (!file) return;
+            if (!fileMatchesKind(kind, file)) {
+                toast(`“${file.name}” is not a valid ${k.label}. Choose a ${Object.values(k.types)[0].join(", ")} file.`, true);
+                return;
+            }
             if (file.size > UPLOAD_MAX_MB * 1024 * 1024) {
                 toast(`This file is ${Math.round(file.size / 1048576)} MB. The maximum is ${UPLOAD_MAX_MB} MB.`, true);
                 return;
@@ -1649,13 +1653,35 @@ async function pickFile(kind) {
             // otherwise fall back to the classic chooser below
         }
     }
+    // Safari: the file input must be inside the page, otherwise it never reports the chosen file
+    document.getElementById("hiddenFilePicker")?.remove();
     return new Promise((resolve) => {
         const input = document.createElement("input");
         input.type = "file";
-        input.accept = k.accept;
-        input.addEventListener("change", () => resolve(input.files[0] || null));
+        input.id = "hiddenFilePicker";
+        input.accept = kind === "audio" || kind === "video" ? "" : k.accept;
+        input.style.cssText = "position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0;";
+        let done = false;
+        const finish = () => {
+            if (done) return;
+            done = true;
+            const file = input.files && input.files[0] ? input.files[0] : null;
+            input.remove();
+            resolve(file);
+        };
+        input.addEventListener("change", finish);
+        input.addEventListener("input", finish);
+        input.addEventListener("cancel", () => { done = true; input.remove(); resolve(null); });
+        document.body.appendChild(input);
         input.click();
     });
+}
+
+function fileMatchesKind(kind, file) {
+    const k = UPLOAD_KINDS[kind];
+    const ext = "." + (file.name.split(".").pop() || "").toLowerCase();
+    const mimeGroup = Object.keys(k.types)[0].split("/")[0];          // "video", "audio", "image", "text"
+    return (file.type && file.type.startsWith(mimeGroup + "/")) || Object.values(k.types)[0].includes(ext);
 }
 
 async function uploadToStorage(kind, file) {

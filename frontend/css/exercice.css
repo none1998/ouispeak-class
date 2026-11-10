@@ -1842,3 +1842,10 @@
     border-radius: 12px; border: 1px solid var(--border-color);
     box-shadow: 0 8px 20px -14px rgba(15, 23, 42, 0.45); cursor: zoom-in;
 }
+
+/* Speaking instruction: orange like the speaking exercises */
+.listen-intro.intro-speaking .listen-intro-card { border-top-color: #ea580c; }
+.listen-intro.intro-speaking .listen-intro-icon { background: linear-gradient(135deg, #f97316, #c2410c); box-shadow: 0 10px 22px -10px #ea580c; }
+.listen-intro.intro-speaking .lw.now { background: #ea580c; box-shadow: 0 4px 10px -6px #ea580c; }
+.listen-intro.intro-speaking .listen-intro-bar span { background: #ea580c; }
+.listen-intro-text .lw-mark.said, .listen-intro-text .lw-mark.now { color: var(--secondary); background: transparent; box-shadow: none; }

@@ -314,6 +314,8 @@
             if (typeof audioActivePlayer !== "undefined" && audioActivePlayer) { audioActivePlayer.pause(); audioActivePlayer = null; }
             // exercise with audio: show the spoken instruction first (once per exercise)
             if (blockData.audio || (blockData.questions || []).some(q => q.audio)) showListeningInstruction(`${studentCourse}|${subject}`);
+            // speaking exercise: show the spoken speaking instruction first (once per week)
+            else if (blockData.type === "speaking") showSpeakingInstruction(`${studentCourse}|${subject}`);
             
             container.innerHTML = `<div class="instruction-box">${instruction}</div>`;
 
@@ -2303,43 +2305,69 @@ Reply ONLY with JSON in this exact shape:
         }
 
         // ---------- The spoken instruction, shown word by word ----------
-        // Shown only ONCE per week of the dropdown, even if the week has several audio exercises.
-        // It is remembered on the server ("intro|course|kvira_N"), so when the admin gives
-        // listenings back, the instruction comes back too. If the server can't be reached,
-        // this browser's memory is used instead.
-        const LISTEN_INTRO_SEEN = "ouispeak-listen-intro-seen";
-        const introKey = (weekKey) => `intro|${weekKey}`;
+        // Spoken instructions, shown only ONCE per week of the dropdown:
+        //   "listening" → when the week has an exercise with audio
+        //   "speaking"  → when the week has a speaking exercise
+        // Remembered on the server (keys "intro|course|kvira_N" and "intro|speaking|course|kvira_N"),
+        // so when the admin gives listenings back, the listening instruction comes back too.
+        // If the server can't be reached, this browser's memory is used instead.
+        const SPEAKING_WARNING_WORDS = [
+            ["წარმოგიდგენთ", 0.05], ["სასაუბრო", 0.89], ["დავალებებს.", 1.5],
+            ["ისინი", 2.53], ["დაგეხმარებიან", 2.89], ["გადალახოთ", 3.66], ["ბარიერი", 4.31], ["ფრანგულად", 4.82],
+            ["საუბრისას", 5.44], ["და", 6.27], ["მიეჩვიოთ", 6.47], ["აზრის", 7.06], ["გამოხატვას.", 7.46],
+            ["არ", 8.59], ["გამოიყენოთ", 8.85], ["წინასწარი", 9.61], ["ჩანაწერები", 10.31],
+            ["და", 11.18], ["არ", 11.37], ["წაიკითხოთ", 11.56], ["დაწერილი", 12.09], ["!!!", 12.52],
+            ["ისაუბრეთ", 12.95], ["სპონტანურად", 13.83], ["!!!", 14.54],
+            ["შედეგის", 14.95], ["გაუმჯობესება", 15.47], ["მხოლოდ", 16.28], ["ასეა", 16.74], ["შესაძლებელი.", 17.09]
+        ];
+        const INSTRUCTIONS = {
+            listening: { src: AUDIO_WARNING_SRC, words: AUDIO_WARNING_WORDS, title: "მოსმენის დავალება", icon: "fa-headphones", keyPrefix: "intro|" },
+            speaking: { src: "audios/warning_speaking.mp3", words: SPEAKING_WARNING_WORDS, title: "სასაუბრო დავალება", icon: "fa-microphone", keyPrefix: "intro|speaking|" }
+        };
+        const INSTRUCTIONS_SEEN = "ouispeak-instructions-seen";
+        const LISTEN_INTRO_SEEN = "ouispeak-listen-intro-seen";   // older browser memory (listening only)
 
-        function listenIntroSeen(weekKey) {
-            if (audioWarnedBlocks.has(weekKey)) return true;
-            if (audioServerOk) return (audioServerCounts[introKey(weekKey)] || 0) > 0;
-            try { return (JSON.parse(localStorage.getItem(LISTEN_INTRO_SEEN) || "[]")).includes(weekKey); } catch (e) { return false; }
+        function instructionKey(kind, weekKey) { return INSTRUCTIONS[kind].keyPrefix + weekKey; }
+
+        function instructionSeen(kind, weekKey) {
+            const key = instructionKey(kind, weekKey);
+            if (audioWarnedBlocks.has(key)) return true;
+            if (audioServerOk) return (audioServerCounts[key] || 0) > 0;
+            try {
+                if ((JSON.parse(localStorage.getItem(INSTRUCTIONS_SEEN) || "[]")).includes(key)) return true;
+                return kind === "listening" && (JSON.parse(localStorage.getItem(LISTEN_INTRO_SEEN) || "[]")).includes(weekKey);
+            } catch (e) { return false; }
         }
-        function markListenIntroSeen(weekKey) {
-            audioWarnedBlocks.add(weekKey);
-            audioServerCounts[introKey(weekKey)] = 1;
-            api("/api/listening/start", { method: "POST", body: JSON.stringify({ key: introKey(weekKey) }) })
+        function markInstructionSeen(kind, weekKey) {
+            const key = instructionKey(kind, weekKey);
+            audioWarnedBlocks.add(key);
+            audioServerCounts[key] = 1;
+            api("/api/listening/start", { method: "POST", body: JSON.stringify({ key }) })
                 .catch(err => console.warn("Instruction not saved on the server:", err));
             try {
-                const seen = JSON.parse(localStorage.getItem(LISTEN_INTRO_SEEN) || "[]");
-                if (!seen.includes(weekKey)) seen.push(weekKey);
-                localStorage.setItem(LISTEN_INTRO_SEEN, JSON.stringify(seen));
+                const seen = JSON.parse(localStorage.getItem(INSTRUCTIONS_SEEN) || "[]");
+                if (!seen.includes(key)) seen.push(key);
+                localStorage.setItem(INSTRUCTIONS_SEEN, JSON.stringify(seen));
             } catch (e) { /* storage blocked: once per visit */ }
         }
 
-        async function showListeningInstruction(blockKey) {
+        function showListeningInstruction(weekKey) { return showInstruction("listening", weekKey); }
+        function showSpeakingInstruction(weekKey) { return showInstruction("speaking", weekKey); }
+
+        async function showInstruction(kind, weekKey) {
+            const conf = INSTRUCTIONS[kind];
             await audioLoadCounts();   // know first what the server remembers
             const subjectNow = document.getElementById('subjectSelect').value;
-            if (blockKey !== `${studentCourse}|${subjectNow}`) return;   // the student already changed week
-            if (listenIntroSeen(blockKey) || document.getElementById('listenIntro')) return;
+            if (weekKey !== `${studentCourse}|${subjectNow}`) return;   // the student already changed week
+            if (instructionSeen(kind, weekKey) || document.getElementById('listenIntro')) return;
 
             const overlay = document.createElement('div');
             overlay.id = "listenIntro";
-            overlay.className = "listen-intro";
+            overlay.className = `listen-intro intro-${kind}`;
             overlay.innerHTML = `
                 <div class="listen-intro-card" role="dialog" aria-modal="true" aria-labelledby="listenIntroTitle">
-                    <div class="listen-intro-icon" aria-hidden="true"><i class="fa-solid fa-headphones"></i></div>
-                    <h2 id="listenIntroTitle">მოსმენის დავალება</h2>
+                    <div class="listen-intro-icon" aria-hidden="true"><i class="fa-solid ${conf.icon}"></i></div>
+                    <h2 id="listenIntroTitle">${conf.title}</h2>
                     <p class="listen-intro-text" aria-live="off"></p>
                     <div class="listen-intro-bar"><span></span></div>
                     <div class="listen-intro-actions">
@@ -2350,9 +2378,9 @@ Reply ONLY with JSON in this exact shape:
             document.body.appendChild(overlay);
 
             const text = overlay.querySelector('.listen-intro-text');
-            const words = AUDIO_WARNING_WORDS.map(([w]) => {
+            const words = conf.words.map(([w]) => {
                 const span = document.createElement('span');
-                span.className = "lw";
+                span.className = "lw" + (w === "!!!" ? " lw-mark" : "");
                 span.textContent = w;
                 text.appendChild(span);
                 text.appendChild(document.createTextNode(" "));
@@ -2361,12 +2389,12 @@ Reply ONLY with JSON in this exact shape:
             const bar = overlay.querySelector('.listen-intro-bar span');
             const playBtn = overlay.querySelector('.listen-intro-play');
             const okBtn = overlay.querySelector('.listen-intro-ok');
-            const voice = new Audio(AUDIO_WARNING_SRC);
+            const voice = new Audio(conf.src);
 
             function highlight(t) {
                 words.forEach((span, i) => {
-                    const start = AUDIO_WARNING_WORDS[i][1];
-                    const next = i + 1 < AUDIO_WARNING_WORDS.length ? AUDIO_WARNING_WORDS[i + 1][1] : Infinity;
+                    const start = conf.words[i][1];
+                    const next = i + 1 < conf.words.length ? conf.words[i + 1][1] : Infinity;
                     span.classList.toggle('said', t >= next);
                     span.classList.toggle('now', t >= start && t < next);
                 });
@@ -2403,7 +2431,7 @@ Reply ONLY with JSON in this exact shape:
             okBtn.addEventListener('click', () => {
                 voice.pause();
                 cancelAnimationFrame(raf);
-                markListenIntroSeen(blockKey);
+                markInstructionSeen(kind, weekKey);
                 overlay.remove();
             });
 

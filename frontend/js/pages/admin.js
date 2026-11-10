@@ -259,6 +259,7 @@ function renderEditor() {
 
     if (state.section === "courses") { editor.replaceChildren(renderCoursesManager()); renderSaveState(); return; }
     if (state.section === "students") { editor.replaceChildren(renderStudentsManager()); renderSaveState(); return; }
+    if (state.section === "files") { editor.replaceChildren(renderFilesManager()); return; }
 
     if (state.courses.length === 0) {
         editor.replaceChildren(h("div", { class: "empty" },
@@ -1022,6 +1023,7 @@ async function openSection(section) {
             state.coursesDraft = state.courses.map(courseToDraft);
         }
         if (section === "students") await loadStudentsAndScores();
+        if (section === "files") await loadLocalFiles();
     } catch (err) { toast(err.message, true); }
 
     renderSidebar();
@@ -1698,4 +1700,131 @@ async function uploadToStorage(kind, file) {
     });
     if (error) throw error;
     return _supabase.storage.from("media").getPublicUrl(path).data.publicUrl;
+}
+
+// =====================================================================
+// MOVE OLD FILES to Supabase Storage
+// Finds every exercise file still written as a path of the website folder
+// (texts/…, videos/…, audios/…, images/…), uploads it, then updates the exercises.
+// =====================================================================
+const filesUi = { items: [], status: {}, running: false };
+const KIND_LABELS = { text: "Text", video: "Video", audio: "Audio", image: "Picture" };
+const KIND_FA = { text: "fa-file-lines", video: "fa-film", audio: "fa-headphones", image: "fa-image" };
+const MIME_BY_EXT = {
+    mp3: "audio/mpeg", wav: "audio/wav", m4a: "audio/mp4", aac: "audio/aac", ogg: "audio/ogg",
+    mp4: "video/mp4", m4v: "video/mp4", mov: "video/quicktime", webm: "video/webm",
+    txt: "text/plain", jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp", gif: "image/gif"
+};
+
+async function loadLocalFiles() {
+    filesUi.items = await api("/api/admin/files/local");
+    filesUi.status = {};
+}
+
+function safeStorageName(name) {
+    const dot = name.lastIndexOf(".");
+    const ext = dot > 0 ? name.slice(dot + 1).toLowerCase().replace(/[^a-z0-9]/g, "") : "";
+    const raw = dot > 0 ? name.slice(0, dot) : name;
+    let base = raw.normalize("NFKD").replace(/[^\w.-]+/g, "_").replace(/_+/g, "_").replace(/^_|_$/g, "").slice(0, 60) || "file";
+    if (base !== raw) {   // name had special letters (e.g. Georgian): add a short code so names stay different
+        let h = 0;
+        for (const ch of raw) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+        base += "_" + h.toString(36);
+    }
+    return base + (ext ? "." + ext : "");
+}
+
+function renderFilesManager() {
+    const items = filesUi.items || [];
+    const done = items.filter((it) => filesUi.status[it.path]?.state === "done").length;
+    const failed = items.filter((it) => filesUi.status[it.path]?.state === "error").length;
+
+    return h("section", {},
+        h("div", { class: "editor-head" },
+            h("div", {}, h("p", { class: "course-name" }, "Storage"), h("h1", {}, "Move old files")),
+            h("div", { class: "head-actions" },
+                h("button", {
+                    class: "btn btn-outline", disabled: filesUi.running,
+                    onclick: async () => { try { await loadLocalFiles(); renderEditor(); } catch (err) { toast(err.message, true); } }
+                }, h("i", { class: "fa-solid fa-rotate" }), "Search again"),
+                h("button", {
+                    class: "btn btn-primary", disabled: filesUi.running || items.length === 0, onclick: moveAllFiles
+                }, h("i", { class: "fa-solid fa-cloud-arrow-up" }), filesUi.running ? "Working…" : `Upload all (${items.length})`))),
+        h("p", { class: "rec-note" },
+            "These files are still used as paths of the website folder (like ", h("code", {}, "audios/audio.mp3"), "). ",
+            "“Upload all” copies each file from your website to Supabase Storage, then updates every exercise that uses it. ",
+            "Students' listening counts are kept. Keep this page open until it's finished."),
+        items.length === 0
+            ? h("div", { class: "empty" }, h("h2", {}, "Nothing to move"), h("p", {}, "All exercise files are already in Supabase Storage."))
+            : h("div", { class: "table-scroll" }, h("table", { class: "data-table files-table" },
+                h("thead", {}, h("tr", {}, ["Kind", "File", "Used", "Status"].map((t) => h("th", {}, t)))),
+                h("tbody", {}, items.map((it) => {
+                    const st = filesUi.status[it.path] || { state: "waiting" };
+                    const statusText = {
+                        waiting: "Waiting", uploading: "Uploading…", done: "✓ Moved", error: "✗ " + (st.msg || "Failed")
+                    }[st.state];
+                    return h("tr", { class: "file-" + st.state },
+                        h("td", {}, h("span", { class: "file-kind" }, h("i", { class: `fa-solid ${KIND_FA[it.kind] || "fa-file"}` }), KIND_LABELS[it.kind] || it.kind)),
+                        h("td", { class: "mono" }, it.path),
+                        h("td", {}, `${it.uses}×`),
+                        h("td", { class: "file-status" }, statusText));
+                })))),
+        (done || failed) ? h("p", { class: "q-note" }, `${done} moved, ${failed} failed.`) : null);
+}
+
+async function moveOneFile(it) {
+    const clean = it.path.replace(/^\.?\//, "");
+    const response = await fetch(clean, { cache: "no-store" });
+    if (!response.ok) throw new Error("not found on the website");
+    const blob = await response.blob();
+    if ((blob.type || "").includes("text/html")) throw new Error("not found on the website");   // a "page not found" page
+    if (blob.size > UPLOAD_MAX_MB * 1024 * 1024) throw new Error(`too big (${Math.round(blob.size / 1048576)} MB, max ${UPLOAD_MAX_MB} MB)`);
+
+    const parts = clean.split("/");
+    const name = parts.pop();
+    const known = ["videos", "texts", "audios", "audio", "images"];
+    const folder = known.includes(parts[0]) ? parts[0] : (UPLOAD_KINDS[it.kind]?.folder || "files");
+    const storagePath = `${folder}/${safeStorageName(decodeURIComponent(name))}`;
+    const ext = name.split(".").pop().toLowerCase();
+
+    const { error } = await _supabase.storage.from("media").upload(storagePath, blob, {
+        contentType: MIME_BY_EXT[ext] || blob.type || undefined,
+        upsert: false
+    });
+    // already uploaded earlier (e.g. second try): just reuse it
+    if (error && !(String(error.statusCode) === "409" || /exist/i.test(error.message || ""))) throw error;
+    return _supabase.storage.from("media").getPublicUrl(storagePath).data.publicUrl;
+}
+
+async function moveAllFiles() {
+    if (!confirm(`Upload ${filesUi.items.length} files to Supabase Storage and update the exercises?`)) return;
+    filesUi.running = true;
+    renderEditor();
+
+    const replacements = [];
+    for (const it of filesUi.items) {
+        filesUi.status[it.path] = { state: "uploading" };
+        renderEditor();
+        try {
+            const url = await moveOneFile(it);
+            filesUi.status[it.path] = { state: "done", url };
+            replacements.push({ from: it.path, to: url });
+        } catch (err) {
+            filesUi.status[it.path] = { state: "error", msg: err.message || String(err) };
+        }
+        renderEditor();
+    }
+
+    try {
+        if (replacements.length) {
+            const r = await api("/api/admin/files/replace", { method: "POST", body: JSON.stringify({ replacements }) });
+            toast(`${r.files} files moved, ${r.changed} exercise items updated.`);
+        } else {
+            toast("No file could be moved. See the status column.", true);
+        }
+    } catch (err) {
+        toast("Files uploaded but exercises not updated: " + err.message + ". Click “Upload all” again.", true);
+    }
+    filesUi.running = false;
+    renderEditor();
 }

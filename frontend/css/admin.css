@@ -511,3 +511,11 @@ textarea { overflow: hidden; }
 .q-image-label { font-weight: 700; font-size: 0.85rem; }
 .q-image-row input { flex: 1; min-width: 0; background: #ffffff; border-color: #b7e6df; }
 .q-image-preview { max-width: 260px; max-height: 160px; border-radius: 8px; border: 1px solid var(--line); object-fit: contain; background: #fff; }
+
+/* Move old files */
+.files-table .file-kind { display: inline-flex; align-items: center; gap: 0.4rem; font-weight: 600; }
+.files-table .file-kind i { color: var(--blue); width: 1rem; text-align: center; }
+.files-table tr.file-uploading td { background: #f0f7ff; }
+.files-table tr.file-done .file-status { color: var(--green); font-weight: 700; }
+.files-table tr.file-error .file-status { color: var(--red); font-weight: 600; }
+.files-table tr.file-uploading .file-status { color: var(--blue); font-weight: 600; }

@@ -404,8 +404,8 @@ function renderBlock(block, i) {
         h("div", { class: "block-body" },
             h("label", {}, "Instruction", boundInput(block, "instruction", { multiline: true, rows: 2 })),
             h("div", { class: "media-row" },
-                h("label", {}, "Reading text file", boundInput(block, "textFile", { placeholder: "e.g. texts/a2_text_1.txt" })),
-                h("label", {}, "Video", boundInput(block, "video", { placeholder: "e.g. videos/a2_video1.mp4" })),
+                h("label", {}, "Reading text file", fileField(block, "textFile", "text", "e.g. texts/a2_text_1.txt")),
+                h("label", {}, "Video", fileField(block, "video", "video", "e.g. videos/a2_video1.mp4")),
                 renderAudioList(block)),
             isEssay
                 ? h("p", { class: "q-note" }, "Students write a free text for this block. No questions needed.")
@@ -618,6 +618,7 @@ function renderQuestion(block, q, j) {
     }
 
     const audioBar = q.audio != null ? renderQuestionAudioBar(block, q, j) : null;
+    if (q.image != null) fields.push(renderQuestionImageBar(q));
     return h("div", { class: "question-wrap" }, audioBar, h("div", { class: `question q-type-${q.type || "short"}` },
         h("span", { class: "q-num" }, j + 1 + "."),
         h("div", { class: "q-fields" }, fields),
@@ -627,6 +628,10 @@ function renderQuestion(block, q, j) {
                 class: "icon-btn audio-here", title: "Add an audio before this question (for it and the next ones)",
                 onclick: () => { q.audio = ""; markUnsaved(); renderEditor(); }
             }, h("i", { class: "fa-solid fa-headphones" })) : null,
+            q.image == null ? h("button", {
+                class: "icon-btn image-here", title: "Add a picture to this question",
+                onclick: () => { q.image = ""; markUnsaved(); renderEditor(); }
+            }, h("i", { class: "fa-regular fa-image" })) : null,
             h("button", { class: "icon-btn danger", title: "Delete question", onclick: () => removeAt(questions, j, "question") }, h("i", { class: "fa-solid fa-xmark" })))));
 }
 
@@ -642,9 +647,10 @@ function renderQuestionAudioBar(block, q, j) {
         h("i", { class: "fa-solid fa-headphones" }),
         h("span", { class: "q-audio-range" }, `Audio for ${range}`),
         h("input", {
-            value: q.audio || "", placeholder: "e.g. audio/a2_week3_part1.mp3", "aria-label": `Audio for ${range}`,
+            value: q.audio || "", placeholder: "e.g. audios/a2_week3_part1.mp3", "aria-label": `Audio for ${range}`,
             oninput: (e) => { q.audio = e.target.value; markUnsaved(); }
         }),
+        uploadButton("audio", (url) => { q.audio = url; markUnsaved(); renderEditor(); }),
         h("button", {
             class: "icon-btn danger", title: "Remove this audio",
             onclick: () => { q.audio = null; markUnsaved(); renderEditor(); }
@@ -776,6 +782,7 @@ async function saveWeek() {
             : b.type === "speaking" ? (b.questions || []).filter((q) => (q.text || "").trim()).map((q) => ({ type: null, text: q.text, options: null, answer: "" }))
             : (b.questions || []).map((q) => ({
             audio: (q.audio || "").trim() || null,
+            image: (q.image || "").trim() || null,
             type: q.type || null,
             text: q.text || "",
             options: q.type === "mc" ? (q.options || []) : null,
@@ -1412,10 +1419,11 @@ function renderAudioList(block) {
         h("span", { class: "audio-label" }, files.filter((f) => f.trim()).length > 1 ? `Audio (${files.filter((f) => f.trim()).length} files)` : "Audio"),
         files.map((file, k) => h("div", { class: "audio-row" },
             h("input", {
-                value: file, placeholder: k === 0 ? "e.g. audio/a2_audio1.mp3" : "another audio file",
+                value: file, placeholder: k === 0 ? "e.g. audios/a2_audio1.mp3" : "another audio file",
                 "aria-label": `Audio file ${k + 1}`,
                 oninput: (e) => { files[k] = e.target.value; save(); }
             }),
+            uploadButton("audio", (url) => { files[k] = url; save(); renderEditor(); }),
             files.length > 1 ? h("button", {
                 class: "icon-btn danger", title: "Remove this audio",
                 onclick: () => { files.splice(k, 1); save(); renderEditor(); }
@@ -1440,7 +1448,7 @@ function copyToClipboard(kind, item) {
         ? {
             instruction: item.instruction || "", type: item.type || null,
             textFile: item.textFile || null, video: item.video || null, audio: item.audio || null,
-            questions: (item.questions || []).map((q) => ({ type: q.type || "", text: q.text || "", options: q.options ? [...q.options] : null, answer: q.answer || "", audio: q.audio ?? null }))
+            questions: (item.questions || []).map((q) => ({ type: q.type || "", text: q.text || "", options: q.options ? [...q.options] : null, answer: q.answer || "", audio: q.audio ?? null, image: q.image ?? null }))
         }
         : { instruction: item.instruction || "", words: (item.words || []).map((w) => ({ french: w.french || "", georgian: w.georgian || "" })) };
     const label = kind === "block"
@@ -1548,4 +1556,120 @@ function renderListeningPanel(studentId) {
 
     load();
     return panel;
+}
+
+// =====================================================================
+// PICTURE OF A QUESTION
+// =====================================================================
+function renderQuestionImageBar(q) {
+    const preview = q.image ? h("img", { class: "q-image-preview", src: q.image, alt: "" }) : null;
+    return h("div", { class: "q-image-bar" },
+        h("div", { class: "q-image-row" },
+            h("i", { class: "fa-regular fa-image" }),
+            h("span", { class: "q-image-label" }, "Picture"),
+            h("input", {
+                value: q.image || "", placeholder: "e.g. images/a2_week3_photo.jpg", "aria-label": "Picture of the question",
+                oninput: (e) => { q.image = e.target.value; markUnsaved(); },
+                onchange: () => renderEditor()
+            }),
+            uploadButton("image", (url) => { q.image = url; markUnsaved(); renderEditor(); }),
+            h("button", {
+                class: "icon-btn danger", title: "Remove the picture",
+                onclick: () => { q.image = null; markUnsaved(); renderEditor(); }
+            }, h("i", { class: "fa-solid fa-xmark" }))),
+        preview);
+}
+
+// =====================================================================
+// UPLOAD BUTTONS (videos, texts, audios, images)
+// Files are stored in Supabase Storage (bucket "media", one folder per kind)
+// and the field gets the file's address automatically: no typing, no mistakes.
+// =====================================================================
+const UPLOAD_KINDS = {
+    video: { folder: "videos", accept: "video/*,.mp4,.webm,.mov", types: { "video/*": [".mp4", ".webm", ".mov", ".m4v"] }, label: "video" },
+    text:  { folder: "texts",  accept: ".txt,text/plain", types: { "text/plain": [".txt"] }, label: "text file" },
+    audio: { folder: "audios", accept: "audio/*,.mp3,.wav,.m4a,.ogg", types: { "audio/*": [".mp3", ".wav", ".m4a", ".ogg", ".aac"] }, label: "audio" },
+    image: { folder: "images", accept: "image/*", types: { "image/*": [".jpg", ".jpeg", ".png", ".webp", ".gif"] }, label: "picture" }
+};
+const UPLOAD_MAX_MB = 50;
+
+// A text field + an upload button, bound to obj[key]
+function fileField(obj, key, kind, placeholder) {
+    return h("div", { class: "file-field" },
+        h("input", {
+            value: obj[key] || "", placeholder,
+            oninput: (e) => { obj[key] = e.target.value; markUnsaved(); }
+        }),
+        uploadButton(kind, (url) => { obj[key] = url; markUnsaved(); renderEditor(); }));
+}
+
+function uploadButton(kind, onUploaded) {
+    const k = UPLOAD_KINDS[kind];
+    return h("button", {
+        class: "icon-btn upload-btn", type: "button", title: `Upload a ${k.label} (opens your ${k.folder} folder)`,
+        onclick: async (e) => {
+            e.preventDefault();
+            const btn = e.currentTarget;
+            const file = await pickFile(kind);
+            if (!file) return;
+            if (file.size > UPLOAD_MAX_MB * 1024 * 1024) {
+                toast(`This file is ${Math.round(file.size / 1048576)} MB. The maximum is ${UPLOAD_MAX_MB} MB.`, true);
+                return;
+            }
+            btn.disabled = true;
+            btn.classList.add("busy");
+            toast(`Uploading ${file.name}…`);
+            try {
+                onUploaded(await uploadToStorage(kind, file));
+                toast(`${file.name} uploaded. Don't forget to save.`);
+            } catch (err) {
+                toast("Upload failed: " + (err.message || err), true);
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove("busy");
+            }
+        }
+    }, h("i", { class: "fa-solid fa-cloud-arrow-up" }));
+}
+
+// Opens the file chooser. In Chrome/Edge it remembers a separate folder for each kind:
+// the first time, go once to your videos (texts, audios, images) folder, then it opens there by itself.
+async function pickFile(kind) {
+    const k = UPLOAD_KINDS[kind];
+    if (window.showOpenFilePicker) {
+        try {
+            const [handle] = await window.showOpenFilePicker({
+                id: `ouispeak-${k.folder}`,
+                multiple: false,
+                types: [{ description: k.label, accept: k.types }]
+            });
+            return await handle.getFile();
+        } catch (err) {
+            if (err && err.name === "AbortError") return null;   // the user closed the window
+            // otherwise fall back to the classic chooser below
+        }
+    }
+    return new Promise((resolve) => {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = k.accept;
+        input.addEventListener("change", () => resolve(input.files[0] || null));
+        input.click();
+    });
+}
+
+async function uploadToStorage(kind, file) {
+    const k = UPLOAD_KINDS[kind];
+    const dot = file.name.lastIndexOf(".");
+    const ext = dot > 0 ? file.name.slice(dot + 1).toLowerCase().replace(/[^a-z0-9]/g, "") : "";
+    const base = (dot > 0 ? file.name.slice(0, dot) : file.name)
+        .normalize("NFKD").replace(/[^\w.-]+/g, "_").replace(/_+/g, "_").replace(/^_|_$/g, "").slice(0, 60) || "file";
+    const path = `${k.folder}/${Date.now()}_${base}${ext ? "." + ext : ""}`;
+
+    const { error } = await _supabase.storage.from("media").upload(path, file, {
+        contentType: file.type || undefined,
+        upsert: false
+    });
+    if (error) throw error;
+    return _supabase.storage.from("media").getPublicUrl(path).data.publicUrl;
 }

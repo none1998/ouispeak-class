@@ -55,6 +55,7 @@ public class Question
     public List<string>? Options { get; set; }       // only for "mc"
     public string Answer { get; set; } = "";
     public string? Audio { get; set; }               // audio played before this question (for it and the next ones)
+    public string? Image { get; set; }               // picture shown with this question
 }
 
 public class VocabSection

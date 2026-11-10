@@ -1,7 +1,7 @@
 namespace Lingono.Api.Dtos;
 
 // What the admin page sends and receives.
-public record QuestionDto(string? Type, string Text, List<string>? Options, string? Answer, string? Audio = null);
+public record QuestionDto(string? Type, string Text, List<string>? Options, string? Answer, string? Audio = null, string? Image = null);
 public record BlockDto(string Instruction, string? Type, string? TextFile, string? Video, string? Audio, List<QuestionDto>? Questions);
 public record WordDto(string French, string Georgian);
 public record SectionDto(string Instruction, List<WordDto> Words);

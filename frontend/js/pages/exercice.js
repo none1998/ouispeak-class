@@ -391,8 +391,12 @@
                 const cachedAnswerValue = userAnswersCache[`${cacheKeyPrefix}_q_${index}`] || "";
                 const valObj = validationResultsCache[`${cacheKeyPrefix}_q_${index}`];
                 
+                // picture of the question (shown under the question text)
+                const questionImage = q.image ? buildQuestionImage(q.image) : null;
+
                 if (q.type === "mc" || q.type === "vf") {
                     questionDiv.appendChild(document.createTextNode(`${index + 1}. ${q.text}`));
+                    if (questionImage) questionDiv.appendChild(questionImage);
                     const optionsGroup = document.createElement('div');
                     optionsGroup.className = "options-group";
                     
@@ -465,6 +469,8 @@
                         }
                     }
                 }
+
+                if (questionImage && !questionImage.parentNode) questionDiv.appendChild(questionImage);
 
                 if (valObj !== undefined) {
                     const badge = document.createElement('div');
@@ -2572,4 +2578,16 @@ Reply ONLY with JSON in this exact shape:
             draw();
             audioLoadCounts().then(() => { if (mode === "idle") draw(); });
             return box;
+        }
+
+        function buildQuestionImage(src) {
+            const figure = document.createElement('figure');
+            figure.className = "question-image";
+            const img = document.createElement('img');
+            img.src = src;
+            img.alt = "";
+            img.loading = "lazy";
+            img.addEventListener('click', () => window.open(src, '_blank'));
+            figure.appendChild(img);
+            return figure;
         }

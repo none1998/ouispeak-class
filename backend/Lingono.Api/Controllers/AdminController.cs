@@ -146,7 +146,7 @@ public class AdminController(AppDbContext db) : ControllerBase
             CourseName = week.Course!.Name,
             Blocks = week.Blocks.OrderBy(b => b.Order).Select(b => new BlockDto(
                 b.Instruction, b.Type, b.TextFile, b.Video, b.Audio,
-                b.Questions.OrderBy(q => q.Order).Select(q => new QuestionDto(q.Type, q.Text, q.Options, q.Answer, q.Audio)).ToList())),
+                b.Questions.OrderBy(q => q.Order).Select(q => new QuestionDto(q.Type, q.Text, q.Options, q.Answer, q.Audio, q.Image)).ToList())),
             VocabSections = week.VocabSections.OrderBy(s => s.Order).Select(s => new SectionDto(
                 s.Instruction,
                 s.Words.OrderBy(x => x.Order).Select(x => new WordDto(x.French, x.Georgian)).ToList()))
@@ -178,6 +178,7 @@ public class AdminController(AppDbContext db) : ControllerBase
                 Text = q.Text.Trim(),
                 Answer = q.Answer?.Trim() ?? "",
                 Audio = Clean(q.Audio),
+                Image = Clean(q.Image),
                 Options = q.Type == "mc"
                     ? (q.Options ?? []).Select(o => o.Trim()).Where(o => o != "").ToList()
                     : null

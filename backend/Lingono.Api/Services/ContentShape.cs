@@ -55,6 +55,7 @@ public static class ContentShape
         json["answer"] = q.Answer;
         if (q.Type != null) json["type"] = q.Type;
         if (q.Audio != null) json["audio"] = q.Audio;
+        if (q.Image != null) json["image"] = q.Image;
         return json;
     }
 

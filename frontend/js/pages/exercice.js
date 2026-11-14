@@ -601,6 +601,10 @@
             emailjs.send("service_4k5phem", "template_dpz0tuk", templateParams)
                 .then(() => {
                     feedback.innerHTML = `<span style="color: #10b981;"><i class="fa-solid fa-circle-check"></i> ყველა სავარჯიშოს პასუხები წარმატებით გაიგზავნა!</span>`;
+                    // tick this week as "homework sent" in the admin page (once per week, even if sent again)
+                    const weekNo = parseInt(String(subject).replace(/\D/g, ""), 10);
+                    if (weekNo) api("/api/homework/sent", { method: "POST", body: JSON.stringify({ week: weekNo }) })
+                        .catch(err => console.warn("Homework tick not saved:", err));
                 }, (error) => {
                     console.error("Email delivery failed:", error);
                     feedback.innerHTML = `<span style="color: var(--secondary);"><i class="fa-solid fa-circle-xmark"></i> გაგზავნა ვერ მოხერხდა. სცადეთ მოგვიანებით.</span>`;

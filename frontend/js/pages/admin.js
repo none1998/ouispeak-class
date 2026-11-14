@@ -1157,10 +1157,14 @@ const SCORE_FIELDS = [
     { key: "speaking", label: "Speaking" }
 ];
 
-const studentsUi = { tab: "students", search: "", course: "", group: "", edit: null, scoresDraft: {}, scoresOriginal: {} };
+const studentsUi = { tab: "students", search: "", course: "", group: "", edit: null, scoresDraft: {}, scoresOriginal: {}, homework: [] };
 
 async function loadStudentsAndScores() {
-    const [students, scores] = await Promise.all([api("/api/admin/students"), api("/api/admin/scores")]);
+    const [students, scores, homework] = await Promise.all([
+        api("/api/admin/students"), api("/api/admin/scores"),
+        api("/api/admin/homework").catch(() => [])
+    ]);
+    studentsUi.homework = homework || [];
     state.students = students || [];
     studentsUi.scoresOriginal = {};
     (scores || []).forEach((s) => { studentsUi.scoresOriginal[String(s.student_id)] = s; });
@@ -1216,20 +1220,21 @@ function renderStudentsManager() {
                 isScores ? h("span", { id: "saveState", class: "save-state" }) : null,
                 isScores ? h("button", { class: "btn btn-primary", id: "saveBtn", onclick: saveAllScores }, h("i", { class: "fa-solid fa-floppy-disk" }), "Save scores") : null)),
         h("div", { class: "tabs", role: "tablist" },
-            ["students", "scores"].map((t) => h("button", {
+            ["students", "scores", "homework"].map((t) => h("button", {
                 class: "tab" + (studentsUi.tab === t ? " active" : ""), role: "tab", "aria-selected": studentsUi.tab === t ? "true" : "false",
                 onclick: () => { if (t !== studentsUi.tab && confirmLeave()) { state.unsaved = false; studentsUi.tab = t; studentsUi.edit = null; renderEditor(); } }
-            }, t === "students" ? "Students" : "Scores (evaluation)"))),
+            }, { students: "Students", scores: "Scores (evaluation)", homework: "Exercises (homework)" }[t]))),
         !isScores && studentsUi.edit ? renderStudentForm(courseNames) : null,
         toolbar,
-        h("div", { id: "studentTableWrap", class: "table-scroll" }, isScores ? renderScoresTable(list) : renderStudentsTable(list)));
+        studentsUi.tab === "homework" ? h("p", { class: "q-note" }, "✓ = the student sent this week's exercises to your email (one tick, even if sent several times). Click a box to tick or untick it by hand.") : null,
+        h("div", { id: "studentTableWrap", class: "table-scroll" }, tableFor(list)));
 }
 
 function redrawStudentTable() {
     const wrap = $("studentTableWrap");
     if (!wrap) return;
     const list = filteredStudents();
-    wrap.replaceChildren(studentsUi.tab === "scores" ? renderScoresTable(list) : renderStudentsTable(list));
+    wrap.replaceChildren(tableFor(list));
 }
 
 function renderStudentsTable(list) {
@@ -1351,6 +1356,59 @@ async function deleteStudent() {
         renderEditor();
         toast("Student deleted");
     } catch (err) { toast(err.message, true); }
+}
+
+function tableFor(list) {
+    if (studentsUi.tab === "scores") return renderScoresTable(list);
+    if (studentsUi.tab === "homework") return renderHomeworkTable(list);
+    return renderStudentsTable(list);
+}
+
+// =====================================================================
+// EXERCISES (HOMEWORK): one tick per student and week when they sent it by email
+// =====================================================================
+const hwKey = (id, course, week) => `${id}|${(course || "").trim()}|${week}`;
+
+function renderHomeworkTable(list) {
+    if (list.length === 0) return h("div", { class: "empty" }, h("h2", {}, "No students found"), h("p", {}, "Change the filters."));
+    const byKey = {};
+    studentsUi.homework.forEach((r) => { byKey[hwKey(r.studentId, r.course, r.week)] = r; });
+    // number of weeks: the longest course among the students shown (at least 26)
+    const weeksOf = (name) => { const c = state.courses.find((x) => x.name === (name || "").trim()); return c ? c.weeks.length : 0; };
+    const maxWeeks = Math.max(26, ...list.map((st) => weeksOf(st.course)), ...studentsUi.homework.map((r) => r.week));
+    const weeks = Array.from({ length: maxWeeks }, (_, i) => i + 1);
+
+    return h("table", { class: "data-table homework-table" },
+        h("thead", {}, h("tr", {},
+            h("th", { class: "hw-sticky" }, "Student"), h("th", {}, "Group"), h("th", { class: "num" }, "Sent"),
+            weeks.map((w) => h("th", { class: "hw-week" }, w)))),
+        h("tbody", {}, list.map((st) => {
+            const sentCount = weeks.filter((w) => byKey[hwKey(st.id, st.course, w)]).length;
+            return h("tr", { class: st.is_active === false ? "inactive" : "" },
+                h("td", { class: "hw-sticky" }, h("strong", {}, studentName(st)), h("div", { class: "mono small" }, `${st.id} · ${st.course || ""}`)),
+                h("td", {}, st.group_number ?? 1),
+                h("td", { class: "num" }, h("b", {}, sentCount)),
+                weeks.map((w) => {
+                    const r = byKey[hwKey(st.id, st.course, w)];
+                    const title = r
+                        ? (r.manual && !r.count ? `Week ${w}: ticked by hand` : `Week ${w}: sent ${r.count}× · last ${new Date(r.lastSentAt).toLocaleString()}`)
+                        : `Week ${w}: not sent`;
+                    return h("td", { class: "hw-cell" }, h("button", {
+                        class: "hw-box" + (r ? " done" : ""), title, "aria-label": `${studentName(st)}, ${title}`,
+                        onclick: () => toggleHomework(st, w, !r)
+                    }, r ? "✓" : ""));
+                }));
+        })));
+}
+
+async function toggleHomework(st, week, done) {
+    try {
+        await api(`/api/admin/homework/${encodeURIComponent(st.id)}/${week}`, { method: "PUT", body: JSON.stringify({ done, course: st.course || "" }) });
+        const key = hwKey(st.id, st.course, week);
+        studentsUi.homework = studentsUi.homework.filter((r) => hwKey(r.studentId, r.course, r.week) !== key);
+        if (done) studentsUi.homework.push({ studentId: String(st.id), course: (st.course || "").trim(), week, count: 0, manual: true, lastSentAt: new Date().toISOString() });
+        redrawStudentTable();
+    } catch (err) { toast("Not saved: " + err.message, true); }
 }
 
 function renderScoresTable(list) {

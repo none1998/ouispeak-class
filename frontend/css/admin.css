@@ -530,3 +530,6 @@ textarea { overflow: hidden; }
 }
 .hw-box:hover { border-color: var(--blue); }
 .hw-box.done { background: #16a34a; border-color: #16a34a; }
+.hw-box.waiting { background: #fef3c7; border-color: #f59e0b; font-size: 0.85rem; }
+.hw-note { display: flex; gap: 0.8rem; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-bottom: 0.6rem; }
+.hw-note .q-note { margin: 0; flex: 1; min-width: 260px; }

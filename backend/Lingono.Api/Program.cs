@@ -30,6 +30,7 @@ builder.Services.AddCors(options => options.AddPolicy("Frontend", policy => poli
     .AllowAnyHeader()
     .AllowAnyMethod()));
 
+builder.Services.AddHostedService<Lingono.Api.Services.HomeworkDailyJob>();
 var app = builder.Build();
 
 app.UseCors("Frontend");

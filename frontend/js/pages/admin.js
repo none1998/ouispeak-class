@@ -1226,7 +1226,9 @@ function renderStudentsManager() {
             }, { students: "Students", scores: "Scores (evaluation)", homework: "Exercises (homework)" }[t]))),
         !isScores && studentsUi.edit ? renderStudentForm(courseNames) : null,
         toolbar,
-        studentsUi.tab === "homework" ? h("p", { class: "q-note" }, "✓ = the student sent this week's exercises to your email (one tick, even if sent several times). Click a box to tick or untick it by hand.") : null,
+        studentsUi.tab === "homework" ? h("div", { class: "hw-note" },
+            h("p", { class: "q-note" }, "⏳ = sent, waiting. Every day at 13:05 waiting weeks become ✓ and give +1 Homework point (only the first time a week is sent). Click a box to tick (no point) or untick it by hand."),
+            h("button", { class: "btn btn-outline", onclick: confirmHomeworkNow }, h("i", { class: "fa-solid fa-forward" }), "Confirm waiting now")) : null,
         h("div", { id: "studentTableWrap", class: "table-scroll" }, tableFor(list)));
 }
 
@@ -1383,22 +1385,34 @@ function renderHomeworkTable(list) {
             h("th", { class: "hw-sticky" }, "Student"), h("th", {}, "Group"), h("th", { class: "num" }, "Sent"),
             weeks.map((w) => h("th", { class: "hw-week" }, w)))),
         h("tbody", {}, list.map((st) => {
-            const sentCount = weeks.filter((w) => byKey[hwKey(st.id, st.course, w)]).length;
+            const sentCount = weeks.filter((w) => byKey[hwKey(st.id, st.course, w)]?.confirmedAt).length;
             return h("tr", { class: st.is_active === false ? "inactive" : "" },
                 h("td", { class: "hw-sticky" }, h("strong", {}, studentName(st)), h("div", { class: "mono small" }, `${st.id} · ${st.course || ""}`)),
                 h("td", {}, st.group_number ?? 1),
                 h("td", { class: "num" }, h("b", {}, sentCount)),
                 weeks.map((w) => {
                     const r = byKey[hwKey(st.id, st.course, w)];
-                    const title = r
-                        ? (r.manual && !r.count ? `Week ${w}: ticked by hand` : `Week ${w}: sent ${r.count}× · last ${new Date(r.lastSentAt).toLocaleString()}`)
-                        : `Week ${w}: not sent`;
+                    const waiting = r && !r.confirmedAt;
+                    const title = !r ? `Week ${w}: not sent`
+                        : waiting ? `Week ${w}: sent ${r.count}×, waiting — ticked with +1 point at 13:05 (click to tick now by hand, no point)`
+                        : r.manual && !r.count ? `Week ${w}: ticked by hand`
+                        : `Week ${w}: sent ${r.count}× · last ${new Date(r.lastSentAt).toLocaleString()}`;
                     return h("td", { class: "hw-cell" }, h("button", {
-                        class: "hw-box" + (r ? " done" : ""), title, "aria-label": `${studentName(st)}, ${title}`,
-                        onclick: () => toggleHomework(st, w, !r)
-                    }, r ? "✓" : ""));
+                        class: "hw-box" + (waiting ? " waiting" : r ? " done" : ""), title, "aria-label": `${studentName(st)}, ${title}`,
+                        onclick: () => toggleHomework(st, w, !r || waiting)
+                    }, waiting ? "⏳" : r ? "✓" : ""));
                 }));
         })));
+}
+
+async function confirmHomeworkNow() {
+    if (!confirm("Tick all waiting homework now and add their points (instead of waiting for 13:05)?")) return;
+    try {
+        const r = await api("/api/admin/homework/confirm-now", { method: "POST" });
+        await loadStudentsAndScores();
+        renderEditor();
+        toast(`${r.confirmed} week(s) ticked, points added.`);
+    } catch (err) { toast("Not done: " + err.message, true); }
 }
 
 async function toggleHomework(st, week, done) {
@@ -1406,7 +1420,7 @@ async function toggleHomework(st, week, done) {
         await api(`/api/admin/homework/${encodeURIComponent(st.id)}/${week}`, { method: "PUT", body: JSON.stringify({ done, course: st.course || "" }) });
         const key = hwKey(st.id, st.course, week);
         studentsUi.homework = studentsUi.homework.filter((r) => hwKey(r.studentId, r.course, r.week) !== key);
-        if (done) studentsUi.homework.push({ studentId: String(st.id), course: (st.course || "").trim(), week, count: 0, manual: true, lastSentAt: new Date().toISOString() });
+        if (done) studentsUi.homework.push({ studentId: String(st.id), course: (st.course || "").trim(), week, count: 0, manual: true, lastSentAt: new Date().toISOString(), confirmedAt: new Date().toISOString() });
         redrawStudentTable();
     } catch (err) { toast("Not saved: " + err.message, true); }
 }

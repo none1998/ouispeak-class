@@ -3,14 +3,16 @@ using Lingono.Api.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Lingono.Api.Services;
 
 namespace Lingono.Api.Controllers;
 
 /// <summary>
-/// Homework sent by email. The student page calls "sent" after the email goes out;
-/// the admin page shows one tick per student and week (sending again only adds to the count).
-/// The first time a week is sent, the student also gets +1 point in Scores.homework.
-/// Table: content."HomeworkSubmissions" (sql/7_homework_submissions.sql).
+/// Homework sent by email.
+/// - The student page calls "sent" after the email goes out: the week is saved as WAITING (no tick, no point yet).
+/// - Every day at 13:05 (HomeworkDailyJob), waiting weeks become ticked and each gives +1 point in Scores.homework.
+/// - A week already sent (waiting or ticked) never gives a second point.
+/// Table: content."HomeworkSubmissions" (sql/7 and sql/8).
 /// </summary>
 [ApiController]
 public class HomeworkController(AppDbContext db) : ControllerBase
@@ -18,7 +20,7 @@ public class HomeworkController(AppDbContext db) : ControllerBase
     public record SentDto(int Week);
     public record MarkDto(bool Done, string? Course);
     public record StudentRow(string Id, string Course);
-    public record SubmissionRow(string StudentId, string Course, int Week, int Count, DateTime FirstSentAt, DateTime LastSentAt, bool Manual);
+    public record SubmissionRow(string StudentId, string Course, int Week, int Count, DateTime FirstSentAt, DateTime LastSentAt, bool Manual, DateTime? ConfirmedAt);
 
     // ---------- Student: "I sent the homework of week N" ----------
     [Authorize]
@@ -35,46 +37,28 @@ public class HomeworkController(AppDbContext db) : ControllerBase
             """).ToListAsync()).FirstOrDefault();
         if (student == null) return NotFound("Student not found.");
 
-        await using var tx = await db.Database.BeginTransactionAsync();
-
-        // "IsNew" is true only the first time this student sends this week
+        // new week → saved as waiting (ConfirmedAt empty); already sent → only the counter goes up
         var isNew = (await db.Database.SqlQuery<bool>($"""
-            INSERT INTO content."HomeworkSubmissions" ("StudentId", "Course", "Week", "Count", "FirstSentAt", "LastSentAt", "Manual")
-            VALUES ({student.Id}, {student.Course}, {dto.Week}, 1, now(), now(), false)
+            INSERT INTO content."HomeworkSubmissions" ("StudentId", "Course", "Week", "Count", "FirstSentAt", "LastSentAt", "Manual", "ConfirmedAt")
+            VALUES ({student.Id}, {student.Course}, {dto.Week}, 1, now(), now(), false, NULL)
             ON CONFLICT ("StudentId", "Course", "Week") DO UPDATE
                 SET "Count" = content."HomeworkSubmissions"."Count" + 1, "LastSentAt" = now()
             RETURNING (xmax = 0) AS "Value"
             """).ToListAsync()).FirstOrDefault();
 
-        if (isNew)
-        {
-            // +1 point in the Homework score (creates the scores row if the student has none yet)
-            var updated = await db.Database.ExecuteSqlAsync($"""
-                UPDATE public."Scores" SET homework = COALESCE(homework, 0) + 1
-                WHERE student_id::text = {student.Id}
-                """);
-            if (updated == 0)
-                await db.Database.ExecuteSqlAsync($"""
-                    INSERT INTO public."Scores" (student_id, homework, "Name")
-                    SELECT s.id, 1, trim(COALESCE(s."firstName", '') || ' ' || COALESCE(s."lastName", ''))
-                    FROM public."Students" s WHERE s.id::text = {student.Id}
-                    """);
-        }
-
-        await tx.CommitAsync();
-        return Ok(new { Saved = true, PointAdded = isNew });
+        return Ok(new { Saved = true, Waiting = isNew });
     }
 
-    // ---------- Admin: all ticks ----------
+    // ---------- Admin: all weeks (ticked and waiting) ----------
     [Authorize(Policy = "Admin")]
     [HttpGet("api/admin/homework")]
     public async Task<IActionResult> All() =>
         Ok(await db.Database.SqlQuery<SubmissionRow>($"""
-            SELECT "StudentId", "Course", "Week", "Count", "FirstSentAt", "LastSentAt", "Manual"
+            SELECT "StudentId", "Course", "Week", "Count", "FirstSentAt", "LastSentAt", "Manual", "ConfirmedAt"
             FROM content."HomeworkSubmissions"
             """).ToListAsync());
 
-    // ---------- Admin: tick or untick by hand ----------
+    // ---------- Admin: tick (no point) or untick by hand ----------
     [Authorize(Policy = "Admin")]
     [HttpPut("api/admin/homework/{studentId}/{week:int}")]
     public async Task<IActionResult> Mark(string studentId, int week, MarkDto dto)
@@ -82,9 +66,10 @@ public class HomeworkController(AppDbContext db) : ControllerBase
         var course = (dto.Course ?? "").Trim();
         if (dto.Done)
             await db.Database.ExecuteSqlAsync($"""
-                INSERT INTO content."HomeworkSubmissions" ("StudentId", "Course", "Week", "Count", "Manual")
-                VALUES ({studentId}, {course}, {week}, 0, true)
-                ON CONFLICT ("StudentId", "Course", "Week") DO NOTHING
+                INSERT INTO content."HomeworkSubmissions" ("StudentId", "Course", "Week", "Count", "Manual", "ConfirmedAt")
+                VALUES ({studentId}, {course}, {week}, 0, true, now())
+                ON CONFLICT ("StudentId", "Course", "Week") DO UPDATE
+                    SET "ConfirmedAt" = COALESCE(content."HomeworkSubmissions"."ConfirmedAt", now()), "Manual" = true
                 """);
         else
             await db.Database.ExecuteSqlAsync($"""
@@ -93,4 +78,10 @@ public class HomeworkController(AppDbContext db) : ControllerBase
                 """);
         return Ok(new { Done = dto.Done });
     }
+
+    // ---------- Admin: confirm waiting homework right now (same as the 13:05 run) ----------
+    [Authorize(Policy = "Admin")]
+    [HttpPost("api/admin/homework/confirm-now")]
+    public async Task<IActionResult> ConfirmNow() =>
+        Ok(new { Confirmed = await HomeworkDailyJob.ConfirmWaiting(db, DateTime.UtcNow) });
 }

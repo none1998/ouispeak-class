@@ -1686,6 +1686,14 @@ function uploadButton(kind, onUploaded) {
             const btn = e.currentTarget;
             const file = await pickFile(kind);
             if (!file) return;
+            if (kind === "video" && await isHevcVideo(file)) {
+                const go = confirm(
+                    `“${file.name}” is saved in the HEVC (H.265) format.\n\n` +
+                    "Many Android phones show only a BLACK SCREEN with sound for this format.\n\n" +
+                    "Better: convert it to H.264 first (see the instructions from Claude: HandBrake → preset “Fast 1080p30”).\n\n" +
+                    "Click OK to upload it anyway, or Cancel to convert it first.");
+                if (!go) return;
+            }
             if (!fileMatchesKind(kind, file)) {
                 toast(`“${file.name}” is not a valid ${k.label}. Choose a ${Object.values(k.types)[0].join(", ")} file.`, true);
                 return;
@@ -1749,6 +1757,24 @@ async function pickFile(kind) {
         document.body.appendChild(input);
         input.click();
     });
+}
+
+// Looks inside a video file for the HEVC (H.265) markers "hvc1" / "hev1" (Android often can't show it)
+async function isHevcVideo(file) {
+    try {
+        const chunk = 4 * 1024 * 1024;
+        const parts = [file.slice(0, chunk)];
+        if (file.size > chunk) parts.push(file.slice(Math.max(chunk, file.size - chunk)));   // the header is often at the end
+        for (const part of parts) {
+            const bytes = new Uint8Array(await part.arrayBuffer());
+            for (let i = 0; i < bytes.length - 4; i++) {
+                // "hvc1" = 68 76 63 31, "hev1" = 68 65 76 31
+                if (bytes[i] !== 0x68 || bytes[i + 3] !== 0x31) continue;
+                if ((bytes[i + 1] === 0x76 && bytes[i + 2] === 0x63) || (bytes[i + 1] === 0x65 && bytes[i + 2] === 0x76)) return true;
+            }
+        }
+    } catch (e) { /* can't read: don't block the upload */ }
+    return false;
 }
 
 function fileMatchesKind(kind, file) {

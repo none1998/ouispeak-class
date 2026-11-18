@@ -1849,3 +1849,11 @@
 .listen-intro.intro-speaking .lw.now { background: #ea580c; box-shadow: 0 4px 10px -6px #ea580c; }
 .listen-intro.intro-speaking .listen-intro-bar span { background: #ea580c; }
 .listen-intro-text .lw-mark.said, .listen-intro-text .lw-mark.now { color: var(--secondary); background: transparent; box-shadow: none; }
+
+/* Help when a phone can't show the video picture */
+.video-help { display: flex; align-items: center; justify-content: flex-end; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.5rem; color: var(--text-muted); font-size: 0.85rem; }
+.video-help > i { display: none; }
+.video-help .video-help-btn { padding: 0.35rem 0.7rem; font-size: 0.85rem; }
+.video-help.alert { justify-content: flex-start; padding: 0.7rem 0.9rem; border-radius: 12px; background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; font-size: 0.92rem; }
+.video-help.alert > i { display: inline; }
+.video-help-btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.45rem 0.8rem; border-radius: 10px; background: var(--primary); color: #fff; text-decoration: none; font-weight: 600; }

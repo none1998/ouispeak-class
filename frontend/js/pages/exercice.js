@@ -346,10 +346,7 @@
 
             // Inject video player if present
             if (blockData.video) {
-                const videoDiv = document.createElement('div');
-                videoDiv.className = "video-player-container";
-                videoDiv.innerHTML = `<video controls src="${blockData.video}"></video>`;
-                container.appendChild(videoDiv);
+                container.appendChild(buildVideoPlayer(blockData.video));
             }
 
             // Inject text file presentation box if present
@@ -2634,4 +2631,39 @@ Reply ONLY with JSON in this exact shape:
             img.addEventListener('click', () => window.open(src, '_blank'));
             figure.appendChild(img);
             return figure;
+        }
+
+        // ---------- Video player ----------
+        // Some phones (mostly Android) can't show videos saved in the HEVC / H.265 format
+        // (iPhone and Mac recordings, .mov files): the sound plays but the picture stays black.
+        // When that happens, the student gets a message and a button to open the video
+        // in the phone's own video player, which usually can show it.
+        function buildVideoPlayer(src) {
+            const box = document.createElement('div');
+            box.className = "video-player-container";
+            const video = document.createElement('video');
+            video.controls = true;
+            video.preload = "metadata";
+            video.setAttribute("playsinline", "");
+            video.src = src;
+            box.appendChild(video);
+
+            const help = document.createElement('div');
+            help.className = "video-help";
+            help.innerHTML = `
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span>ვიდეო შავ ეკრანს აჩვენებს? გახსენით ტელეფონის ვიდეო პლეერში:</span>
+                <a class="video-help-btn" target="_blank" rel="noopener"><i class="fa-solid fa-up-right-from-square"></i> ვიდეოს გახსნა</a>`;
+            help.querySelector('a').href = src;
+            box.appendChild(help);
+
+            // shown small for everyone, highlighted when the browser surely can't show the picture
+            const showHelp = () => { help.classList.add("alert"); };
+            video.addEventListener('error', showHelp);
+            // sound plays but the browser has no picture (width 0) → this phone can't decode the video
+            video.addEventListener('playing', () => {
+                setTimeout(() => { if (!video.paused && video.videoWidth === 0) showHelp(); }, 1500);
+            });
+            video.addEventListener('loadedmetadata', () => { if (video.videoWidth === 0 && video.duration > 0) showHelp(); });
+            return box;
         }

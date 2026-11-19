@@ -25,8 +25,8 @@
     const MAX_PHRASES = 10;
     const MC_TILES = 8;
     const MIN_FILL = 8;
-    const PICK_SECONDS = 15;
-    const ANSWER_SECONDS = 15;
+    const PICK_SECONDS = 20;
+    const ANSWER_SECONDS = 20;
     const HINTS_PER_GAME = 3;
     const ACCENTS = ["é", "è", "ê", "ë", "à", "â", "ç", "î", "ï", "ô", "û", "ù", "œ"];
     const AI_ENDPOINT = (typeof SUPABASE_URL !== "undefined" ? SUPABASE_URL : "") + "/functions/v1/openai-chat";
@@ -315,27 +315,20 @@ Reply ONLY with: {"items":[{"i":0,"sentence":"…","answer":"…","ka":"…"}]}`
         body().innerHTML = `
             <div class="vg-start">
                 <div class="vg-start-hero">
-                    <div class="vg-vs">
-                        <div class="vg-vs-av vg-vs-you"><i class="fa-solid fa-user"></i></div>
-                        <div class="vg-vs-txt">VS</div>
-                        <div class="vg-vs-av vg-vs-ai">${ROBO_SVG}</div>
-                    </div>
+                    <div class="vg-start-icon"><i class="fa-solid fa-chess-board"></i></div>
                     <h2>დაიპყარი დაფა სიტყვებით!</h2>
                     <p class="vg-lead">${G.words.length} სიტყვა · ${G.phrases.length} ფრაზა · შენ რობოს წინააღმდეგ</p>
                 </div>
-                <div class="vg-rules">
-                    <div class="vg-rule"><span class="vg-rule-ic vg-ic-blue"><i class="fa-solid fa-hand-pointer"></i></span><span><b>შენი მხარე ლურჯია</b> (ქვემოთ), რობოსი — <b>წითელი</b> (ზემოთ). გახსნა შეგიძლია მხოლოდ <b>მოციმციმე</b> უჯრების, შენი ტერიტორიის გვერდით.</span></div>
-                    <div class="vg-rule"><span class="vg-rule-ic vg-ic-green"><i class="fa-solid fa-layer-group"></i></span><span><b>FR</b> ბარათი — დაწერე ქართულად. <b>KA</b> ბარათი — დაწერე ფრანგულად. <b>„შეავსე წინადადება“</b> — ჩაწერე გამოტოვებული სიტყვა.</span></div>
-                    <div class="vg-rule"><span class="vg-rule-ic vg-ic-amber"><i class="fa-solid fa-keyboard"></i></span><span>მხოლოდ ${MC_TILES} ბარათზეა სავარაუდო პასუხები <i class="fa-solid fa-list-ul"></i>, დანარჩენზე <b>ზუსტად წერ</b>. თუ მნიშვნელობები „/“-ითაა გამოყოფილი, ერთიც საკმარისია.</span></div>
-                    <div class="vg-rule"><span class="vg-rule-ic vg-ic-red"><i class="fa-solid fa-stopwatch"></i></span><span>უჯრის ასარჩევად გაქვს <b>${PICK_SECONDS} წამი</b>, პასუხისთვის — <b>${ANSWER_SECONDS} წამი</b>.</span></div>
-                    <div class="vg-rule"><span class="vg-rule-ic vg-ic-amber"><i class="fa-solid fa-gift"></i></span><span>მოიგე <b>ექსპერტის</b> დონეზე და მიიღე <b>+${EXPERT_POINTS} ქულა</b> „ლექსიკა 2“-ში (ყოველ კვირაში ერთხელ).</span></div>
-                    <div class="vg-rule"><span class="vg-rule-ic vg-ic-purple"><i class="fa-solid fa-khanda"></i></span><span>რობოს უჯრაზე დაჭერა = <b>დუელი</b>. დაცული უჯრა <i class="fa-solid fa-shield-halved"></i> ფარს იღებს. ფრაზა <i class="fa-solid fa-chess-rook"></i> = 2 ქულა.</span></div>
-                </div>
+                <ul class="vg-rules">
+                    <li>შენი მხარე <b class="vg-c-you">ლურჯია</b> (ქვემოთ), რობოსი — <b class="vg-c-ai">წითელი</b> (ზემოთ). გახსნა შეგიძლია მხოლოდ შენი ტერიტორიის გვერდით მდებარე უჯრების.</li>
+                    <li><b>ფრანგული</b> სიტყვა — აირჩიე ქართული მნიშვნელობა. <b>ქართული</b> სიტყვა და <b>„შეავსე წინადადება“</b> — დაწერე ფრანგულად.</li>
+                    <li>უჯრის ასარჩევად და პასუხისთვის გაქვს <b>${ANSWER_SECONDS} წამი</b>. ფრაზა = 2 ქულა. რობოს უჯრაზე დაჭერა = დუელი.</li>
+                    <li>მოიგე <b>ექსპერტის</b> დონეზე — <b>+${EXPERT_POINTS} ქულა</b> „ლექსიკა 2“-ში (კვირაში ერთხელ).</li>
+                </ul>
                 <div class="vg-levels-title">აირჩიე სირთულე</div>
                 <div class="vg-levels">
                     ${Object.keys(LEVELS).map((k, i) => `
                         <button class="vg-level vg-level-${k}" data-level="${k}">
-                            <span class="vg-level-stars">${"★".repeat(i + 1)}${"☆".repeat(2 - i)}</span>
                             <span class="vg-level-name">${LEVELS[k].name}</span>
                             <span class="vg-level-fr">${LEVELS[k].fr}</span>
                             <span class="vg-level-acc">რობო სწორად პასუხობს ${Math.round(LEVELS[k].acc * 100)}%-ში</span>
@@ -422,14 +415,14 @@ Reply ONLY with: {"items":[{"i":0,"sentence":"…","answer":"…","ka":"…"}]}`
             if (!g) g = templateGap(t.item);
             t.face = "fill"; t.gap = g; count++;
         }
-        let flip = Math.random() < 0.5;
-        shuffle(wordTiles.filter(t => !t.face)).forEach(t => { t.face = flip ? "fr" : "ka"; flip = !flip; });
+        // French word cards → choose the Georgian meaning (MC_TILES of them); Georgian word cards → type the French
+        shuffle(wordTiles.filter(t => !t.face)).forEach((t, i) => { t.face = i < MC_TILES ? "fr" : "ka"; });
         phraseTiles.forEach(t => {
             const g = phraseGap(t.item, usedPhrases.get(t.item));
             if (g) { t.face = "fill"; t.gap = g; } else t.face = "ka";
         });
-        const mcSet = new Set(shuffle(real).slice(0, MC_TILES));
-        real.forEach(t => { t.mc = mcSet.has(t); t.item.tile = t; });
+        // only French cards are multiple choice; everything else is typed IN FRENCH (no Georgian keyboard needed)
+        real.forEach(t => { t.mc = t.face === "fr"; t.item.tile = t; });
 
         Object.assign(G, {
             level: LEVELS[levelKey], levelKey,
@@ -674,8 +667,8 @@ Reply ONLY with: {"items":[{"i":0,"sentence":"…","answer":"…","ka":"…"}]}`
         G.turn = "player";
         G.busy = false;
         drawTiles();
-        setStatus(first ? '<i class="fa-solid fa-hand-pointer"></i> შენი სვლაა — აირჩიე <b>მოციმციმე</b> უჯრა ქვედა რიგიდან'
-            : '<i class="fa-solid fa-hand-pointer"></i> შენი სვლაა — აირჩიე <b>მოციმციმე</b> უჯრა', "you");
+        setStatus(first ? '<i class="fa-solid fa-hand-pointer"></i> შენი სვლაა — აირჩიე <b>ლურჯად მონიშნული</b> უჯრა ქვედა რიგიდან'
+            : '<i class="fa-solid fa-hand-pointer"></i> შენი სვლაა — აირჩიე <b>ლურჯად მონიშნული</b> უჯრა', "you");
         startTimer(document.getElementById("vgPickTimer"), PICK_SECONDS, async () => {
             if (!G || G.over || G.turn !== "player" || G.busy) return;
             setStatus('<i class="fa-solid fa-hourglass-end"></i> დრო ამოიწურა! სვლა რობოს გადაეცა.', "bad");

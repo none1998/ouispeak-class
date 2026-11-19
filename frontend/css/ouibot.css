@@ -815,13 +815,10 @@ html.ob-open, html.ob-open body { overflow: hidden; }
         linear-gradient(180deg, #eef4fb 0%, #dce8f7 100%);
     border-right: 1px solid var(--border-color);
 }
-.obs-tilt { width: min(230px, 100%); transform-style: preserve-3d; transition: transform 0.25s ease-out; animation: obsSway 7s ease-in-out infinite; }
-.obs-stage:hover .obs-tilt { animation: none; }
-@keyframes obsSway { 0%, 100% { transform: rotateY(-9deg); } 50% { transform: rotateY(9deg); } }
-.obs-tilt .ob-robot { width: 100%; }
-.obs-tilt .ob-robot svg { -webkit-mask-image: linear-gradient(180deg, #000 82%, transparent 100%); mask-image: linear-gradient(180deg, #000 82%, transparent 100%); display: block; width: 100%; height: auto; filter: drop-shadow(10px 18px 14px rgba(15, 40, 80, 0.28)) drop-shadow(-2px -2px 0 rgba(255, 255, 255, 0.6)); }
-.obs-ground { display: none; width: 170px; height: 22px; margin-top: -18px; border-radius: 50%; background: radial-gradient(ellipse at center, rgba(15, 40, 80, 0.35), rgba(15, 40, 80, 0) 70%); animation: obsShadow 4s ease-in-out infinite; }
-@keyframes obsShadow { 50% { transform: scaleX(0.88); opacity: 0.75; } }
+.obs-tilt { width: 100%; height: min(430px, 100%); position: relative; }
+.obs-tilt .ob-robot { width: 100%; height: 100%; cursor: grab; }
+.obs-tilt .ob-robot:active { cursor: grabbing; }
+.obs-hint-3d { position: absolute; left: 50%; bottom: -0.4rem; transform: translateX(-50%); font-size: 0.78rem; color: var(--text-muted); white-space: nowrap; display: inline-flex; align-items: center; gap: 0.35rem; background: rgba(255, 255, 255, 0.75); padding: 0.25rem 0.65rem; border-radius: 99px; }
 .obs-name { margin: 0.3rem 0 0; font-size: 1.45rem; font-weight: 800; letter-spacing: -0.02em; color: var(--text-main); min-height: 1.2em; overflow-wrap: anywhere; text-align: center; }
 
 /* question side */
@@ -899,10 +896,10 @@ html.ob-open, html.ob-open body { overflow: hidden; }
     .obs-badge { font-size: 0.85rem; }
     .obs-body { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
     .obs-stage { flex-direction: row; gap: 0.6rem; padding: 0.6rem 1rem; border-right: 0; border-bottom: 1px solid var(--border-color); }
-    .obs-tilt { width: 96px; }
-    .obs-ground { display: none; }
+    .obs-tilt { width: 110px; height: 130px; flex: none; }
+    .obs-hint-3d { display: none; }
     .obs-name { font-size: 1.15rem; text-align: left; }
-    #obSetup.obs-is-intro .obs-tilt { width: 150px; }
+    #obSetup.obs-is-intro .obs-tilt { width: 170px; height: 200px; }
     .obs-scroll { padding: 1.1rem 1.1rem 0.5rem; }
     .obs-question { font-size: 1.2rem; }
     #obSetup.obs-is-intro .obs-question { font-size: 1.35rem; }
@@ -916,6 +913,64 @@ html.ob-open, html.ob-open body { overflow: hidden; }
     .obs-btn { padding: 0.75rem 1.1rem; }
 }
 @media (prefers-reduced-motion: reduce) {
-    .obs-tilt, .obs-ground, .obs-bubble.obs-in, .obs-bubble.obs-in-back { animation: none; }
-    .obs-tilt { transition: none; }
+    .obs-bubble.obs-in, .obs-bubble.obs-in-back { animation: none; }
+}
+
+
+/* =========================================================
+   3D robot canvases and pictures
+   ========================================================= */
+.r3d-canvas { display: block; width: 100%; height: 100%; }
+.r3d-img { display: block; width: 100%; height: 100%; object-fit: contain; user-select: none; -webkit-user-drag: none; }
+.r3d-fallback { display: grid; place-items: center; width: 100%; height: 100%; font-size: 3rem; }
+.obs-tile-img .r3d-img, .obs-gender-img .r3d-img { object-fit: contain; }
+.obs-mini-title { margin: 1rem 0 0.5rem; font-weight: 700; color: var(--text-main); }
+.obs-eyes .obs-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 0.65rem; }
+.obs-eyes .obs-swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.55rem; }
+
+/* chat window: light stage for the 3D robot (same look as the website) */
+.ob-chat .ob-stage { background: radial-gradient(circle at 50% 40%, #ffffff, rgba(255, 255, 255, 0) 60%), linear-gradient(180deg, #eef4fb, #dce8f7); color: var(--text-main); border-right: 1px solid var(--border-color); }
+.ob-chat .ob-stage::before { display: none; }
+.ob-chat .ob-robot { width: 100%; height: min(320px, 60%); }
+.ob-chat .ob-plate { color: var(--text-main); }
+.ob-chat .ob-plate-sub { color: var(--text-muted); }
+.ob-mini .r3d-img { width: 38px; height: 38px; border-radius: 50%; background: #eef4fb; }
+.ob-launcher-bot .r3d-img { width: 46px; height: 46px; }
+.ob-launcher:hover .ob-launcher-bot .r3d-img { animation: obWiggle 0.6s ease-in-out; }
+
+/* =========================================================
+   AFTER THE CREATION: the robot introduces itself
+   (same look as the website: white, blue, soft)
+   ========================================================= */
+.ob-hero-grid {
+    background: radial-gradient(ellipse at 50% 45%, rgba(248, 250, 252, 0.94), rgba(226, 236, 248, 0.97) 75%) !important;
+    animation: obFadeIn 0.6s ease both;
+}
+.ob-hero-halo { border: 0 !important; box-shadow: none !important; background: radial-gradient(circle, rgba(0, 85, 165, 0.14), rgba(0, 85, 165, 0) 65%); }
+.ob-hero-halo::before { border: 2px dashed rgba(0, 85, 165, 0.18) !important; }
+.ob-hero-bot { width: min(320px, 34vw); height: min(400px, 46vh); }
+.ob-hero-bot::before { display: none; }
+.ob-hero-card {
+    background: #ffffff !important; color: var(--text-main) !important;
+    border: 1px solid var(--border-color) !important; border-radius: 22px !important;
+    box-shadow: 0 30px 70px -28px rgba(15, 40, 80, 0.35) !important;
+    backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+    border-top: 5px solid var(--primary) !important;
+}
+.ob-hero-card::before { display: none !important; }
+.ob-hero-head { font-family: inherit !important; }
+.ob-hero-dot { background: #22c55e !important; box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.18) !important; }
+.ob-hero-name { font-family: inherit !important; font-size: 1rem !important; letter-spacing: 0 !important; text-transform: none !important; font-weight: 800; color: var(--primary) !important; }
+.ob-hero-tag { font-size: 0.78rem !important; letter-spacing: 0 !important; text-transform: none !important; color: var(--text-muted) !important; }
+.ob-line { color: var(--text-main) !important; text-shadow: none !important; }
+.ob-line.ob-line-old { color: #94a3b8 !important; }
+.ob-hero-progress { background: #e8eef6 !important; height: 6px !important; }
+.ob-hero-progress span { background: linear-gradient(90deg, var(--primary), #3b82f6) !important; box-shadow: none !important; }
+.ob-hero-skip { font-family: inherit !important; font-size: 0.9rem !important; letter-spacing: 0 !important; background: #f1f5f9 !important; color: var(--text-main) !important; border: 0 !important; font-weight: 600; }
+.ob-hero-skip:hover { background: #e2e8f0 !important; }
+.ob-hero-mute { color: var(--primary) !important; border: 1px solid var(--border-color) !important; background: #ffffff !important; }
+.ob-hero-mute[aria-pressed="true"] { color: var(--secondary) !important; }
+@media (max-width: 760px) {
+    .ob-hero-bot { width: min(220px, 56vw); height: min(260px, 34vh); }
+    .ob-chat .ob-stage { display: none; }
 }

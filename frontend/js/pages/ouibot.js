@@ -16,142 +16,32 @@
             const OB_ENDPOINT = `${SUPABASE_URL}/functions/v1/openai-chat`;
             const OB_MODELS = ["gpt-6-luna", "gpt-5.4-mini", "gpt-4.1-mini"];
 
-            /* ---------- appearance options (original humanoid android, girl or boy) ---------- */
-            const SKINS = {
-                porcelaine:  { c: '#f7e3d4', ka: 'ფაიფური', en: 'very fair' },
-                claire:      { c: '#f1c8a4', ka: 'ღია', en: 'light' },
-                doree:       { c: '#dfaa7e', ka: 'ოქროსფერი', en: 'golden' },
-                mate:        { c: '#bd8258', ka: 'ხორბლისფერი', en: 'tan' },
-                brune:       { c: '#8f5b3b', ka: 'მუქი', en: 'brown' },
-                ebene:       { c: '#5c3824', ka: 'ძალიან მუქი', en: 'deep brown' },
-                synthetique: { c: '#dde6f1', ka: 'სინთეტიკური', en: 'pale synthetic android' }
-            };
-            const HAIRS = {
-                court:   { ka: 'მოკლე', en: 'short hair' },
-                meche:   { ka: 'ჩოლკა', en: 'a swept fringe' },
-                rase:    { ka: 'გადაპარსული', en: 'a buzz cut' },
-                boucles: { ka: 'ხუჭუჭა', en: 'curly hair' },
-                carre:   { ka: 'კარე', en: 'a bob cut' },
-                longs:   { ka: 'გრძელი', en: 'long hair' },
-                queue:   { ka: 'კუდი', en: 'a ponytail' },
-                chignon: { ka: 'შეკრული', en: 'a bun' }
-            };
-            const HAIR_COLORS = {
-                noir:    { c: '#211a16', ka: 'შავი', en: 'black' },
-                brun:    { c: '#5a3a28', ka: 'წაბლისფერი', en: 'brown' },
-                blond:   { c: '#e3bf74', ka: 'ქერა', en: 'blond' },
-                roux:    { c: '#bf5530', ka: 'წითური', en: 'red' },
-                platine: { c: '#e9e5dd', ka: 'პლატინისფერი', en: 'platinum' },
-                bleu:    { c: '#3b82f6', ka: 'ლურჯი', en: 'blue' },
-                rose:    { c: '#f472b6', ka: 'ვარდისფერი', en: 'pink' },
-                violet:  { c: '#8b5cf6', ka: 'იისფერი', en: 'purple' }
-            };
-            const EYE_COLORS = {
-                marron:   { c: '#6b3e26', ka: 'ყავისფერი', en: 'brown' },
-                noisette: { c: '#9a6f37', ka: 'თხილისფერი', en: 'hazel' },
-                vert:     { c: '#3f8f5a', ka: 'მწვანე', en: 'green' },
-                bleu:     { c: '#3b7fd1', ka: 'ცისფერი', en: 'blue' },
-                gris:     { c: '#7b8794', ka: 'ნაცრისფერი', en: 'grey' },
-                cyan:     { c: '#22d3ee', ka: 'მანათობელი ცისფერი', en: 'glowing cyan', glow: true },
-                violet:   { c: '#a78bfa', ka: 'მანათობელი იისფერი', en: 'glowing violet', glow: true }
-            };
-            /* Robotic body: shell colour, joint colour, chest light */
-            const SHELLS = {
-                blanc:    { c: '#f3f5f8', ka: 'თეთრი', en: 'glossy white' },
-                argent:   { c: '#c7cdd6', ka: 'ვერცხლისფერი', en: 'silver' },
-                perle:    { c: '#f2dde5', ka: 'მარგალიტისფერი', en: 'pearl pink' },
-                glacier:  { c: '#d4e7f6', ka: 'ყინულისფერი', en: 'ice blue' },
-                champagne:{ c: '#e9dcb8', ka: 'შამპანური', en: 'champagne gold' },
-                graphite: { c: '#454c59', ka: 'გრაფიტი', en: 'graphite' },
-                noir:     { c: '#1b1f27', ka: 'შავი', en: 'black' }
-            };
-            const JOINTS = {
-                anthracite: { c: '#2d323c', ka: 'მუქი ნაცრისფერი', en: 'dark grey' },
-                noir:       { c: '#0e1015', ka: 'შავი', en: 'black' },
-                blanc:      { c: '#eef1f5', ka: 'თეთრი', en: 'white' },
-                or:         { c: '#c9a24a', ka: 'ოქროსფერი', en: 'gold' },
-                cyan:       { c: '#22d3ee', ka: 'მანათობელი ცისფერი', en: 'glowing cyan', glow: true },
-                rose:       { c: '#f472b6', ka: 'მანათობელი ვარდისფერი', en: 'glowing pink', glow: true }
-            };
-            const EMBLEMS = {
-                aucun:   { ka: 'არაფერი', en: '' },
-                coeur:   { ka: 'მანათობელი გული', en: 'a glowing heart light on the chest' },
-                anneau:  { ka: 'ენერგიის რგოლი', en: 'a glowing energy ring on the chest' },
-                drapeau: { ka: 'საფრანგეთის დროშა', en: 'a small French flag on the chest' },
-                etoile:  { ka: 'ვარსკვლავი', en: 'a glowing star on the chest' }
-            };
-            /* Clothes worn over the robotic body (optional) */
-            const OUTFITS = {
-                aucun:   { ka: 'არაფერი', en: '' },
-                veste:   { ka: 'ქურთუკი', en: 'an open jacket' },
-                sweat:   { ka: 'ჰუდი', en: 'an open hoodie' },
-                blazer:  { ka: 'პიჯაკი', en: 'a smart blazer' },
-                echarpe: { ka: 'შარფი', en: 'a scarf' },
-                gilet:   { ka: 'ჟილეტი', en: 'a light vest' }
-            };
-            const OUTFIT_COLORS = {
-                bleu:   { c: '#2563eb', ka: 'ლურჯი', en: 'blue' },
-                rouge:  { c: '#e11d48', ka: 'წითელი', en: 'red' },
-                vert:   { c: '#16a34a', ka: 'მწვანე', en: 'green' },
-                noir:   { c: '#1f2937', ka: 'შავი', en: 'black' },
-                blanc:  { c: '#f1f5f9', ka: 'თეთრი', en: 'white' },
-                jaune:  { c: '#f59e0b', ka: 'ყვითელი', en: 'yellow' },
-                rose:   { c: '#ec4899', ka: 'ვარდისფერი', en: 'pink' },
-                violet: { c: '#7c3aed', ka: 'იისფერი', en: 'purple' }
-            };
-            const ACCS = {
-                aucun:     { ka: 'არაფერი', en: '' },
-                casque:    { ka: 'ყურსასმენი', en: 'headphones' },
-                casquette: { ka: 'კეპი', en: 'a cap' },
-                bonnet:    { ka: 'შალის ქუდი', en: 'a beanie' },
-                bandeau:   { ka: 'სალტე', en: 'a headband' },
-                fleur:     { ka: 'ყვავილი', en: 'a flower in the hair' },
-                noeud:     { ka: 'ბაფთა', en: 'a bow' }
-            };
-            const GLASSES = {
-                aucune:  { ka: 'არაფერი', en: '' },
-                rondes:  { ka: 'მრგვალი', en: 'round glasses' },
-                carrees: { ka: 'კვადრატული', en: 'square glasses' },
-                soleil:  { ka: 'მზის სათვალე', en: 'sunglasses' },
-                futur:   { ka: 'ფუტურისტული', en: 'futuristic visor glasses' }
-            };
-            const JEWELS = {
-                aucun:   { ka: 'არაფერი', en: '' },
-                boucles: { ka: 'საყურეები', en: 'small earrings' },
-                creoles: { ka: 'რგოლები', en: 'hoop earrings' },
-                collier: { ka: 'ყელსაბამი', en: 'a necklace' }
-            };
-            const ANDROID = {
-                aucun:    { ka: 'არაფერი', en: '' },
-                circuits: { ka: 'ხაზები სახეზე', en: 'thin glowing circuit lines on the cheek' },
-                oreille:  { ka: 'ტექნო ყური', en: 'a glowing tech ring on the ear' },
-                points:   { ka: 'ნათელი წერტილები', en: 'three tiny glowing dots under one eye' }
-            };
-
-            /* Older robots get the closest new look automatically */
+            /* The 3D robot (js/robot3d.js). Older robots get the closest new look automatically. */
+            const R3 = window.Robot3D;
+            const OPT = R3 ? R3.OPTIONS : {};
             function migrateProfile(p) {
                 if (!p) return p;
-                if (p.v === 3) return p;
-                if (p.v === 2) {
-                    const overlayMap = { veste: 'veste', hoodie: 'sweat', costume: 'blazer', sport: 'sweat' };
-                    return Object.assign({}, p, {
-                        v: 3, shell: 'blanc', joint: 'anthracite', emblem: 'coeur',
-                        outfit: overlayMap[p.outfit] || 'aucun',
-                        android: ANDROID[p.android] ? p.android : 'circuits'
-                    });
-                }
-                const colorMap = { bleu: 'bleu', rouge: 'rouge', menthe: 'vert', lavande: 'violet', soleil: 'jaune', orange: 'jaune', rose: 'rose', argent: 'blanc' };
-                const accMap = { casque: 'casque', casquette: 'casquette', bonnet: 'bonnet', noeud: 'noeud', fleur: 'fleur' };
+                if (p.v === 4) return p;
+                const pickKey = (map, k, fallback) => (map && map[k] ? k : fallback);
+                const bodyMap = { blanc: 'blanc', argent: 'argent', perle: 'rose', glacier: 'bleu', champagne: 'jaune', graphite: 'noir', noir: 'noir' };
+                const accMap = { anthracite: 'noir', noir: 'noir', blanc: 'argent', or: 'or', cyan: 'bleu', rose: 'rose' };
+                const eyeMap = { marron: 'jaune', noisette: 'jaune', vert: 'vert', bleu: 'bleu', gris: 'blanc', cyan: 'cyan', violet: 'violet' };
+                const topMap = { casque: 'casque', casquette: 'casquette', bonnet: 'casquette', noeud: 'noeud', fleur: 'noeud', bandeau: 'antenne' };
+                const chestMap = { coeur: 'coeur', anneau: 'anneau', drapeau: 'drapeau', etoile: 'etoile', aucun: 'aucun' };
+                const extra = p.glasses && p.glasses !== 'aucune' ? 'lunettes' : (p.outfit === 'echarpe' ? 'echarpe' : 'aucun');
                 return {
-                    name: p.name, gender: p.gender, created: p.created, v: 3, old: true,
-                    skin: 'claire', hair: p.gender === 'f' ? 'carre' : 'court', hairColor: 'brun',
-                    eyeColor: p.eyes === 'coeurs' ? 'violet' : (p.eyes === 'visiere' || p.eyes === 'pixels' ? 'cyan' : 'marron'),
-                    shell: 'blanc', joint: 'anthracite', emblem: 'coeur',
-                    outfit: 'aucun', outfitColor: colorMap[p.color] || 'bleu',
-                    acc: accMap[p.acc] || 'aucun', glasses: GLASSES[p.glasses] ? p.glasses : 'aucune',
-                    jewel: 'aucun', android: 'circuits'
+                    name: p.name, gender: p.gender, created: p.created, v: 4,
+                    head: 'ronde',
+                    body: pickKey(OPT.body, bodyMap[p.shell], 'blanc'),
+                    accent: pickKey(OPT.accent, accMap[p.joint], 'bleu'),
+                    eyes: p.gender === 'f' ? 'ovale' : 'rond',
+                    eyeColor: pickKey(OPT.eyeColor, eyeMap[p.eyeColor], 'cyan'),
+                    top: topMap[p.acc] || 'antenne',
+                    chest: chestMap[p.emblem] || 'coeur',
+                    extra
                 };
             }
+            function botLabel(p, key) { const o = OPT[key] && OPT[key][p[key]]; return o ? o.ka : ''; }
 
             /* Each day the robot is in a different mood, so the conversation never feels the same twice.
                The mood is only background colour – it is NOT a joke to repeat. */
@@ -260,272 +150,32 @@
                 return '#' + ((1 << 24) | (ch(16) << 16) | (ch(8) << 8) | ch(0)).toString(16).slice(1);
             }
 
-            function hairParts(style, f) {
-                // { back, front } paths for a head centred at x=120 (forehead ≈ y 46, chin ≈ y 137)
-                switch (style) {
-                    case 'meche': return { back: '', front: 'M88 88 C83 52 100 33 124 33 C147 34 157 52 152 82 C148 65 140 56 128 55 C116 64 102 68 92 66 C90 72 89 80 88 88 Z' };
-                    case 'rase': return { back: '', front: 'M90 82 C90 56 102 41 120 41 C138 41 150 56 150 82 C146 64 136 53 120 53 C104 53 94 64 90 82 Z', thin: true };
-                    case 'boucles': {
-                        const curls = [[92, 70], [95, 57], [104, 46], [115, 40], [127, 40], [138, 46], [146, 57], [149, 70], [100, 62], [111, 52], [129, 52], [140, 62], [120, 47]];
-                        const front = curls.map(([x, y]) => `M${x - 8} ${y} a8 8 0 1 0 16 0 a8 8 0 1 0 -16 0`).join(' ');
-                        const back = [[88, 92], [152, 92], [87, 106], [153, 106]].map(([x, y]) => `M${x - 8} ${y} a8 8 0 1 0 16 0 a8 8 0 1 0 -16 0`).join(' ');
-                        return { back, front };
-                    }
-                    case 'carre': return { back: 'M83 90 C79 50 98 31 120 31 C142 31 161 50 157 90 L159 128 C151 135 143 133 141 125 L99 125 C97 133 89 135 81 128 Z', front: 'M90 80 C90 52 104 38 120 38 C136 38 150 52 150 80 C141 70 131 66 120 68 C109 66 99 70 90 80 Z' };
-                    case 'longs': return { back: 'M83 92 C77 48 98 29 120 29 C142 29 163 48 157 92 L166 200 C152 208 141 202 139 188 L101 188 C99 202 88 208 74 200 Z', front: 'M90 86 C88 50 104 35 124 35 C144 37 153 54 150 84 C146 64 136 54 118 58 C104 62 94 72 90 86 Z' };
-                    case 'queue': return { back: 'M138 50 C172 54 178 104 168 152 C164 172 156 182 149 186 C158 150 157 110 141 78 Z', front: 'M90 82 C90 51 104 37 120 37 C136 37 150 51 150 82 C144 63 134 55 120 55 C106 55 96 63 90 82 Z' };
-                    case 'chignon': return { back: 'M107 34 a13 13 0 1 0 26 0 a13 13 0 1 0 -26 0', front: 'M90 82 C90 51 104 37 120 37 C136 37 150 51 150 82 C144 63 134 55 120 55 C106 55 96 63 90 82 Z' };
-                    default: return { back: '', front: f
-                        ? 'M89 86 C87 52 102 36 120 36 C138 36 153 52 151 86 C149 68 143 60 136 57 C126 62 112 62 101 56 C95 62 91 72 89 86 Z'
-                        : 'M88 84 C86 55 99 37 120 36 C141 37 154 54 152 82 C150 70 146 62 138 58 C128 62 112 62 100 57 C94 62 90 72 88 84 Z' };
-                }
+
+            /* A picture of the robot (small places: buttons, tiles, title bar) */
+            function robotImg(p, label, frame, w, h) {
+                const url = R3 ? R3.snapshot(migrateProfile(p), frame || 'full', w || 120, h || 150) : '';
+                if (!url) return '<span class="r3d-fallback" aria-hidden="true">🤖</span>';
+                const alt = String(label || 'robot').replace(/[<>&"]/g, '');
+                return `<img class="r3d-img" src="${url}" alt="${alt}" draggable="false">`;
+            }
+            /* The live, animated 3D robot (big places) */
+            function mountBot(id, p, opts) {
+                const el = $(id);
+                if (!el || !R3) return null;
+                return R3.mount(el, migrateProfile(p), Object.assign({ frame: 'full' }, opts || {}));
             }
 
-            function robotSVG(p, label, viewBox) {
-                p = migrateProfile(p) || {};
-                const f = p.gender === 'f';
-                const id = 'oba' + (++svgCounter);
-                const skin = (SKINS[p.skin] || SKINS.claire).c;
-                const skinShade = mixColor(skin, '#5a2e1a', 0.2);
-                const skinDeep = mixColor(skin, '#3b1d10', 0.35);
-                const hairC = (HAIR_COLORS[p.hairColor] || HAIR_COLORS.brun).c;
-                const hairLight = mixColor(hairC, '#ffffff', 0.3);
-                const hairDark = mixColor(hairC, '#000000', 0.25);
-                const eye = EYE_COLORS[p.eyeColor] || EYE_COLORS.marron;
-                const cloth = (OUTFIT_COLORS[p.outfitColor] || OUTFIT_COLORS.bleu).c;
-                const clothLight = mixColor(cloth, '#ffffff', 0.22);
-                const clothDark = mixColor(cloth, '#0f172a', 0.32);
-                const shell = (SHELLS[p.shell] || SHELLS.blanc).c;
-                const shellLight = mixColor(shell, '#ffffff', 0.55);
-                const shellShade = mixColor(shell, '#1e293b', 0.28);
-                const shellLine = mixColor(shell, '#0f172a', 0.4);
-                const jointDef = JOINTS[p.joint] || JOINTS.anthracite;
-                const joint = jointDef.c;
-                const jointLight = mixColor(joint, '#ffffff', 0.35);
-                const glow = '#7df9ff';
-                const hp = hairParts(p.hair || (f ? 'carre' : 'court'), f);
-                const brow = mixColor(hairC, '#2b1b14', 0.45);
-                const lip = f ? mixColor('#c2566b', skin, 0.25) : mixColor(skin, '#9a4a3a', 0.4);
-                const lipDark = mixColor(lip, '#3b0d12', 0.3);
-                const jointGlow = jointDef.glow ? `filter="url(#${id}f)"` : '';
-
-                // ---------- robotic body ----------
-                const torsoPath = f
-                    ? 'M40 300 L42 212 C46 180 70 172 88 168 C100 165 106 160 108 156 L132 156 C134 160 140 165 152 168 C170 172 194 180 198 212 L200 300 Z'
-                    : 'M28 300 L30 208 C34 176 62 168 82 163 C96 160 104 156 106 152 L134 152 C136 156 144 160 158 163 C178 168 206 176 210 208 L212 300 Z';
-                const sL = f ? 50 : 40, sR = f ? 190 : 200; // outer arm x
-                const stroke = (d, w, c, extra) => `<path d="${d}" stroke="${c}" stroke-width="${w}" stroke-linecap="round" fill="none" ${extra || ''}/>`;
-                // robotic arm: shell segments + dark joints (shoulder, elbow)
-                const roboArm = (upper, fore, shoulder, elbow, w) =>
-                    stroke(upper, w, `url(#${id}a)`) + stroke(fore, w - 2, `url(#${id}a)`) +
-                    stroke(upper, 1.4, shellLine, 'opacity=".35" transform="translate(5 0)"') +
-                    `<circle cx="${elbow.x}" cy="${elbow.y}" r="${w * 0.42}" fill="${joint}" ${jointGlow}/><circle cx="${elbow.x - 2}" cy="${elbow.y - 2}" r="${w * 0.16}" fill="${jointLight}" opacity=".6"/>` +
-                    `<circle cx="${shoulder.x}" cy="${shoulder.y}" r="${w * 0.55}" fill="${joint}" ${jointGlow}/><circle cx="${shoulder.x}" cy="${shoulder.y}" r="${w * 0.55}" fill="url(#${id}jh)"/><path d="M${shoulder.x - w * 0.3} ${shoulder.y - w * 0.3} a${w * 0.42} ${w * 0.42} 0 0 1 ${w * 0.5} -${w * 0.05}" stroke="${jointLight}" stroke-width="2" opacity=".55" fill="none"/>`;
-                const hand = (x, y, r) => `<ellipse cx="${x}" cy="${y}" rx="${r * 0.82}" ry="${r}" fill="${shell}" stroke="${shellLine}" stroke-width=".8"/>` +
-                    [-0.45, -0.15, 0.15, 0.45].map(o => stroke(`M${x + o * r * 1.3} ${y - r * 0.7} v-${r * 0.75}`, r * 0.3, joint)).join('') +
-                    stroke(`M${x - r * 0.75} ${y - r * 0.1} q-${r * 0.45} -${r * 0.35} -${r * 0.4} -${r * 0.9}`, r * 0.32, joint);
-                // arms hanging down
-                const shL = { x: sL + 12, y: 190 }, shR = { x: sR - 12, y: 190 };
-                const elL = { x: sL - 3, y: 256 }, elR = { x: sR + 3, y: 256 };
-                const leftArm = roboArm(`M${shL.x} ${shL.y} C${sL} 214 ${elL.x} 236 ${elL.x} ${elL.y}`, `M${elL.x} ${elL.y} C${elL.x} 272 ${sL - 4} 288 ${sL - 3} 304`, shL, elL, 26);
-                const rightArmDown = roboArm(`M${shR.x} ${shR.y} C${sR} 214 ${elR.x} 236 ${elR.x} ${elR.y}`, `M${elR.x} ${elR.y} C${elR.x} 272 ${sR + 4} 288 ${sR + 3} 304`, shR, elR, 26);
-                // gesture poses
-                const elbowW = { x: sR + 12, y: 230 }, handW = { x: sR + 16, y: 122 };
-                const waveUpper = `M${shR.x} ${shR.y} C${sR + 2} 200 ${elbowW.x} 214 ${elbowW.x} ${elbowW.y}`;
-                const waveFore = `M${elbowW.x} ${elbowW.y} C${elbowW.x + 2} 196 ${handW.x} 162 ${handW.x} ${handW.y + 12}`;
-                const elbowT = { x: sR - 6, y: 258 }, chin = { x: 134, y: 140 };
-                const thinkUpper = `M${shR.x} ${shR.y} C${sR - 2} 214 ${elbowT.x + 2} 238 ${elbowT.x} ${elbowT.y}`;
-                const thinkFore = `M${elbowT.x} ${elbowT.y} C${elbowT.x - 14} 214 ${chin.x + 22} 170 ${chin.x + 6} ${chin.y + 10}`;
-                const armWaveUpper = stroke(waveUpper, 24, `url(#${id}a)`) + `<circle cx="${shR.x}" cy="${shR.y}" r="13" fill="${joint}" ${jointGlow}/>`;
-                const armWaveFore = stroke(waveFore, 21, `url(#${id}a)`) + `<circle cx="${elbowW.x}" cy="${elbowW.y}" r="10" fill="${joint}" ${jointGlow}/>`;
-                const armThink = stroke(thinkUpper, 24, `url(#${id}a)`) + stroke(thinkFore, 21, `url(#${id}a)`) + `<circle cx="${elbowT.x}" cy="${elbowT.y}" r="10" fill="${joint}" ${jointGlow}/><circle cx="${shR.x}" cy="${shR.y}" r="13" fill="${joint}" ${jointGlow}/>`;
-
-                // torso shell: panels, seams, collar ring, chest light
-                const half = f ? 78 : 90;
-                let shellDetails = `
-                    <path d="M120 176 V300" stroke="${shellLine}" stroke-width="1.1" opacity=".3"/>
-                    <path d="M${120 - half + 18} 206 C${120 - half + 30} 222 ${108} 226 ${112} 214 M${120 + half - 18} 206 C${120 + half - 30} 222 ${132} 226 ${128} 214" stroke="${shellLine}" stroke-width="1.2" opacity=".35" fill="none"/>
-                    <path d="M${120 - half + 6} 252 Q120 266 ${120 + half - 6} 252" stroke="${shellLine}" stroke-width="1.2" opacity=".3" fill="none"/>
-                    <path d="M${120 - half + 14} 190 C${120 - half + 24} 178 ${96} 172 ${104} 168" stroke="#ffffff" stroke-width="4" opacity=".55" fill="none" stroke-linecap="round"/>
-                    <path d="M${120 - half + 4} 268 Q120 284 ${120 + half - 4} 268" stroke="${joint}" stroke-width="3" opacity=".85" fill="none" ${jointGlow}/>`;
-                let emblem = '';
-                switch (p.emblem) {
-                    case 'coeur': emblem = `<path d="M120 222 C110 214 108 204 115 202 C118 201 120 203 120 205 C120 203 122 201 125 202 C132 204 130 214 120 222 Z" fill="${glow}" filter="url(#${id}f)" opacity=".95"/>`; break;
-                    case 'anneau': emblem = `<circle cx="120" cy="208" r="9" fill="none" stroke="${glow}" stroke-width="3" filter="url(#${id}f)"/><circle cx="120" cy="208" r="3" fill="${glow}" filter="url(#${id}f)"/>`; break;
-                    case 'drapeau': emblem = `<rect x="108" y="200" width="24" height="16" rx="3" fill="#fff" stroke="${shellLine}" stroke-width=".6"/><rect x="108" y="200" width="8" height="16" rx="2" fill="#0055a5"/><rect x="124" y="200" width="8" height="16" rx="2" fill="#ef4135"/>`; break;
-                    case 'etoile': emblem = `<path d="M120 196 l3.2 7.2 7.8 .8 -5.9 5.2 1.8 7.7 -6.9 -4 -6.9 4 1.8 -7.7 -5.9 -5.2 7.8 -.8 z" fill="${glow}" filter="url(#${id}f)"/>`; break;
-                }
-                const collarRing = `<ellipse cx="120" cy="158" rx="${f ? 20 : 22}" ry="6" fill="${joint}" ${jointGlow}/><ellipse cx="120" cy="156.5" rx="${f ? 16 : 18}" ry="3.6" fill="${jointLight}" opacity=".35"/>`;
-
-                // optional clothes over the robotic body
-                let overlay = '', overlayArmL = '', overlayArmR = '';
-                const panelL = (inner) => `M${inner} 160 L${inner + 8} 206 L${inner + 2} 300 L${f ? 42 : 30} 300 L${f ? 42 : 30} 210 C${f ? 46 : 34} 178 ${f ? 70 : 62} 170 ${inner} 160 Z`;
-                const panelR = (inner) => `M${inner} 160 L${inner - 8} 206 L${inner - 2} 300 L${f ? 198 : 210} 300 L${f ? 198 : 210} 210 C${f ? 194 : 206} 178 ${f ? 170 : 178} 170 ${inner} 160 Z`;
-                switch (p.outfit) {
-                    case 'veste':
-                    case 'blazer':
-                    case 'gilet': {
-                        const inner = p.outfit === 'gilet' ? 92 : 98;
-                        overlay = `<path d="${panelL(inner)}" fill="url(#${id}o)"/><path d="${panelR(240 - inner)}" fill="url(#${id}o)"/>`;
-                        if (p.outfit !== 'gilet') overlay += `<path d="M${inner} 160 L${inner + 8} 206 L${inner - 2} 212 L${inner - 10} 172 Z M${240 - inner} 160 L${232 - inner} 206 L${242 - inner} 212 L${250 - inner} 172 Z" fill="${clothDark}"/>`;
-                        if (p.outfit === 'blazer') overlay += `<circle cx="${inner + 4}" cy="246" r="2.4" fill="${clothDark}"/><circle cx="${inner + 4}" cy="268" r="2.4" fill="${clothDark}"/>`;
-                        if (p.outfit !== 'gilet') {
-                            overlayArmL = (d) => stroke(d, 27, cloth);
-                            overlayArmR = (d) => stroke(d, 27, cloth);
-                        }
-                        break;
-                    }
-                    case 'sweat':
-                        overlay = `<path d="${panelL(102)}" fill="url(#${id}o)"/><path d="${panelR(138)}" fill="url(#${id}o)"/><path d="M96 162 Q120 150 144 162 Q138 172 120 174 Q102 172 96 162 Z" fill="${clothDark}"/><path d="M106 172 L104 206 M134 172 L136 206" stroke="#f8fafc" stroke-width="2.2" stroke-linecap="round"/>`;
-                        overlayArmL = (d) => stroke(d, 27, cloth);
-                        overlayArmR = (d) => stroke(d, 27, cloth);
-                        break;
-                    case 'echarpe':
-                        overlay = `<path d="M98 160 Q120 176 142 160 L144 170 Q120 188 96 170 Z" fill="${cloth}"/><path d="M128 174 L134 226 L122 228 L118 178 Z" fill="${clothDark}"/><path d="M121 212 L134 210 M120 220 L134 218" stroke="#fff" stroke-width="2" opacity=".6"/>`;
-                        break;
-                }
-                const armDownL = `M${shL.x} ${shL.y} C${sL} 214 ${elL.x} 236 ${elL.x} ${elL.y} C${elL.x} 272 ${sL - 4} 288 ${sL - 3} 304`;
-                const armDownR = `M${shR.x} ${shR.y} C${sR} 214 ${elR.x} 236 ${elR.x} ${elR.y} C${elR.x} 272 ${sR + 4} 288 ${sR + 3} 304`;
-                const sleeveL = overlayArmL ? overlayArmL(armDownL) : '';
-                const sleeveR = overlayArmR ? overlayArmR(armDownR) : '';
-                const sleeveWave = overlayArmR ? overlayArmR(waveUpper) : '';
-                const sleeveThink = overlayArmR ? overlayArmR(thinkUpper) : '';
-
-                // ---------- face ----------
-                const facePath = f
-                    ? 'M90 88 C90 60 102 46 120 46 C138 46 150 60 150 88 C150 106 146 118 138 127 C132 133 126 137 120 137 C114 137 108 133 102 127 C94 118 90 106 90 88 Z'
-                    : 'M89 86 C89 58 102 44 120 44 C138 44 151 58 151 86 C151 104 149 116 143 125 C137 133 128 139 120 139 C112 139 103 133 97 125 C91 116 89 104 89 86 Z';
-                const EY = 91;
-                // right eye drawn once, the left one is a mirror image
-                const eyeR = (x) => `<g transform="translate(${x} ${EY}) scale(1.18) translate(${-x} ${-EY})">
-                    <path d="M${x - 7} ${EY} C${x - 4} ${EY - 3.6} ${x + 3} ${EY - 4.2} ${x + 7.2} ${EY - 0.8} C${x + 3} ${EY + 2.8} ${x - 3} ${EY + 3} ${x - 7} ${EY} Z" fill="#fbfaf8"/>
-                    <g class="ob-iris"><circle cx="${x}" cy="${EY - 0.4}" r="3.5" fill="url(#${id}i)" ${eye.glow ? `filter="url(#${id}f)"` : ''}/>
-                    <circle cx="${x}" cy="${EY - 0.4}" r="1.6" fill="${eye.glow ? '#ffffff' : '#0b0b0f'}"/>
-                    <circle cx="${x + 1.2}" cy="${EY - 1.7}" r="0.9" fill="#ffffff"/></g>
-                    <path d="M${x - 7.4} ${EY + 0.2} C${x - 4} ${EY - 4} ${x + 3} ${EY - 4.6} ${x + 7.6} ${EY - 0.8}" stroke="#24150f" stroke-width="${f ? 1.9 : 1.4}" fill="none" stroke-linecap="round"/>
-                    <path d="M${x - 6} ${EY - 4.6} C${x - 2} ${EY - 7.4} ${x + 4} ${EY - 7.2} ${x + 7} ${EY - 4}" stroke="${skinDeep}" stroke-width="0.9" opacity=".45" fill="none"/>
-                    ${f ? `<path d="M${x + 7.2} ${EY - 1} l2.6 -2.4 M${x + 5.6} ${EY - 2.6} l1.8 -2.6" stroke="#24150f" stroke-width="1.1" stroke-linecap="round"/>` : ''}
-                    <path d="M${x - 5} ${EY + 3.3} Q${x} ${EY + 4.6} ${x + 5} ${EY + 2.6}" stroke="${skinDeep}" stroke-width="0.7" opacity=".35" fill="none"/></g>`;
-                const browR = f
-                    ? `<path class="ob-brow" d="M126 83 C130 79 136 78.2 142.5 80.6 C137 80 131 81.2 126.4 84.6 Z" fill="${brow}"/>`
-                    : `<path class="ob-brow" d="M125 82.6 C130 78.6 137 78 143.5 80.2 L143 82.8 C137 81.4 131 82.2 125.6 85.2 Z" fill="${brow}"/>`;
-                const nose = `<path d="M118 93 C117 98 116 102 115.5 105" stroke="${skinShade}" stroke-width="1.1" opacity=".45" fill="none" stroke-linecap="round"/>
-                    <path d="M114.5 106 Q117 108.5 120 108 Q123 108.5 125.5 106" stroke="${skinDeep}" stroke-width="1.2" opacity=".55" fill="none" stroke-linecap="round"/>
-                    <ellipse cx="120" cy="104" rx="3" ry="2" fill="#ffffff" opacity=".12"/>`;
-                const mouthSmile = f
-                    ? `<path d="M111 116.5 C114 114 117 114.2 120 115 C123 114.2 126 114 129 116.5 C125 117.6 115 117.6 111 116.5 Z" fill="${lipDark}"/><path d="M111.5 116.6 C115 121.6 125 121.6 128.5 116.6 C124 118.2 116 118.2 111.5 116.6 Z" fill="${lip}"/><path d="M116 119.2 Q120 120.2 124 119.2" stroke="#ffffff" stroke-width="0.9" opacity=".35" fill="none" stroke-linecap="round"/>`
-                    : `<path d="M111.5 116.6 C116 119 124 119 128.5 116.6" stroke="${lipDark}" stroke-width="1.6" fill="none" stroke-linecap="round"/><path d="M114.5 120.4 Q120 122.4 125.5 120.4" stroke="${skinDeep}" stroke-width="1.1" opacity=".35" fill="none" stroke-linecap="round"/>`;
-                const mouthBig = `<path d="M110.5 115.5 C115 114.6 125 114.6 129.5 115.5 C127 123.5 113 123.5 110.5 115.5 Z" fill="#5b1f24"/><path d="M112 116.2 C116 115.6 124 115.6 128 116.2 L127.4 118 C123 118.8 117 118.8 112.6 118 Z" fill="#ffffff"/><path d="M110.5 115.5 C115 114.6 125 114.6 129.5 115.5" stroke="${lipDark}" stroke-width="1.4" fill="none"/>`;
-                const mouthO = `<ellipse cx="120" cy="117.5" rx="3.6" ry="4.2" fill="#5b1f24"/><ellipse cx="120" cy="117.5" rx="3.6" ry="4.2" fill="none" stroke="${lipDark}" stroke-width="1.4"/>`;
-                const cheeks = `<ellipse cx="102" cy="106" rx="8" ry="5" fill="#ff8a9a" opacity="${f ? 0.15 : 0.07}"/><ellipse cx="138" cy="106" rx="8" ry="5" fill="#ff8a9a" opacity="${f ? 0.15 : 0.07}"/>`;
-                const contour = `<path d="M92 98 C94 116 104 130 120 136 C108 128 98 116 96 98 Z" fill="${skinShade}" opacity=".22"/><path d="M148 98 C146 116 136 130 120 136 C132 128 142 116 144 98 Z" fill="${skinShade}" opacity=".22"/>`;
-
-                let androidFace = '';
-                if (p.android === 'circuits') {
-                    androidFace = `<g filter="url(#${id}f)" stroke="${glow}" stroke-width="1.1" fill="none" opacity=".95"><path d="M139 99 h5 l3 4 v7"/><path d="M137 112 h4 l3 3"/><circle cx="147" cy="110.5" r="1.2" fill="${glow}"/><circle cx="144.5" cy="115.5" r="1.1" fill="${glow}"/></g>`;
-                } else if (p.android === 'oreille') {
-                    androidFace = `<circle cx="151.5" cy="95" r="5.4" fill="${joint}"/><circle cx="151.5" cy="95" r="3.4" fill="none" stroke="${glow}" stroke-width="1.4" filter="url(#${id}f)"/>`;
-                } else if (p.android === 'points') {
-                    androidFace = `<g fill="${glow}" filter="url(#${id}f)"><circle cx="139" cy="99.5" r="1.1"/><circle cx="142.5" cy="98.5" r="1.1"/><circle cx="146" cy="97" r="1.1"/></g>`;
-                }
-
-                // ---------- accessories ----------
-                let onHead = '';
-                switch (p.acc) {
-                    case 'casque': onHead = `<path d="M86 94 C83 28 157 28 154 94" stroke="#1f2937" stroke-width="6" fill="none" stroke-linecap="round"/><rect x="80" y="82" width="12" height="22" rx="5" fill="#1f2937"/><rect x="148" y="82" width="12" height="22" rx="5" fill="#1f2937"/><circle cx="86" cy="93" r="2.5" fill="${cloth}"/><circle cx="154" cy="93" r="2.5" fill="${cloth}"/>`; break;
-                    case 'casquette': onHead = `<path d="M88 72 C88 42 102 31 120 31 C138 31 152 42 152 72 C138 65 102 65 88 72 Z" fill="${cloth}"/><path d="M118 67 C140 59 168 61 184 71 C166 77 138 76 118 73 Z" fill="${clothDark}"/><circle cx="120" cy="32" r="2.6" fill="${clothDark}"/><path d="M120 33 C114 44 112 56 113 67" stroke="${clothDark}" stroke-width="1" opacity=".5" fill="none"/>`; break;
-                    case 'bonnet': onHead = `<path d="M86 76 C86 36 102 26 120 26 C138 26 154 36 154 76 Z" fill="${cloth}"/><rect x="84" y="64" width="72" height="14" rx="7" fill="${clothDark}"/><circle cx="120" cy="25" r="8.5" fill="${clothLight}"/>${[96, 108, 120, 132, 144].map(x => `<path d="M${x} 38 V64" stroke="${clothDark}" stroke-width="1" opacity=".35"/>`).join('')}`; break;
-                    case 'bandeau': onHead = `<path d="M90 68 Q120 44 150 68" stroke="${cloth}" stroke-width="5.5" fill="none" stroke-linecap="round"/>`; break;
-                    case 'fleur': onHead = `<g transform="translate(145 58)">${[0, 72, 144, 216, 288].map(a => `<circle cx="${(Math.cos(a * Math.PI / 180) * 5.5).toFixed(1)}" cy="${(Math.sin(a * Math.PI / 180) * 5.5).toFixed(1)}" r="4.8" fill="#f9a8d4"/>`).join('')}<circle r="3.4" fill="#facc15"/></g>`; break;
-                    case 'noeud': onHead = `<g transform="translate(142 46) rotate(14)"><path d="M0 0 L-13 -8 L-13 8 Z" fill="${cloth}"/><path d="M0 0 L13 -8 L13 8 Z" fill="${cloth}"/><circle r="3.8" fill="${clothDark}"/></g>`; break;
-                }
-                let glasses = '';
-                switch (p.glasses) {
-                    case 'rondes': glasses = `<circle cx="107" cy="${EY}" r="9.5" fill="rgba(255,255,255,.06)" stroke="#a07c45" stroke-width="1.8"/><circle cx="133" cy="${EY}" r="9.5" fill="rgba(255,255,255,.06)" stroke="#a07c45" stroke-width="1.8"/><path d="M116.5 89.5 Q120 87.5 123.5 89.5" stroke="#a07c45" stroke-width="1.6" fill="none"/>`; break;
-                    case 'carrees': glasses = `<rect x="96" y="83" width="21" height="15" rx="3" fill="rgba(255,255,255,.08)" stroke="#1f2937" stroke-width="2.2"/><rect x="123" y="83" width="21" height="15" rx="3" fill="rgba(255,255,255,.08)" stroke="#1f2937" stroke-width="2.2"/><path d="M117 89 H123" stroke="#1f2937" stroke-width="2"/>`; break;
-                    case 'soleil': glasses = `<path d="M95 84 H118 V91 Q118 100 106.5 100 Q95 100 95 91 Z" fill="#0b1020"/><path d="M122 84 H145 V91 Q145 100 133.5 100 Q122 100 122 91 Z" fill="#0b1020"/><path d="M118 86.5 H122" stroke="#0b1020" stroke-width="2"/><path d="M99 88 L105 88" stroke="#fff" stroke-opacity=".45" stroke-width="1.6" stroke-linecap="round"/>`; break;
-                    case 'futur': glasses = `<path d="M94 84 H146 Q148 96 138 99 H102 Q92 96 94 84 Z" fill="${glow}" fill-opacity=".25" stroke="${glow}" stroke-width="1.4" filter="url(#${id}f)"/>`; break;
-                }
-                let jewel = '';
-                switch (p.jewel) {
-                    case 'boucles': jewel = `<circle cx="88.5" cy="103" r="1.8" fill="#facc15"/><circle cx="151.5" cy="103" r="1.8" fill="#facc15"/>`; break;
-                    case 'creoles': jewel = `<circle cx="88.5" cy="107" r="4" fill="none" stroke="#facc15" stroke-width="1.5"/><circle cx="151.5" cy="107" r="4" fill="none" stroke="#facc15" stroke-width="1.5"/>`; break;
-                }
-                const necklace = p.jewel === 'collier' ? `<path d="M107 157 Q120 172 133 157" stroke="#facc15" stroke-width="1.4" fill="none"/><circle cx="120" cy="167" r="2.8" fill="#facc15"/>` : '';
-                const hairShine = hp.thin ? '' : `<path d="M102 47 Q116 40 134 44" stroke="${hairLight}" stroke-width="2.2" opacity=".45" fill="none" stroke-linecap="round"/>`;
-
-                return `<svg class="ob-bot ob-android" viewBox="${viewBox || '0 0 240 300'}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${label || 'android'}">
-                    <defs>
-                        <linearGradient id="${id}o" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${clothLight}"/><stop offset="1" stop-color="${clothDark}"/></linearGradient>
-                        <linearGradient id="${id}b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${shellLight}"/><stop offset=".45" stop-color="${shell}"/><stop offset="1" stop-color="${shellShade}"/></linearGradient>
-                        <linearGradient id="${id}a" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${shellShade}"/><stop offset=".35" stop-color="${shellLight}"/><stop offset="1" stop-color="${shellShade}"/></linearGradient>
-                        <linearGradient id="${id}n" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${mixColor(joint, '#000000', 0.2)}"/><stop offset=".5" stop-color="${jointLight}"/><stop offset="1" stop-color="${mixColor(joint, '#000000', 0.2)}"/></linearGradient>
-                        <linearGradient id="${id}h" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${hairLight}"/><stop offset=".6" stop-color="${hairC}"/><stop offset="1" stop-color="${hairDark}"/></linearGradient>
-                        <radialGradient id="${id}s" cx=".45" cy=".38" r=".75"><stop offset="0" stop-color="${mixColor(skin, '#ffffff', 0.14)}"/><stop offset=".7" stop-color="${skin}"/><stop offset="1" stop-color="${skinShade}"/></radialGradient>
-                        <linearGradient id="${id}sk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${skin}"/><stop offset="1" stop-color="${skinShade}"/></linearGradient>
-                        <radialGradient id="${id}i" cx=".4" cy=".35" r=".7"><stop offset="0" stop-color="${mixColor(eye.c, '#ffffff', 0.35)}"/><stop offset="1" stop-color="${mixColor(eye.c, '#000000', 0.25)}"/></radialGradient>
-                        <radialGradient id="${id}hl" cx=".3" cy=".18" r=".85"><stop offset="0" stop-color="#ffffff" stop-opacity=".75"/><stop offset=".35" stop-color="#ffffff" stop-opacity=".18"/><stop offset=".6" stop-color="#ffffff" stop-opacity="0"/></radialGradient>
-                        <linearGradient id="${id}sh" x1="0" y1="0" x2="1" y2="1"><stop offset=".4" stop-color="#0f172a" stop-opacity="0"/><stop offset=".78" stop-color="#0f172a" stop-opacity=".28"/><stop offset="1" stop-color="#0f172a" stop-opacity=".5"/></linearGradient>
-                        <linearGradient id="${id}rim" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffffff" stop-opacity=".5"/><stop offset=".08" stop-color="#ffffff" stop-opacity="0"/><stop offset=".9" stop-color="#0f172a" stop-opacity="0"/><stop offset="1" stop-color="#0f172a" stop-opacity=".3"/></linearGradient>
-                        <radialGradient id="${id}fh" cx=".36" cy=".26" r=".5"><stop offset="0" stop-color="#ffffff" stop-opacity=".42"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></radialGradient>
-                        <radialGradient id="${id}fr" cx=".5" cy=".42" r=".62"><stop offset=".72" stop-color="${skinDeep}" stop-opacity="0"/><stop offset="1" stop-color="${skinDeep}" stop-opacity=".45"/></radialGradient>
-                        <radialGradient id="${id}hh" cx=".35" cy=".12" r=".6"><stop offset="0" stop-color="#ffffff" stop-opacity=".45"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></radialGradient>
-                        <radialGradient id="${id}jh" cx=".35" cy=".3" r=".6"><stop offset="0" stop-color="#ffffff" stop-opacity=".7"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></radialGradient>
-                        <filter id="${id}f" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="1.3" result="bl"/><feMerge><feMergeNode in="bl"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-                    </defs>
-                    <g class="ob-float">
-                        <g class="ob-body">
-                            ${hp.back ? `<path d="${hp.back}" fill="url(#${id}h)"/>` : ''}
-                            <path d="M${f ? 110 : 108} 120 L${f ? 130 : 132} 120 L${f ? 132 : 134} 160 Q120 166 ${f ? 108 : 106} 160 Z" fill="url(#${id}n)"/>
-                            ${[136, 144, 152].map(y => `<path d="M${f ? 111 : 109} ${y} Q120 ${y + 3} ${f ? 129 : 131} ${y}" stroke="${jointLight}" stroke-width="1.3" opacity=".45" fill="none"/>`).join('')}
-                            <path d="M110 126 Q120 140 130 126" stroke="${skinDeep}" stroke-width="2" opacity=".25" fill="none"/>
-                            <path d="M106 128 Q120 142 134 128 L134 140 Q120 150 106 140 Z" fill="#0f172a" opacity=".22"/>
-                            <path d="${torsoPath}" fill="url(#${id}b)"/>
-                            <path d="${torsoPath}" fill="url(#${id}sh)"/>
-                            <path d="${torsoPath}" fill="url(#${id}rim)"/>
-                            <path d="${torsoPath}" fill="url(#${id}hl)"/>
-                            ${shellDetails}
-                            ${emblem}
-                            ${collarRing}
-                            ${overlay}
-                            ${necklace}
-                            <g>${leftArm}${sleeveL}</g>
-                            <g class="ob-arm-down">${rightArmDown}${sleeveR}</g>
-                            <g class="ob-pose ob-pose-wave">${armWaveUpper}${sleeveWave}<g class="ob-forearm" style="transform-origin:${elbowW.x}px ${elbowW.y}px">${armWaveFore}${hand(handW.x, handW.y + 4, 9)}</g></g>
-                            <g class="ob-pose ob-pose-think">${armThink}${sleeveThink}${hand(chin.x + 4, chin.y + 4, 8.5)}</g>
-                        </g>
-                        <g class="ob-head">
-                            <ellipse cx="88.5" cy="95" rx="4.6" ry="9" fill="${skin}"/><ellipse cx="151.5" cy="95" rx="4.6" ry="9" fill="${skin}"/>
-                            <path d="M88.5 89 Q86.5 95 89 101 M151.5 89 Q153.5 95 151 101" stroke="${skinShade}" stroke-width="1" fill="none"/>
-                            ${jewel}
-                            <path d="${facePath}" fill="url(#${id}s)"/>
-                            <path d="${facePath}" fill="url(#${id}fr)"/>
-                            <path d="${facePath}" fill="url(#${id}fh)"/>
-                            ${cheeks}
-                            <g class="ob-eyes"><g class="ob-eyes-in">${eyeR(133)}<g transform="translate(240 0) scale(-1 1)">${eyeR(133)}</g></g></g>
-                            <g class="ob-brows">${browR}<g transform="translate(240 0) scale(-1 1)">${browR}</g></g>
-                            ${nose}
-                            <g class="ob-mouth-smile">${mouthSmile}</g>
-                            <g class="ob-mouth-big">${mouthBig}</g>
-                            <g class="ob-mouth-o">${mouthO}</g>
-                            ${androidFace}
-                            ${glasses}
-                            <path d="${hp.front}" fill="url(#${id}h)" ${hp.thin ? 'opacity=".85"' : ''}/>
-                            ${hp.thin ? '' : `<path d="${hp.front}" fill="url(#${id}hh)"/>`}
-                            ${hairShine}
-                            ${onHead}
-                        </g>
-                    </g>
-                </svg>`;
-            }
-
-            /* Short text describing the android (for ChatGPT) */
             function lookText(p) {
                 p = migrateProfile(p) || {};
-                const parts = [`a humanoid android ${p.gender === 'f' ? 'girl' : 'boy'}: a realistic human face with ${(SKINS[p.skin] || SKINS.claire).en} skin, ${(HAIR_COLORS[p.hairColor] || HAIR_COLORS.brun).en} ${(HAIRS[p.hair] || HAIRS.court).en} and ${(EYE_COLORS[p.eyeColor] || EYE_COLORS.marron).en} eyes, on a sleek ${(SHELLS[p.shell] || SHELLS.blanc).en} robotic body with ${(JOINTS[p.joint] || JOINTS.anthracite).en} joints`];
-                if (EMBLEMS[p.emblem] && EMBLEMS[p.emblem].en) parts.push(EMBLEMS[p.emblem].en);
-                if (OUTFITS[p.outfit] && OUTFITS[p.outfit].en) parts.push(`wearing ${(OUTFIT_COLORS[p.outfitColor] || OUTFIT_COLORS.bleu).en} ${OUTFITS[p.outfit].en.replace(/^an? /, '')}`);
-                [ACCS[p.acc], GLASSES[p.glasses], JEWELS[p.jewel], ANDROID[p.android]].forEach(x => { if (x && x.en) parts.push('with ' + x.en); });
+                const EN = {
+                    head: { ronde: 'a round head', carree: 'a square head', tele: 'a wide TV-shaped head', oeuf: 'an egg-shaped head' },
+                    eyes: { rond: 'round', ovale: 'oval', carre: 'square', coeur: 'heart-shaped', etoile: 'star-shaped' },
+                    top: { antenne: 'a little antenna', oreilles: 'cat ears', helice: 'a propeller on the head', noeud: 'a bow', casquette: 'a cap', casque: 'headphones', couronne: 'a crown' },
+                    chest: { coeur: 'a glowing heart on the chest', etoile: 'a glowing star on the chest', anneau: 'a glowing energy ring on the chest', drapeau: 'a small French flag on the chest' },
+                    extra: { lunettes: 'glasses', echarpe: 'a scarf', papillon: 'a bow tie', sac: 'a backpack' }
+                };
+                const parts = [`a cute, friendly floating 3D robot ${p.gender === 'f' ? 'girl' : 'boy'} with ${EN.head[p.head] || 'a round head'}, a dark face screen with glowing ${EN.eyes[p.eyes] || 'round'} eyes, a ${botLabel(p, 'body') ? p.body : 'white'} body with ${p.accent} details`];
+                ['top', 'chest', 'extra'].forEach(k => { if (EN[k][p[k]]) parts.push('with ' + EN[k][p[k]]); });
                 return parts.join(', ');
             }
 
@@ -687,7 +337,7 @@
                 hideWindow(false);
             }
             document.querySelectorAll('#obOverlay [data-ob-close]').forEach(b => b.addEventListener('click', dismiss));
-            document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('obOverlay').hidden) dismiss(); });
+            document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('obOverlay').hidden && !$('obSetup').classList.contains('ob-active')) dismiss(); });
 
             /* ---------- start check (after login) ---------- */
             async function maybeStart(session) {
@@ -753,52 +403,36 @@
             /* =====================================================
                1) SETUP – look, name, gender (saved forever)
                ===================================================== */
-            const draft = { name: '', gender: '', skin: 'claire', hair: '', hairColor: 'noir', eyeColor: 'marron', shell: 'blanc', joint: 'anthracite', emblem: 'coeur', outfit: 'aucun', outfitColor: 'bleu', acc: 'aucun', glasses: 'aucune', jewel: 'aucun', android: 'aucun', v: 3 };
-            let setupMode = 'new';      // 'new' = first creation, 'restyle' = old robot gets the new look
-            let hairTouched = false;
+            const draft = Object.assign({ name: '', gender: '' }, R3 ? R3.DEFAULT : {}, { gender: '', v: 4 });
+            let setupMode = 'new';      // 'new' = first creation, 'restyle' = very old robot chooses its new look
             let setupIndex = 0;
+            let setupBot = null;
 
-            const HEAD_VIEW = '74 22 92 124';
-            const BODY_VIEW = '20 140 200 160';
-            const EYES_VIEW = '93 77 54 28';
-            const CHEST_VIEW = '62 170 116 70';
-
-            /* One question per screen (Georgian only). "type" decides what the answer looks like. */
+            /* One question per screen (Georgian only). 10 questions, the intro is not counted. */
             const SETUP = [
                 { key: 'intro', type: 'intro' },
                 { key: 'name', type: 'name', q: 'რა გინდა რომ მერქვას?', sub: 'ჩაწერე ჩემი სახელი. შეგიძლია ფრანგული სახელი აირჩიო, მაგალითად Léa, Noah, Chloé ან Adam.' },
                 { key: 'gender', type: 'gender', q: 'ბიჭი გინდა რომ ვიყო თუ გოგო?', sub: 'ამის მიხედვით ფრანგულად სწორად ვილაპარაკებ, მაგალითად: content (ბიჭი) / contente (გოგო).' },
-                { key: 'skin', type: 'swatch', field: 'skin', map: () => SKINS, q: 'რა ფერის კანი გინდა რომ მქონდეს?', sub: 'დააჭირე ფერს — მარცხნივ მაშინვე დაინახავ, როგორი ვიქნები.' },
-                { key: 'hair', type: 'tile', field: 'hair', map: () => HAIRS, view: HEAD_VIEW, q: 'როგორი ვარცხნილობა გინდა რომ მქონდეს?' },
-                { key: 'hairColor', type: 'swatch', field: 'hairColor', map: () => HAIR_COLORS, q: 'რა ფერის თმა გინდა რომ მქონდეს?' },
-                { key: 'eyeColor', type: 'tile', field: 'eyeColor', map: () => EYE_COLORS, view: EYES_VIEW, q: 'რა ფერის თვალები გინდა რომ მქონდეს?' },
-                { key: 'shell', type: 'swatch', field: 'shell', map: () => SHELLS, q: 'რა ფერის იყოს ჩემი რობოტის სხეული?' },
-                { key: 'joint', type: 'swatch', field: 'joint', map: () => JOINTS, q: 'რა ფერის იყოს ჩემი სახსრები?', sub: 'მხრები, იდაყვები და კისერი.' },
-                { key: 'emblem', type: 'tile', field: 'emblem', map: () => EMBLEMS, view: CHEST_VIEW, q: 'რა ენთოს ჩემს მკერდზე?' },
-                { key: 'outfit', type: 'tile', field: 'outfit', map: () => OUTFITS, view: BODY_VIEW, q: 'ტანსაცმელი ჩავიცვა?', sub: 'თუ არ გინდა, აირჩიე „არაფერი“.' },
-                { key: 'acc', type: 'tile', field: 'acc', map: () => ACCS, view: HEAD_VIEW, q: 'თავზე რამე დავიხურო?' },
-                { key: 'outfitColor', type: 'swatch', field: 'outfitColor', map: () => OUTFIT_COLORS,
-                  q: () => draft.outfit === 'aucun' ? 'რა ფერის იყოს ის, რაც თავზე მიკეთია?' : (COLORED_ACC.includes(draft.acc) ? 'რა ფერის იყოს ჩემი ტანსაცმელი და ის, რაც თავზე მიკეთია?' : 'რა ფერის იყოს ჩემი ტანსაცმელი?'),
-                  skip: () => draft.outfit === 'aucun' && !COLORED_ACC.includes(draft.acc) },
-                { key: 'glasses', type: 'tile', field: 'glasses', map: () => GLASSES, view: EYES_VIEW, q: 'სათვალე გავიკეთო?' },
-                { key: 'jewel', type: 'tile', field: 'jewel', map: () => JEWELS, view: '74 76 92 104', q: 'სამკაული გავიკეთო?' },
-                { key: 'android', type: 'tile', field: 'android', map: () => ANDROID, view: HEAD_VIEW, q: 'და ბოლოს: ანდროიდის პატარა დეტალი?', sub: 'ეს მაჩვენებს, რომ ნამდვილი რობოტი ვარ 🤖' },
+                { key: 'head', type: 'tile', field: 'head', map: () => OPT.head, frame: 'head', q: 'როგორი თავი გინდა რომ მქონდეს?', sub: 'დააჭირე და მაშინვე დაინახავ, როგორი ვიქნები. შემიძლია თითით ან მაუსით შემატრიალო!' },
+                { key: 'body', type: 'swatch', field: 'body', map: () => OPT.body, q: 'რა ფერის იყოს ჩემი სხეული?' },
+                { key: 'accent', type: 'swatch', field: 'accent', map: () => OPT.accent, q: 'რა ფერის იყოს ჩემი დეტალები?', sub: 'ყურები, ხელები, კისერი და აქსესუარები.' },
+                { key: 'eyes', type: 'eyes', q: 'როგორი თვალები გინდა რომ მქონდეს?', sub: 'ჯერ აირჩიე ფორმა, მერე ფერი.' },
+                { key: 'top', type: 'tile', field: 'top', map: () => OPT.top, frame: 'head', q: 'თავზე რა გავიკეთო?' },
+                { key: 'chest', type: 'tile', field: 'chest', map: () => OPT.chest, frame: 'chest', q: 'რა ენთოს ჩემს მკერდზე?' },
+                { key: 'extra', type: 'tile', field: 'extra', map: () => OPT.extra, frame: 'body', q: 'და ბოლოს: რამე აქსესუარი?' },
                 { key: 'summary', type: 'summary' }
             ];
-            const COLORED_ACC = ['casque', 'casquette', 'bonnet', 'bandeau', 'noeud'];
-            const visibleSteps = () => SETUP.filter(st => !(st.skip && st.skip()) && !(setupMode === 'restyle' && (st.key === 'name' || st.key === 'gender')));
+            const visibleSteps = () => SETUP.filter(st => !(setupMode === 'restyle' && (st.key === 'name' || st.key === 'gender')));
 
             function renderSetupPreview() {
-                $('obSetupRobot').innerHTML = robotSVG(draft, draft.name || 'robot');
+                if (setupBot) setupBot.setProfile(Object.assign({}, draft, { gender: draft.gender || 'f' }));
                 $('obSetupPlate').textContent = draft.name || '';
             }
 
             /* Little "pop + sparkles" when the student picks something */
             function celebrate() {
                 const box = $('obSetupRobot');
-                box.classList.remove('ob-pop');
-                void box.offsetWidth;
-                box.classList.add('ob-pop');
+                if (setupBot) setupBot.gesture(Math.random() < 0.5 ? 'wow' : 'nod');
                 if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
                 const colors = ['#0055a5', '#ef4135', '#facc15', '#60a5fa', '#34d399'];
                 for (let i = 0; i < 10; i++) {
@@ -816,22 +450,20 @@
 
             function pickOption(field, value) {
                 draft[field] = value;
-                if (field === 'hair') hairTouched = true;
                 renderSetupPreview();
                 celebrate();
             }
 
             /* picture tiles: the robot wearing each option */
-            function tileGroup(box, map, field, viewBox) {
-                box.className = 'obs-answer obs-tiles';
-                box.innerHTML = '';
+            function tileGroup(box, map, field, frame, keep) {
+                if (!keep) { box.className = 'obs-answer obs-tiles'; box.innerHTML = ''; }
                 Object.keys(map).forEach(k => {
                     const b = document.createElement('button');
                     b.type = 'button';
                     b.className = 'obs-tile';
                     b.setAttribute('aria-pressed', String(draft[field] === k));
-                    const preview = Object.assign({}, draft, { [field]: k });
-                    b.innerHTML = `<span class="obs-tile-img">${robotSVG(preview, map[k].ka, viewBox)}</span><span class="obs-tile-label"></span>`;
+                    const preview = Object.assign({}, draft, { gender: draft.gender || 'f', [field]: k });
+                    b.innerHTML = `<span class="obs-tile-img">${robotImg(preview, map[k].ka, frame, 118, 84)}</span><span class="obs-tile-label"></span>`;
                     b.querySelector('.obs-tile-label').textContent = map[k].ka;
                     b.addEventListener('click', () => {
                         box.querySelectorAll('.obs-tile').forEach(t => t.setAttribute('aria-pressed', String(t === b)));
@@ -842,7 +474,7 @@
             }
 
             /* colour buttons with their name */
-            function swatchGroup(box, map, field) {
+            function swatchGroup(box, map, field, onPick) {
                 box.className = 'obs-answer obs-swatches';
                 box.innerHTML = '';
                 Object.keys(map).forEach(k => {
@@ -856,6 +488,7 @@
                     b.addEventListener('click', () => {
                         box.querySelectorAll('.obs-swatch').forEach(t => t.setAttribute('aria-pressed', String(t === b)));
                         pickOption(field, k);
+                        if (onPick) onPick();
                     });
                     box.appendChild(b);
                 });
@@ -887,11 +520,11 @@
                         b.type = 'button';
                         b.className = 'obs-gender';
                         b.setAttribute('aria-pressed', String(draft.gender === g));
-                        const look = Object.assign({}, draft, { gender: g, hair: hairTouched ? draft.hair : (g === 'f' ? 'carre' : 'court') });
-                        b.innerHTML = `<span class="obs-gender-img">${robotSVG(look, label, '40 20 160 200')}</span><span class="obs-gender-label"><i class="fa-solid ${icon}"></i> ${label}</span>`;
+                        const look = Object.assign({}, draft, { gender: g, eyes: g === 'f' ? 'ovale' : 'rond' });
+                        b.innerHTML = `<span class="obs-gender-img">${robotImg(look, label, 'bust', 190, 150)}</span><span class="obs-gender-label"><i class="fa-solid ${icon}"></i> ${label}</span>`;
                         b.addEventListener('click', () => {
                             draft.gender = g;
-                            if (!hairTouched) draft.hair = g === 'f' ? 'carre' : 'court';
+                            draft.eyes = g === 'f' ? 'ovale' : 'rond';
                             box.querySelectorAll('.obs-gender').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
                             renderSetupPreview();
                             celebrate();
@@ -900,10 +533,20 @@
                     });
                 }
                 if (st.type === 'swatch') swatchGroup(box, st.map(), st.field);
-                if (st.type === 'tile') tileGroup(box, st.map(), st.field, st.view);
+                if (st.type === 'tile') tileGroup(box, st.map(), st.field, st.frame);
+                if (st.type === 'eyes') {
+                    box.className = 'obs-answer obs-eyes';
+                    box.innerHTML = '<div class="obs-tiles" id="obsEyeShapes"></div><p class="obs-mini-title">ფერი</p><div class="obs-swatches" id="obsEyeColors"></div>';
+                    const shapes = $('obsEyeShapes');
+                    const drawShapes = () => tileGroup(shapes, OPT.eyes, 'eyes', 'face', true);
+                    shapes.className = 'obs-tiles';
+                    drawShapes();
+                    swatchGroup($('obsEyeColors'), OPT.eyeColor, 'eyeColor', () => { shapes.innerHTML = ''; drawShapes(); });
+                    $('obsEyeColors').className = 'obs-swatches';
+                }
                 if (st.type === 'summary') {
-                    const extras = [EMBLEMS[draft.emblem].ka, draft.outfit !== 'aucun' ? `${OUTFIT_COLORS[draft.outfitColor].ka} ${OUTFITS[draft.outfit].ka}` : 'არაფერი', ACCS[draft.acc].ka, GLASSES[draft.glasses].ka, JEWELS[draft.jewel].ka, ANDROID[draft.android].ka].filter(x => x !== 'არაფერი');
-                    const meta = [draft.gender === 'f' ? 'გოგო' : 'ბიჭი', `${SKINS[draft.skin].ka} კანი`, `${HAIRS[draft.hair].ka} ${HAIR_COLORS[draft.hairColor].ka} თმა`, `${EYE_COLORS[draft.eyeColor].ka} თვალები`, `${SHELLS[draft.shell].ka} სხეული`].concat(extras);
+                    const meta = [draft.gender === 'f' ? 'გოგო' : 'ბიჭი', `${botLabel(draft, 'head')} თავი`, `${botLabel(draft, 'body')} სხეული`, `${botLabel(draft, 'accent')} დეტალები`,
+                        `${botLabel(draft, 'eyeColor')} ${botLabel(draft, 'eyes')} თვალები`, botLabel(draft, 'top'), botLabel(draft, 'chest'), botLabel(draft, 'extra')].filter(x => x && x !== 'არაფერი');
                     box.innerHTML = `<div class="obs-summary"><p class="obs-summary-name"></p><ul class="obs-summary-list"></ul></div>
                         <div class="obs-warn"><i class="fa-solid fa-lock"></i><p><strong>ყურადღება:</strong> ${setupMode === 'restyle' ? 'ამ გარეგნობას მერე ვეღარ შეცვლი.' : 'ჩემს სახელს, გარეგნობას და სქესს მერე ვეღარ შეცვლი — სამუდამოდ ასეთი ვიქნები.'}</p></div>`;
                     box.querySelector('.obs-summary-name').textContent = draft.name;
@@ -948,42 +591,18 @@
                 bubble.classList.add(dir < 0 ? 'obs-in-back' : 'obs-in');
                 buildAnswer(st);
 
-                const box = $('obSetupRobot');
-                box.classList.remove('ob-hop');
-                void box.offsetWidth;
-                box.classList.add('ob-hop');
                 gesture('obSetupRobot', '', st.type === 'intro' ? 'wave' : st.type === 'summary' ? 'happy' : (setupIndex % 3 === 0 ? 'tilt' : 'nod'));
                 const sc = document.querySelector('#obSetup .obs-scroll'); if (sc) sc.scrollTop = 0;
             }
 
             function openSetup(mode) {
                 setupMode = mode === 'restyle' ? 'restyle' : 'new';
-                if (setupMode === 'restyle') {
-                    // keep name and gender, choose the look again
-                    Object.assign(draft, migrateProfile(state.profile), { v: 3 });
-                    delete draft.old;
-                    hairTouched = true;
-                }
-                if (!draft.hair) draft.hair = draft.gender === 'm' ? 'court' : 'carre';
+                if (setupMode === 'restyle') Object.assign(draft, migrateProfile(state.profile));   // keep name and gender
+                showWindow('obSetup');
+                setupBot = mountBot('obSetupRobot', Object.assign({}, draft, { gender: draft.gender || 'f' }), { interactive: true, pointerArea: $('obsStage'), label: 'robot' });
                 renderSetupPreview();
                 goStep(0, 1);
-                showWindow('obSetup');
             }
-
-            /* the robot turns a little towards the mouse / finger: 3D effect */
-            (function tilt3d() {
-                const stage = $('obsStage'), tiltBox = $('obsTilt');
-                if (!stage || !tiltBox) return;
-                if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-                const move = (e) => {
-                    const r = stage.getBoundingClientRect();
-                    const x = ((e.clientX - r.left) / r.width - 0.5) * 2;
-                    const y = ((e.clientY - r.top) / r.height - 0.5) * 2;
-                    tiltBox.style.transform = `rotateY(${(x * 16).toFixed(1)}deg) rotateX(${(-y * 8).toFixed(1)}deg)`;
-                };
-                stage.addEventListener('pointermove', move);
-                stage.addEventListener('pointerleave', () => { tiltBox.style.transform = ''; });
-            })();
 
             $('obBackBtn').addEventListener('click', () => goStep(setupIndex - 1, -1));
             $('obNextBtn').addEventListener('click', async () => {
@@ -1009,12 +628,7 @@
                 }
 
                 // last step: save the robot forever
-                const look = {
-                    skin: draft.skin, hair: draft.hair, hairColor: draft.hairColor, eyeColor: draft.eyeColor,
-                    shell: draft.shell, joint: draft.joint, emblem: draft.emblem,
-                    outfit: draft.outfit, outfitColor: draft.outfitColor, acc: draft.acc, glasses: draft.glasses,
-                    jewel: draft.jewel, android: draft.android, v: 3
-                };
+                const look = { head: draft.head, body: draft.body, accent: draft.accent, eyes: draft.eyes, eyeColor: draft.eyeColor, top: draft.top, chest: draft.chest, extra: draft.extra, v: 4 };
                 $('obNextBtn').disabled = true;
                 if (setupMode === 'restyle' && state.profile) {
                     state.profile = Object.assign({ name: state.profile.name, gender: state.profile.gender, created: state.profile.created }, look);
@@ -1024,6 +638,7 @@
                 }
                 await saveState();
                 $('obNextBtn').disabled = false;
+                if (setupBot) { setupBot.destroy(); setupBot = null; }
                 updateLauncher();
                 openChat(false, setupMode !== 'restyle');
             });
@@ -1085,8 +700,8 @@
 
             function prepareChatWindow() {
                 const p = state.profile;
-                $('obChatRobot').innerHTML = robotSVG(p, `${p.name} – robot`);
-                $('obChatMini').innerHTML = robotSVG(p, p.name, '78 26 84 110');
+                mountBot('obChatRobot', p, { interactive: true, label: `${p.name} – robot` });
+                $('obChatMini').innerHTML = robotImg(p, p.name, 'bust', 40, 40);
                 $('obChatPlate').textContent = p.name;
                 $('obChatName').textContent = p.name;
                 $('obLog').innerHTML = '';
@@ -1263,7 +878,7 @@
                 const hero = $('obHero');
                 const heroBot = $('obHeroBot');
                 introSkip = false;
-                heroBot.innerHTML = robotSVG(p, p.name);
+                mountBot('obHeroBot', p, { interactive: true, label: p.name });
                 $('obHeroName').textContent = p.name;
                 $('obHeroCaption').classList.remove('ob-hidden');
                 $('obHeroLines').innerHTML = '';
@@ -1380,14 +995,10 @@
                 return pick(['nod', 'tilt', 'nod']);
             }
             function gesture(robotId, text, forced) {
-                const svg = $(robotId) && $(robotId).querySelector('svg');
-                if (!svg) return;
-                const g = forced || chooseGesture(text);
-                Object.keys(GESTURE_TIME).forEach(k => svg.classList.remove('ob-g-' + k));
-                void svg.getBoundingClientRect();
-                svg.classList.add('ob-g-' + g);
-                clearTimeout(svg._obGesture);
-                svg._obGesture = setTimeout(() => svg.classList.remove('ob-g-' + g), GESTURE_TIME[g] || 1500);
+                const bot = $(robotId) && $(robotId)._bot;
+                if (!bot) return;
+                bot.gesture(forced || chooseGesture(text));
+                if (text) bot.talkFor(Math.min(4500, Math.max(900, String(text).length * 55)));
             }
             function talk(robotId, ms, text) { gesture(robotId, text || ''); }
 
@@ -2003,8 +1614,9 @@ Reply ONLY with the JSON object.`;
             function updateLauncher() {
                 if (!state) return;
                 const p = state.profile;
-                const look = p || Object.assign({}, draft, { gender: draft.gender || 'f', hair: draft.hair || 'carre' });
-                $('obLauncherBot').innerHTML = robotSVG(look, p ? p.name : 'android', '80 30 80 80');
+                const look = p || Object.assign({}, draft, { gender: draft.gender || 'f' });
+                const lkey = JSON.stringify(migrateProfile(look));
+                if ($('obLauncherBot')._key !== lkey) { $('obLauncherBot').innerHTML = robotImg(look, p ? p.name : 'robot', 'bust', 48, 48); $('obLauncherBot')._key = lkey; }
                 $('obLauncherName').textContent = p ? p.name : 'შენი რობოტი';
                 $('obLauncherSub').textContent = p ? 'დაუძახე მეგობარს' : 'შექმენი მეგობარი';
                 $('obLauncher').setAttribute('aria-label', p ? `დაუძახე ${p.name}-ს` : 'შექმენი შენი რობოტი მეგობარი');

@@ -272,14 +272,13 @@
                     <span class="obs-count" id="obStepNum"></span>
                 </div>
                 <div class="obs-progress" aria-hidden="true"><span id="obsProgressBar"></span></div>
-                <button type="button" class="ob-close" data-ob-close aria-label="დახურვა"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></button>
             </div>
             <div class="obs-body">
                 <div class="obs-stage" id="obsStage">
                     <div class="obs-tilt" id="obsTilt">
                         <div class="ob-robot" id="obSetupRobot"></div>
+                        <span class="obs-hint-3d" aria-hidden="true"><i class="fa-solid fa-arrows-left-right"></i> შემატრიალე</span>
                     </div>
-                    <div class="obs-ground" aria-hidden="true"></div>
                     <p class="obs-name" id="obSetupPlate"></p>
                 </div>
                 <div class="obs-panel">
@@ -340,19 +339,20 @@
                     <div class="ob-hero-head">
                         <span class="ob-hero-dot" aria-hidden="true"></span>
                         <span class="ob-hero-name" id="obHeroName"></span>
-                        <span class="ob-hero-tag">androïde · en ligne</span>
+                        <span class="ob-hero-tag">ონლაინ</span>
                     </div>
                     <div class="ob-hero-lines" id="obHeroLines"></div>
                     <div class="ob-hero-foot">
                         <div class="ob-hero-progress" aria-hidden="true"><span id="obHeroBar"></span></div>
                         <button type="button" class="ob-close ob-mute ob-hero-mute" data-ob-kamute aria-pressed="false" aria-label="ხმა"><svg class="ob-ico-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg><svg class="ob-ico-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16.5 9.5l5 5M21.5 9.5l-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
-                        <button type="button" class="ob-hero-skip" id="obHeroSkip">Passer <span aria-hidden="true">⟶</span></button>
+                        <button type="button" class="ob-hero-skip" id="obHeroSkip">გამოტოვება <span aria-hidden="true">⟶</span></button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <script src="js/robot3d.js"></script>
     <script src="js/pages/ouibot.js"></script>
 </body>
 </html>

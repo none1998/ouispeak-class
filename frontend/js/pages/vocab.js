@@ -262,16 +262,19 @@
                 htmlContent += `</div>`;
             }
 
-            // Append stylized download button at the end of block 2 (20 words section)
+            // Buttons at the end of the block: "თამაში" (both blocks) + "გადმოწერა" (words block)
+            htmlContent += `<div class="download-btn-container vg-btn-row">`;
             if (currentActiveBlock === 2) {
                 htmlContent += `
-                    <div class="download-btn-container">
                         <button class="download-vocab-btn" onclick="downloadAsWord()">
                             <i class="fa-solid fa-file-word"></i> გადმოწერა
-                        </button>
-                    </div>
-                `;
+                        </button>`;
             }
+            htmlContent += `
+                        <button class="download-vocab-btn vg-play-btn" onclick="openVocabGame()">
+                            <i class="fa-solid fa-chess-board"></i> თამაში
+                        </button>
+                    </div>`;
 
             container.innerHTML = htmlContent;
         }
@@ -359,3 +362,20 @@
         }
     });
     
+
+
+        // ===== Vocabulary game "Bataille de Territoire" (js/pages/vocab-game.js) =====
+        // Uses ALL words (block 2) and ALL phrases (block 1) of the selected week.
+        function openVocabGame() {
+            const subjectSelect = document.getElementById('subjectSelect');
+            const subject = subjectSelect.value;
+            if (!studentCourse || !vocabDataset[studentCourse] || !vocabDataset[studentCourse][subject]) return;
+            if (!window.VocabGame) { alert("თამაში ვერ ჩაიტვირთა. განაახლეთ გვერდი."); return; }
+            const week = vocabDataset[studentCourse][subject];
+            window.VocabGame.open({
+                words: (week[2] && week[2].vocabulary) || [],
+                phrases: (week[1] && week[1].vocabulary) || [],
+                weekLabel: subjectSelect.options[subjectSelect.selectedIndex].text,
+                storageKey: studentCourse + "|" + subject
+            });
+        }

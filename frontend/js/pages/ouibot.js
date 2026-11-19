@@ -320,7 +320,7 @@
                     stroke(upper, w, `url(#${id}a)`) + stroke(fore, w - 2, `url(#${id}a)`) +
                     stroke(upper, 1.4, shellLine, 'opacity=".35" transform="translate(5 0)"') +
                     `<circle cx="${elbow.x}" cy="${elbow.y}" r="${w * 0.42}" fill="${joint}" ${jointGlow}/><circle cx="${elbow.x - 2}" cy="${elbow.y - 2}" r="${w * 0.16}" fill="${jointLight}" opacity=".6"/>` +
-                    `<circle cx="${shoulder.x}" cy="${shoulder.y}" r="${w * 0.55}" fill="${joint}" ${jointGlow}/><path d="M${shoulder.x - w * 0.3} ${shoulder.y - w * 0.3} a${w * 0.42} ${w * 0.42} 0 0 1 ${w * 0.5} -${w * 0.05}" stroke="${jointLight}" stroke-width="2" opacity=".55" fill="none"/>`;
+                    `<circle cx="${shoulder.x}" cy="${shoulder.y}" r="${w * 0.55}" fill="${joint}" ${jointGlow}/><circle cx="${shoulder.x}" cy="${shoulder.y}" r="${w * 0.55}" fill="url(#${id}jh)"/><path d="M${shoulder.x - w * 0.3} ${shoulder.y - w * 0.3} a${w * 0.42} ${w * 0.42} 0 0 1 ${w * 0.5} -${w * 0.05}" stroke="${jointLight}" stroke-width="2" opacity=".55" fill="none"/>`;
                 const hand = (x, y, r) => `<ellipse cx="${x}" cy="${y}" rx="${r * 0.82}" ry="${r}" fill="${shell}" stroke="${shellLine}" stroke-width=".8"/>` +
                     [-0.45, -0.15, 0.15, 0.45].map(o => stroke(`M${x + o * r * 1.3} ${y - r * 0.7} v-${r * 0.75}`, r * 0.3, joint)).join('') +
                     stroke(`M${x - r * 0.75} ${y - r * 0.1} q-${r * 0.45} -${r * 0.35} -${r * 0.4} -${r * 0.9}`, r * 0.32, joint);
@@ -464,6 +464,13 @@
                         <radialGradient id="${id}s" cx=".45" cy=".38" r=".75"><stop offset="0" stop-color="${mixColor(skin, '#ffffff', 0.14)}"/><stop offset=".7" stop-color="${skin}"/><stop offset="1" stop-color="${skinShade}"/></radialGradient>
                         <linearGradient id="${id}sk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${skin}"/><stop offset="1" stop-color="${skinShade}"/></linearGradient>
                         <radialGradient id="${id}i" cx=".4" cy=".35" r=".7"><stop offset="0" stop-color="${mixColor(eye.c, '#ffffff', 0.35)}"/><stop offset="1" stop-color="${mixColor(eye.c, '#000000', 0.25)}"/></radialGradient>
+                        <radialGradient id="${id}hl" cx=".3" cy=".18" r=".85"><stop offset="0" stop-color="#ffffff" stop-opacity=".75"/><stop offset=".35" stop-color="#ffffff" stop-opacity=".18"/><stop offset=".6" stop-color="#ffffff" stop-opacity="0"/></radialGradient>
+                        <linearGradient id="${id}sh" x1="0" y1="0" x2="1" y2="1"><stop offset=".4" stop-color="#0f172a" stop-opacity="0"/><stop offset=".78" stop-color="#0f172a" stop-opacity=".28"/><stop offset="1" stop-color="#0f172a" stop-opacity=".5"/></linearGradient>
+                        <linearGradient id="${id}rim" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffffff" stop-opacity=".5"/><stop offset=".08" stop-color="#ffffff" stop-opacity="0"/><stop offset=".9" stop-color="#0f172a" stop-opacity="0"/><stop offset="1" stop-color="#0f172a" stop-opacity=".3"/></linearGradient>
+                        <radialGradient id="${id}fh" cx=".36" cy=".26" r=".5"><stop offset="0" stop-color="#ffffff" stop-opacity=".42"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></radialGradient>
+                        <radialGradient id="${id}fr" cx=".5" cy=".42" r=".62"><stop offset=".72" stop-color="${skinDeep}" stop-opacity="0"/><stop offset="1" stop-color="${skinDeep}" stop-opacity=".45"/></radialGradient>
+                        <radialGradient id="${id}hh" cx=".35" cy=".12" r=".6"><stop offset="0" stop-color="#ffffff" stop-opacity=".45"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></radialGradient>
+                        <radialGradient id="${id}jh" cx=".35" cy=".3" r=".6"><stop offset="0" stop-color="#ffffff" stop-opacity=".7"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></radialGradient>
                         <filter id="${id}f" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="1.3" result="bl"/><feMerge><feMergeNode in="bl"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
                     </defs>
                     <g class="ob-float">
@@ -472,7 +479,11 @@
                             <path d="M${f ? 110 : 108} 120 L${f ? 130 : 132} 120 L${f ? 132 : 134} 160 Q120 166 ${f ? 108 : 106} 160 Z" fill="url(#${id}n)"/>
                             ${[136, 144, 152].map(y => `<path d="M${f ? 111 : 109} ${y} Q120 ${y + 3} ${f ? 129 : 131} ${y}" stroke="${jointLight}" stroke-width="1.3" opacity=".45" fill="none"/>`).join('')}
                             <path d="M110 126 Q120 140 130 126" stroke="${skinDeep}" stroke-width="2" opacity=".25" fill="none"/>
+                            <path d="M106 128 Q120 142 134 128 L134 140 Q120 150 106 140 Z" fill="#0f172a" opacity=".22"/>
                             <path d="${torsoPath}" fill="url(#${id}b)"/>
+                            <path d="${torsoPath}" fill="url(#${id}sh)"/>
+                            <path d="${torsoPath}" fill="url(#${id}rim)"/>
+                            <path d="${torsoPath}" fill="url(#${id}hl)"/>
                             ${shellDetails}
                             ${emblem}
                             ${collarRing}
@@ -488,6 +499,8 @@
                             <path d="M88.5 89 Q86.5 95 89 101 M151.5 89 Q153.5 95 151 101" stroke="${skinShade}" stroke-width="1" fill="none"/>
                             ${jewel}
                             <path d="${facePath}" fill="url(#${id}s)"/>
+                            <path d="${facePath}" fill="url(#${id}fr)"/>
+                            <path d="${facePath}" fill="url(#${id}fh)"/>
                             ${cheeks}
                             <g class="ob-eyes"><g class="ob-eyes-in">${eyeR(133)}<g transform="translate(240 0) scale(-1 1)">${eyeR(133)}</g></g></g>
                             <g class="ob-brows">${browR}<g transform="translate(240 0) scale(-1 1)">${browR}</g></g>
@@ -498,6 +511,7 @@
                             ${androidFace}
                             ${glasses}
                             <path d="${hp.front}" fill="url(#${id}h)" ${hp.thin ? 'opacity=".85"' : ''}/>
+                            ${hp.thin ? '' : `<path d="${hp.front}" fill="url(#${id}hh)"/>`}
                             ${hairShine}
                             ${onHead}
                         </g>
@@ -740,33 +754,43 @@
                1) SETUP – look, name, gender (saved forever)
                ===================================================== */
             const draft = { name: '', gender: '', skin: 'claire', hair: '', hairColor: 'noir', eyeColor: 'marron', shell: 'blanc', joint: 'anthracite', emblem: 'coeur', outfit: 'aucun', outfitColor: 'bleu', acc: 'aucun', glasses: 'aucune', jewel: 'aucun', android: 'aucun', v: 3 };
-            const SETUP_STEPS = 10;
-            let setupStep = 1;
-            let setupDir = 1;
-            let setupMode = 'new';      // 'new' = first creation, 'restyle' = old robot gets the new android look
+            let setupMode = 'new';      // 'new' = first creation, 'restyle' = old robot gets the new look
             let hairTouched = false;
+            let setupIndex = 0;
 
-            function setupSay(n) {
-                const f = draft.gender === 'f';
-                const name = draft.name || '';
-                if (setupMode === 'restyle' && n === 3) return { fr: "J'ai une nouvelle apparence ! Tu choisis mon look ? 😍 D'abord, ma peau 🎨", ka: "ახალი გარეგნობა მაქვს! ჩემს სტილს შენ აირჩევ? 😍 ჯერ კანის ფერი 🎨" };
-                return {
-                    1: { fr: "Salut ! 👋 Je suis ton nouvel ami androïde. D'abord… comment je m'appelle ?", ka: "გამარჯობა! 👋 მე შენი ახალი ანდროიდი მეგობარი ვარ. ჯერ… რა მქვია?" },
-                    2: { fr: `${name} ? J'adore ce prénom ! Je suis une fille ou un garçon ?`, ka: `${name}? ძალიან მომწონს ეს სახელი! გოგო ვარ თუ ბიჭი?` },
-                    3: { fr: "Super ! Maintenant, choisis la couleur de ma peau 🎨", ka: "სუპერ! ახლა ჩემი კანის ფერი აირჩიე 🎨" },
-                    4: { fr: "Et ma coiffure ? Choisis le style et la couleur 💇", ka: "ჩემი ვარცხნილობა? აირჩიე სტილი და ფერი 💇" },
-                    5: { fr: "Et mes yeux ? 👀", ka: "ჩემი თვალები? 👀" },
-                    6: { fr: "Et mon corps de robot ? Choisis les couleurs ⚙️", ka: "ჩემი რობოტის სხეული? აირჩიე ფერები ⚙️" },
-                    7: { fr: "Des vêtements par-dessus ? C'est toi qui choisis 👕", ka: "ტანსაცმელი ზემოდან? შენ აირჩიე 👕" },
-                    8: { fr: "Des accessoires ? Un chapeau, des lunettes, des bijoux… ✨", ka: "აქსესუარები? ქუდი, სათვალე, სამკაულები… ✨" },
-                    9: { fr: "Et un petit détail d'androïde ? 🤖", ka: "და ანდროიდის პატარა დეტალი? 🤖" },
-                    10: { fr: `Waouh, je suis trop ${f ? 'belle' : 'beau'} ! Merci ! On est amis pour toujours ? 🤝`, ka: "ვაუ, რა ლამაზი ვარ! მადლობა! სამუდამოდ მეგობრები ვართ? 🤝" }
-                }[n];
-            }
+            const HEAD_VIEW = '74 22 92 124';
+            const BODY_VIEW = '20 140 200 160';
+            const EYES_VIEW = '93 77 54 28';
+            const CHEST_VIEW = '62 170 116 70';
+
+            /* One question per screen (Georgian only). "type" decides what the answer looks like. */
+            const SETUP = [
+                { key: 'intro', type: 'intro' },
+                { key: 'name', type: 'name', q: 'რა გინდა რომ მერქვას?', sub: 'ჩაწერე ჩემი სახელი. შეგიძლია ფრანგული სახელი აირჩიო, მაგალითად Léa, Noah, Chloé ან Adam.' },
+                { key: 'gender', type: 'gender', q: 'ბიჭი გინდა რომ ვიყო თუ გოგო?', sub: 'ამის მიხედვით ფრანგულად სწორად ვილაპარაკებ, მაგალითად: content (ბიჭი) / contente (გოგო).' },
+                { key: 'skin', type: 'swatch', field: 'skin', map: () => SKINS, q: 'რა ფერის კანი გინდა რომ მქონდეს?', sub: 'დააჭირე ფერს — მარცხნივ მაშინვე დაინახავ, როგორი ვიქნები.' },
+                { key: 'hair', type: 'tile', field: 'hair', map: () => HAIRS, view: HEAD_VIEW, q: 'როგორი ვარცხნილობა გინდა რომ მქონდეს?' },
+                { key: 'hairColor', type: 'swatch', field: 'hairColor', map: () => HAIR_COLORS, q: 'რა ფერის თმა გინდა რომ მქონდეს?' },
+                { key: 'eyeColor', type: 'tile', field: 'eyeColor', map: () => EYE_COLORS, view: EYES_VIEW, q: 'რა ფერის თვალები გინდა რომ მქონდეს?' },
+                { key: 'shell', type: 'swatch', field: 'shell', map: () => SHELLS, q: 'რა ფერის იყოს ჩემი რობოტის სხეული?' },
+                { key: 'joint', type: 'swatch', field: 'joint', map: () => JOINTS, q: 'რა ფერის იყოს ჩემი სახსრები?', sub: 'მხრები, იდაყვები და კისერი.' },
+                { key: 'emblem', type: 'tile', field: 'emblem', map: () => EMBLEMS, view: CHEST_VIEW, q: 'რა ენთოს ჩემს მკერდზე?' },
+                { key: 'outfit', type: 'tile', field: 'outfit', map: () => OUTFITS, view: BODY_VIEW, q: 'ტანსაცმელი ჩავიცვა?', sub: 'თუ არ გინდა, აირჩიე „არაფერი“.' },
+                { key: 'acc', type: 'tile', field: 'acc', map: () => ACCS, view: HEAD_VIEW, q: 'თავზე რამე დავიხურო?' },
+                { key: 'outfitColor', type: 'swatch', field: 'outfitColor', map: () => OUTFIT_COLORS,
+                  q: () => draft.outfit === 'aucun' ? 'რა ფერის იყოს ის, რაც თავზე მიკეთია?' : (COLORED_ACC.includes(draft.acc) ? 'რა ფერის იყოს ჩემი ტანსაცმელი და ის, რაც თავზე მიკეთია?' : 'რა ფერის იყოს ჩემი ტანსაცმელი?'),
+                  skip: () => draft.outfit === 'aucun' && !COLORED_ACC.includes(draft.acc) },
+                { key: 'glasses', type: 'tile', field: 'glasses', map: () => GLASSES, view: EYES_VIEW, q: 'სათვალე გავიკეთო?' },
+                { key: 'jewel', type: 'tile', field: 'jewel', map: () => JEWELS, view: '74 76 92 104', q: 'სამკაული გავიკეთო?' },
+                { key: 'android', type: 'tile', field: 'android', map: () => ANDROID, view: HEAD_VIEW, q: 'და ბოლოს: ანდროიდის პატარა დეტალი?', sub: 'ეს მაჩვენებს, რომ ნამდვილი რობოტი ვარ 🤖' },
+                { key: 'summary', type: 'summary' }
+            ];
+            const COLORED_ACC = ['casque', 'casquette', 'bonnet', 'bandeau', 'noeud'];
+            const visibleSteps = () => SETUP.filter(st => !(st.skip && st.skip()) && !(setupMode === 'restyle' && (st.key === 'name' || st.key === 'gender')));
 
             function renderSetupPreview() {
-                $('obSetupRobot').innerHTML = robotSVG(draft, draft.name || 'android');
-                $('obSetupPlate').textContent = draft.name || '???';
+                $('obSetupRobot').innerHTML = robotSVG(draft, draft.name || 'robot');
+                $('obSetupPlate').textContent = draft.name || '';
             }
 
             /* Little "pop + sparkles" when the student picks something */
@@ -776,17 +800,17 @@
                 void box.offsetWidth;
                 box.classList.add('ob-pop');
                 if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-                const colors = ['#facc15', '#60a5fa', '#f472b6', '#34d399', '#ffffff'];
+                const colors = ['#0055a5', '#ef4135', '#facc15', '#60a5fa', '#34d399'];
                 for (let i = 0; i < 10; i++) {
-                    const s = document.createElement('span');
-                    s.className = 'ob-spark';
-                    const a = (Math.PI * 2 * i) / 10 + Math.random() * 0.4;
+                    const sp = document.createElement('span');
+                    sp.className = 'ob-spark';
+                    const ang = (Math.PI * 2 * i) / 10 + Math.random() * 0.4;
                     const d = 70 + Math.random() * 50;
-                    s.style.setProperty('--dx', `${Math.cos(a) * d}px`);
-                    s.style.setProperty('--dy', `${Math.sin(a) * d}px`);
-                    s.style.background = colors[i % colors.length];
-                    box.appendChild(s);
-                    setTimeout(() => s.remove(), 750);
+                    sp.style.setProperty('--dx', `${Math.cos(ang) * d}px`);
+                    sp.style.setProperty('--dy', `${Math.sin(ang) * d}px`);
+                    sp.style.background = colors[i % colors.length];
+                    box.appendChild(sp);
+                    setTimeout(() => sp.remove(), 750);
                 }
             }
 
@@ -797,165 +821,194 @@
                 celebrate();
             }
 
-            /* tiles = small pictures of the android with each option */
-            function tileGroup(boxId, map, field, viewBox) {
-                const box = $(boxId);
+            /* picture tiles: the robot wearing each option */
+            function tileGroup(box, map, field, viewBox) {
+                box.className = 'obs-answer obs-tiles';
                 box.innerHTML = '';
                 Object.keys(map).forEach(k => {
                     const b = document.createElement('button');
                     b.type = 'button';
-                    b.className = 'ob-tile';
+                    b.className = 'obs-tile';
                     b.setAttribute('aria-pressed', String(draft[field] === k));
                     const preview = Object.assign({}, draft, { [field]: k });
-                    b.innerHTML = `<span class="ob-tile-img">${robotSVG(preview, map[k].ka, viewBox)}</span><span class="ob-tile-label"></span>`;
-                    b.querySelector('.ob-tile-label').textContent = map[k].ka;
+                    b.innerHTML = `<span class="obs-tile-img">${robotSVG(preview, map[k].ka, viewBox)}</span><span class="obs-tile-label"></span>`;
+                    b.querySelector('.obs-tile-label').textContent = map[k].ka;
                     b.addEventListener('click', () => {
-                        box.querySelectorAll('.ob-tile').forEach(t => t.setAttribute('aria-pressed', String(t === b)));
+                        box.querySelectorAll('.obs-tile').forEach(t => t.setAttribute('aria-pressed', String(t === b)));
                         pickOption(field, k);
                     });
                     box.appendChild(b);
                 });
             }
 
-            /* swatches = round colour buttons */
-            function swatchGroup(boxId, map, field, onPick) {
-                const box = $(boxId);
+            /* colour buttons with their name */
+            function swatchGroup(box, map, field) {
+                box.className = 'obs-answer obs-swatches';
                 box.innerHTML = '';
                 Object.keys(map).forEach(k => {
                     const b = document.createElement('button');
                     b.type = 'button';
-                    b.className = 'ob-swatch';
-                    b.style.background = map[k].c;
-                    b.setAttribute('aria-label', map[k].ka);
-                    b.title = map[k].ka;
+                    b.className = 'obs-swatch';
                     b.setAttribute('aria-pressed', String(draft[field] === k));
+                    b.innerHTML = `<span class="obs-dot"></span><span class="obs-swatch-label"></span>`;
+                    b.querySelector('.obs-dot').style.background = map[k].c;
+                    b.querySelector('.obs-swatch-label').textContent = map[k].ka;
                     b.addEventListener('click', () => {
-                        box.querySelectorAll('.ob-swatch').forEach(t => t.setAttribute('aria-pressed', String(t === b)));
+                        box.querySelectorAll('.obs-swatch').forEach(t => t.setAttribute('aria-pressed', String(t === b)));
                         pickOption(field, k);
-                        if (onPick) onPick();
                     });
                     box.appendChild(b);
                 });
             }
 
-            const HEAD_VIEW = '74 22 92 124';
-            const BODY_VIEW = '20 140 200 160';
-            const EYES_VIEW = '93 77 54 28';
-            const CHEST_VIEW = '62 170 116 70';
-            function buildStepOptions(n) {
-                if (n === 3) swatchGroup('obSkinOpts', SKINS, 'skin');
-                if (n === 4) {
-                    tileGroup('obHairOpts', HAIRS, 'hair', HEAD_VIEW);
-                    swatchGroup('obHairColorOpts', HAIR_COLORS, 'hairColor', () => tileGroup('obHairOpts', HAIRS, 'hair', HEAD_VIEW));
+            function buildAnswer(st) {
+                const box = $('obsAnswer');
+                box.className = 'obs-answer';
+                box.innerHTML = '';
+                if (st.type === 'intro') {
+                    box.innerHTML = `<div class="obs-intro-list">
+                        <div><i class="fa-solid fa-comments"></i><span>ყოველდღე ფრანგულად გესაუბრები — შენი დონის მიხედვით.</span></div>
+                        <div><i class="fa-solid fa-lightbulb"></i><span>თუ რამე ვერ გაიგე, ქართულად აგიხსნი.</span></div>
+                        <div><i class="fa-solid fa-heart"></i><span>მემახსოვრება, რასაც მომიყვები — როგორც ნამდვილ მეგობარს.</span></div>
+                    </div>`;
                 }
-                if (n === 5) tileGroup('obEyeOpts', EYE_COLORS, 'eyeColor', EYES_VIEW);
-                if (n === 6) {
-                    const refresh = () => tileGroup('obEmblemOpts', EMBLEMS, 'emblem', CHEST_VIEW);
-                    swatchGroup('obShellOpts', SHELLS, 'shell', refresh);
-                    swatchGroup('obJointOpts', JOINTS, 'joint', refresh);
-                    refresh();
+                if (st.type === 'name') {
+                    box.innerHTML = `<input class="obs-input" id="obNameInput" type="text" maxlength="20" autocomplete="off" placeholder="მაგ. Léa, Noah, Chloé…" aria-label="რობოტის სახელი"><p class="obs-hint">მაქსიმუმ 20 ასო.</p>`;
+                    const inp = $('obNameInput');
+                    inp.value = draft.name;
+                    inp.addEventListener('input', () => { draft.name = inp.value.trim(); renderSetupPreview(); });
+                    inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); $('obNextBtn').click(); } });
+                    setTimeout(() => inp.focus(), 80);
                 }
-                if (n === 7) {
-                    tileGroup('obOutfitOpts', OUTFITS, 'outfit', BODY_VIEW);
-                    swatchGroup('obOutfitColorOpts', OUTFIT_COLORS, 'outfitColor', () => tileGroup('obOutfitOpts', OUTFITS, 'outfit', BODY_VIEW));
+                if (st.type === 'gender') {
+                    box.className = 'obs-answer obs-genders';
+                    [['m', 'ბიჭი', 'fa-mars'], ['f', 'გოგო', 'fa-venus']].forEach(([g, label, icon]) => {
+                        const b = document.createElement('button');
+                        b.type = 'button';
+                        b.className = 'obs-gender';
+                        b.setAttribute('aria-pressed', String(draft.gender === g));
+                        const look = Object.assign({}, draft, { gender: g, hair: hairTouched ? draft.hair : (g === 'f' ? 'carre' : 'court') });
+                        b.innerHTML = `<span class="obs-gender-img">${robotSVG(look, label, '40 20 160 200')}</span><span class="obs-gender-label"><i class="fa-solid ${icon}"></i> ${label}</span>`;
+                        b.addEventListener('click', () => {
+                            draft.gender = g;
+                            if (!hairTouched) draft.hair = g === 'f' ? 'carre' : 'court';
+                            box.querySelectorAll('.obs-gender').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+                            renderSetupPreview();
+                            celebrate();
+                        });
+                        box.appendChild(b);
+                    });
                 }
-                if (n === 8) {
-                    tileGroup('obAccOpts', ACCS, 'acc', HEAD_VIEW);
-                    tileGroup('obGlassesOpts', GLASSES, 'glasses', EYES_VIEW);
-                    tileGroup('obJewelOpts', JEWELS, 'jewel', '74 76 92 104');
+                if (st.type === 'swatch') swatchGroup(box, st.map(), st.field);
+                if (st.type === 'tile') tileGroup(box, st.map(), st.field, st.view);
+                if (st.type === 'summary') {
+                    const extras = [EMBLEMS[draft.emblem].ka, draft.outfit !== 'aucun' ? `${OUTFIT_COLORS[draft.outfitColor].ka} ${OUTFITS[draft.outfit].ka}` : 'არაფერი', ACCS[draft.acc].ka, GLASSES[draft.glasses].ka, JEWELS[draft.jewel].ka, ANDROID[draft.android].ka].filter(x => x !== 'არაფერი');
+                    const meta = [draft.gender === 'f' ? 'გოგო' : 'ბიჭი', `${SKINS[draft.skin].ka} კანი`, `${HAIRS[draft.hair].ka} ${HAIR_COLORS[draft.hairColor].ka} თმა`, `${EYE_COLORS[draft.eyeColor].ka} თვალები`, `${SHELLS[draft.shell].ka} სხეული`].concat(extras);
+                    box.innerHTML = `<div class="obs-summary"><p class="obs-summary-name"></p><ul class="obs-summary-list"></ul></div>
+                        <div class="obs-warn"><i class="fa-solid fa-lock"></i><p><strong>ყურადღება:</strong> ${setupMode === 'restyle' ? 'ამ გარეგნობას მერე ვეღარ შეცვლი.' : 'ჩემს სახელს, გარეგნობას და სქესს მერე ვეღარ შეცვლი — სამუდამოდ ასეთი ვიქნები.'}</p></div>`;
+                    box.querySelector('.obs-summary-name').textContent = draft.name;
+                    const ul = box.querySelector('.obs-summary-list');
+                    meta.forEach(m => { const li = document.createElement('li'); li.textContent = m; ul.appendChild(li); });
+                    celebrate();
                 }
-                if (n === 9) tileGroup('obAndroidOpts', ANDROID, 'android', HEAD_VIEW);
             }
 
-            function goStep(n) {
-                setupDir = n >= setupStep ? 1 : -1;
-                setupStep = n;
-                buildStepOptions(n);
-                document.querySelectorAll('#obSetup .ob-step').forEach(el => {
-                    const on = Number(el.dataset.step) === n;
-                    el.classList.toggle('ob-active', on);
-                    el.classList.toggle('ob-from-left', on && setupDir < 0);
-                });
-                document.querySelectorAll('#obSetup .ob-steps li').forEach((li, i) => li.classList.toggle('ob-done', i < n));
-                $('obStepNum').textContent = n;
-                $('obBackBtn').hidden = n === 1 || (setupMode === 'restyle' && n === 3);
-                $('obNextBtn').textContent = n === SETUP_STEPS ? 'დიახ, დავიწყოთ!' : 'შემდეგი';
+            function goStep(index, dir) {
+                const steps = visibleSteps();
+                setupIndex = Math.max(0, Math.min(steps.length - 1, index));
+                const st = steps[setupIndex];
+                const total = steps.length - 1;   // the intro is not counted
+
+                let q = typeof st.q === 'function' ? st.q() : st.q, sub = st.sub || '';
+                if (st.type === 'intro') {
+                    q = setupMode === 'restyle' ? `გამარჯობა! მე ${draft.name} ვარ 👋` : 'გამარჯობა! 👋 მე შენი მეგობარი რობოტი ვარ.';
+                    sub = setupMode === 'restyle'
+                        ? 'ახალი გარეგნობა მივიღე! სანამ ისევ ერთად ვისაუბრებთ, ჩემი ახალი სტილი შენ უნდა აირჩიო. დავიწყოთ?'
+                        : 'მთელი კურსის განმავლობაში შენთან ვიქნები და ფრანგულის სწავლაში დაგეხმარები. სანამ შენს გვერდზე შეგიშვებ, ჯერ უნდა ამაწყო: რამდენიმე მარტივ კითხვას დაგისვამ — როგორი გინდა რომ ვიყო. დავიწყოთ?';
+                }
+                if (st.type === 'summary') {
+                    q = `აი, მზად ვარ! ${draft.gender === 'f' ? 'ლამაზი' : 'მაგარი'} გამოვედი? 😍`;
+                    sub = 'შეამოწმე ყველაფერი. თუ რამის შეცვლა გინდა, დააჭირე „უკან“.';
+                }
+                $('obsQuestion').textContent = q;
+                $('obsSub').textContent = sub;
+                $('obsSub').hidden = !sub;
+                $('obStepNum').textContent = st.type === 'intro' ? '' : `კითხვა ${setupIndex} / ${total}`;
+                $('obsProgressBar').style.width = `${(setupIndex / total) * 100}%`;
+                $('obBackBtn').hidden = setupIndex === 0;
+                $('obNextBtn').innerHTML = st.type === 'intro' ? 'დავიწყოთ! <i class="fa-solid fa-arrow-right"></i>'
+                    : st.type === 'summary' ? '<i class="fa-solid fa-check"></i> დიახ, ასეთი მინდა!'
+                    : 'შემდეგი <i class="fa-solid fa-arrow-right"></i>';
                 $('obSetupErr').textContent = '';
+                $('obSetup').classList.toggle('obs-is-intro', st.type === 'intro');
+
+                const bubble = $('obsBubble');
+                bubble.classList.remove('obs-in', 'obs-in-back');
+                void bubble.offsetWidth;
+                bubble.classList.add(dir < 0 ? 'obs-in-back' : 'obs-in');
+                buildAnswer(st);
 
                 const box = $('obSetupRobot');
                 box.classList.remove('ob-hop');
                 void box.offsetWidth;
                 box.classList.add('ob-hop');
-                const say = setupSay(n);
-                const bubble = $('obSetupSayFr').parentElement;
-                bubble.classList.remove('ob-swap');
-                void bubble.offsetWidth;
-                bubble.classList.add('ob-swap');
-                $('obSetupSayFr').textContent = say.fr;
-                $('obSetupSayKa').textContent = say.ka;
-
-                if (n === 1) setTimeout(() => $('obNameInput').focus(), 60);
-                if (n === SETUP_STEPS) {
-                    $('obSummaryBot').innerHTML = robotSVG(draft, draft.name);
-                    $('obSummaryName').textContent = draft.name;
-                    const extras = [EMBLEMS[draft.emblem].ka, draft.outfit !== 'aucun' ? `${OUTFIT_COLORS[draft.outfitColor].ka} ${OUTFITS[draft.outfit].ka}` : 'არაფერი', ACCS[draft.acc].ka, GLASSES[draft.glasses].ka, JEWELS[draft.jewel].ka, ANDROID[draft.android].ka].filter(x => x !== 'არაფერი');
-                    $('obSummaryMeta').textContent = [draft.gender === 'f' ? 'გოგო' : 'ბიჭი', SKINS[draft.skin].ka, `${HAIRS[draft.hair].ka} ${HAIR_COLORS[draft.hairColor].ka} თმა`, `${EYE_COLORS[draft.eyeColor].ka} თვალები`, `${SHELLS[draft.shell].ka} სხეული`].concat(extras).join(', ');
-                    celebrate();
-                }
-                gesture('obSetupRobot', say.fr);
-                speakKa(say.fr, draft.gender);
-                if (n < SETUP_STEPS && draft.gender) { kaPrefetchQueue = []; prefetchKa([setupSay(n + 1).fr], draft.gender); }
+                gesture('obSetupRobot', '', st.type === 'intro' ? 'wave' : st.type === 'summary' ? 'happy' : (setupIndex % 3 === 0 ? 'tilt' : 'nod'));
+                const sc = document.querySelector('#obSetup .obs-scroll'); if (sc) sc.scrollTop = 0;
             }
 
             function openSetup(mode) {
                 setupMode = mode === 'restyle' ? 'restyle' : 'new';
                 if (setupMode === 'restyle') {
-                    // keep name and gender, start directly with the look
+                    // keep name and gender, choose the look again
                     Object.assign(draft, migrateProfile(state.profile), { v: 3 });
                     delete draft.old;
                     hairTouched = true;
                 }
                 if (!draft.hair) draft.hair = draft.gender === 'm' ? 'court' : 'carre';
                 renderSetupPreview();
-                $('obNameInput').value = draft.name;
-                setupStep = setupMode === 'restyle' ? 3 : 1;
-                goStep(setupStep);
+                goStep(0, 1);
                 showWindow('obSetup');
             }
 
-            $('obNameInput').addEventListener('input', (e) => {
-                draft.name = e.target.value.trim();
-                renderSetupPreview();
-            });
-            $('obNameInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); $('obNextBtn').click(); } });
-            document.querySelectorAll('#obGenderOpts [data-gender]').forEach(b => {
-                b.addEventListener('click', () => {
-                    draft.gender = b.dataset.gender;
-                    if (!hairTouched) draft.hair = draft.gender === 'f' ? 'carre' : 'court';
-                    kaPrefetchQueue = [];
-                    prefetchKa([setupSay(3).fr], draft.gender);
-                    document.querySelectorAll('#obGenderOpts [data-gender]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
-                    renderSetupPreview();
-                    celebrate();
-                });
-            });
-            $('obBackBtn').addEventListener('click', () => goStep(Math.max(setupMode === 'restyle' ? 3 : 1, setupStep - 1)));
+            /* the robot turns a little towards the mouse / finger: 3D effect */
+            (function tilt3d() {
+                const stage = $('obsStage'), tiltBox = $('obsTilt');
+                if (!stage || !tiltBox) return;
+                if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+                const move = (e) => {
+                    const r = stage.getBoundingClientRect();
+                    const x = ((e.clientX - r.left) / r.width - 0.5) * 2;
+                    const y = ((e.clientY - r.top) / r.height - 0.5) * 2;
+                    tiltBox.style.transform = `rotateY(${(x * 16).toFixed(1)}deg) rotateX(${(-y * 8).toFixed(1)}deg)`;
+                };
+                stage.addEventListener('pointermove', move);
+                stage.addEventListener('pointerleave', () => { tiltBox.style.transform = ''; });
+            })();
+
+            $('obBackBtn').addEventListener('click', () => goStep(setupIndex - 1, -1));
             $('obNextBtn').addEventListener('click', async () => {
-                if (setupStep === 1) {
-                    draft.name = $('obNameInput').value.trim();
+                const steps = visibleSteps();
+                const st = steps[setupIndex];
+                if (st.type === 'name') {
+                    draft.name = ($('obNameInput') ? $('obNameInput').value : draft.name).trim();
                     if (!/^[\p{L}\p{N}' \-]{1,20}$/u.test(draft.name)) {
-                        $('obSetupErr').textContent = 'ჩაწერე სახელი (მხოლოდ ასოები, მაქსიმუმ 20 სიმბოლო).';
+                        $('obSetupErr').textContent = 'ჩაწერე სახელი (მხოლოდ ასოები, მაქსიმუმ 20).';
                         return;
                     }
-                    return goStep(2);
+                    renderSetupPreview();
                 }
-                if (setupStep === 2 && !draft.gender) {
-                    $('obSetupErr').textContent = 'აირჩიე: გოგო თუ ბიჭი.';
+                if (st.type === 'gender' && !draft.gender) {
+                    $('obSetupErr').textContent = 'აირჩიე: ბიჭი თუ გოგო.';
                     return;
                 }
-                if (setupStep < SETUP_STEPS) return goStep(setupStep + 1);
+                if (st.type !== 'summary') {
+                    // the list of steps can change (e.g. no clothes → no clothes colour), so find the next one again
+                    const now = visibleSteps();
+                    const pos = now.findIndex(x => x.key === st.key);
+                    return goStep(pos + 1, 1);
+                }
 
-                // last step: save the android forever
+                // last step: save the robot forever
                 const look = {
                     skin: draft.skin, hair: draft.hair, hairColor: draft.hairColor, eyeColor: draft.eyeColor,
                     shell: draft.shell, joint: draft.joint, emblem: draft.emblem,

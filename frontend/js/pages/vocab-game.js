@@ -69,6 +69,50 @@
         return [...out];
     }
     function isCorrect(given, answer) { return variants(answer).includes(norm(given)); }
+    // right letters but wrong / missing accents (é ↔ e ↔ è …) → returns the correct spelling, else null
+    function accentSlip(given, answer) {
+        if (!String(given).trim() || isCorrect(given, answer)) return null;
+        const g = noAccents(norm(given));
+        const parts = [answer].concat(String(answer).split("/")).map(x => x.trim()).filter(Boolean);
+        for (const part of parts) {
+            for (const v of [part, part.replace(/\([^)]*\)/g, "").trim()])
+                if (v && noAccents(norm(v)) === g) return v;
+        }
+        return null;
+    }
+    function highlightAccents(text) {
+        return esc(text).replace(/([àâäçéèêëîïôöûùüÿœæÀÂÇÉÈÊËÎÏÔÛÙŒ])/g, '<span class="vg-acc-mark">$1</span>');
+    }
+
+    // big flashcard: "correct, but watch the accents" — flips in, then flips away and the game goes on
+    function accentFlashcard(correctText, item, sentence) {
+        return new Promise(done => {
+            const win = root && root.querySelector(".vg-window");
+            if (!win) return done();
+            const card = document.createElement("div");
+            card.className = "vg-flashcard";
+            card.innerHTML = `
+                <div class="vg-flashcard-inner">
+                    <div class="vg-flashcard-ok"><i class="fa-solid fa-circle-check"></i> სწორია!</div>
+                    <div class="vg-flashcard-word vg-fr">${highlightAccents(correctText)}</div>
+                    ${sentence ? `<div class="vg-flashcard-sentence vg-fr">${highlightAccents(sentence)}</div>` : ""}
+                    <div class="vg-flashcard-ka">${esc(item.ka)}</div>
+                    <div class="vg-flashcard-note"><i class="fa-solid fa-triangle-exclamation"></i> მაგრამ ყურადღება მიაქციე აქცენტებს ფრანგულში!</div>
+                </div>`;
+            win.appendChild(card);
+            speak(correctText);
+            requestAnimationFrame(() => card.classList.add("vg-flashcard-in"));
+            let closed = false;
+            const close = () => {
+                if (closed) return; closed = true;
+                card.classList.remove("vg-flashcard-in");
+                card.classList.add("vg-flashcard-out");
+                setTimeout(() => { card.remove(); done(); }, 650);
+            };
+            card.onclick = close;                 // tap to continue sooner
+            setTimeout(close, 3200);
+        });
+    }
     function speak(text) {
         try {
             if (!window.speechSynthesis) return;
@@ -862,6 +906,9 @@ Reply ONLY with: {"items":[{"i":0,"sentence":"…","answer":"…","ka":"…"}]}`
             let done = false;
             const finishQ = (ok, given, timedOut) => {
                 if (done) return;
+                // accents wrong or missing (é → e, è → é …) still counts as correct
+                const slip = !ok && frenchAnswer && !options ? accentSlip(given || "", answer) : null;
+                if (slip) ok = true;
                 done = true;
                 stopTimer();
                 const at = modal.querySelector("#vgAnsTimer"); if (at) at.classList.add("vg-timer-done");
@@ -875,14 +922,19 @@ Reply ONLY with: {"items":[{"i":0,"sentence":"…","answer":"…","ka":"…"}]}`
                 }
                 modal.querySelectorAll("button:not(.vg-say)").forEach(b => b.disabled = true);
                 const inp = modal.querySelector("#vgInput"); if (inp) inp.disabled = true;
+                if (slip) {
+                    drawScoreOnly();
+                    modal.hidden = true; modal.innerHTML = "";
+                    const sentence = tile.face === "fill" && !item.phrase ? tile.gap.text : (item.phrase ? item.fr : "");
+                    accentFlashcard(slip, item, sentence).then(() => resolve(true));
+                    return;
+                }
                 if (timedOut && options) modal.querySelectorAll(".vg-opt").forEach(o => { if (norm(o.dataset.v) === norm(answer)) o.classList.add("vg-opt-ok"); });
                 const fb = modal.querySelector("#vgFeedback");
                 fb.hidden = false;
                 fb.className = "vg-feedback " + (ok ? "vg-ok" : "vg-no");
                 let extra = "";
                 if (timedOut) extra += '<div class="vg-fb-note"><i class="fa-solid fa-hourglass-end"></i> დრო ამოიწურა!</div>';
-                if (!ok && frenchAnswer && given && variants(answer).some(v => noAccents(v) === noAccents(norm(given))))
-                    extra += '<div class="vg-fb-note">თითქმის! შეამოწმე აქცენტები (é, è, à…).</div>';
                 if (!ok && frenchAnswer && given && answer.split("/").some(v => norm(withoutArticle(v.trim())) === norm(given) && norm(withoutArticle(v.trim())) !== norm(v)))
                     extra += '<div class="vg-fb-note">თითქმის! არ დაგავიწყდეს არტიკლი (le, la, l\', les…).</div>';
                 if (!ok && tile.face === "fill") extra += `<div class="vg-fb-note">სწორი სიტყვა: <b>${esc(answer)}</b></div>`;
@@ -910,7 +962,7 @@ Reply ONLY with: {"items":[{"i":0,"sentence":"…","answer":"…","ka":"…"}]}`
             if (tile.face === "fr") speak(item.fr);
             if (timed) startTimer(modal.querySelector("#vgAnsTimer"), ANSWER_SECONDS, () => {
                 const inp = modal.querySelector("#vgInput");
-                finishQ(inp ? isCorrect(inp.value, answer) && inp.value.trim() !== "" : false, inp ? inp.value : "", true);
+                finishQ(inp && inp.value.trim() !== "" ? isCorrect(inp.value, answer) : false, inp ? inp.value : "", true);
             });
 
             // multiple choice

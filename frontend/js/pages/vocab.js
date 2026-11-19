@@ -376,6 +376,7 @@
                 words: (week[2] && week[2].vocabulary) || [],
                 phrases: (week[1] && week[1].vocabulary) || [],
                 weekLabel: subjectSelect.options[subjectSelect.selectedIndex].text,
-                storageKey: studentCourse + "|" + subject
+                storageKey: studentCourse + "|" + subject,
+                course: studentCourse
             });
         }

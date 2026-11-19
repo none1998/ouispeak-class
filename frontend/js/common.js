@@ -37,20 +37,3 @@ async function loadHeaderScore(userEmail) {
         console.error(err);
     }
 }
-
-// ------------------------------------------------------------
-// Adds the "თამაშები" (games) link to the menu of every page,
-// so the HTML of each page doesn't need to change.
-// ------------------------------------------------------------
-(function addGamesLink() {
-    const add = () => {
-        const nav = document.querySelector(".nav-links");
-        if (!nav || nav.querySelector('a[href$="games.html"]')) return;
-        const li = document.createElement("li");
-        li.innerHTML = '<a href="games.html">თამაშები</a>';
-        const scores = nav.querySelector("#scoresNavLink");
-        nav.insertBefore(li, scores ? scores.closest("li") : null);
-    };
-    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", add);
-    else add();
-})();

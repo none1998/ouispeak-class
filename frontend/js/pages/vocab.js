@@ -377,6 +377,7 @@
                 phrases: (week[1] && week[1].vocabulary) || [],
                 weekLabel: subjectSelect.options[subjectSelect.selectedIndex].text,
                 storageKey: studentCourse + "|" + subject,
-                course: studentCourse
+                course: studentCourse,
+                week: parseInt(String(subject).replace(/\D/g, ""), 10) || 0
             });
         }

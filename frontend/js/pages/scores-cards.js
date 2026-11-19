@@ -35,18 +35,19 @@
             let firstTotal = true;
 
             new MutationObserver(() => {
-                const value = parseInt($('totalScore').textContent, 10) || 0;
+                const value = parseFloat($('totalScore').textContent.replace(',', '.')) || 0;
+                const fmt = (n) => String(Math.round(n * 10) / 10).replace('.', ',');
                 const pct = Math.max(0, Math.min(value, 100)) / 100;
                 ring.style.strokeDashoffset = RING_LENGTH * (1 - pct);
                 $('spScoreNote').textContent = 'თქვენი მიმდინარე შეფასება';
 
                 if (reduceMotion) {
-                    $('spScore').textContent = value;
+                    $('spScore').textContent = fmt(value);
                 } else {
                     const start = performance.now();
                     const step = (now) => {
                         const t = Math.min((now - start) / 1400, 1);
-                        $('spScore').textContent = Math.round(value * (1 - Math.pow(1 - t, 3)));
+                        $('spScore').textContent = t < 1 ? Math.round(value * (1 - Math.pow(1 - t, 3))) : fmt(value);
                         if (t < 1) requestAnimationFrame(step);
                     };
                     requestAnimationFrame(step);
@@ -63,7 +64,7 @@
                 const max = parseInt(card.dataset.max, 10) || 100;
                 const valueEl = card.querySelector('.score-points span[id^="score_"]');
                 watch(valueEl, () => {
-                    const value = parseInt(valueEl.textContent, 10) || 0;
+                    const value = parseFloat(valueEl.textContent.replace(',', '.')) || 0;
                     card.style.setProperty('--pct', Math.max(0, Math.min(value / max, 1)) * 100);
                 });
             });

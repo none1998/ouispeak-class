@@ -26,7 +26,7 @@
     const MC_TILES = 8;
     const MIN_FILL = 8;
     const PICK_SECONDS = 15;
-    const ANSWER_SECONDS = 10;
+    const ANSWER_SECONDS = 15;
     const HINTS_PER_GAME = 3;
     const ACCENTS = ["é", "è", "ê", "ë", "à", "â", "ç", "î", "ï", "ô", "û", "ù", "œ"];
     const AI_ENDPOINT = (typeof SUPABASE_URL !== "undefined" ? SUPABASE_URL : "") + "/functions/v1/openai-chat";
@@ -103,18 +103,34 @@
             <circle cx="60" cy="109" r="7" fill="#fff" opacity=".9"/>
         </svg>`;
 
+    // big robot used in the middle of the screen: same robot + an arm that points at the chosen tile
+    const ROBO_BIG = `
+        <svg viewBox="-50 -10 220 160" class="vg-robo-big" aria-hidden="true">
+            <ellipse cx="60" cy="142" rx="40" ry="6" fill="rgba(15,23,42,.18)"/>
+            <line x1="60" y1="8" x2="60" y2="24" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/>
+            <circle class="vg-robo-bulb" cx="60" cy="8" r="7" fill="#ef4135"/>
+            <rect x="8" y="46" width="10" height="20" rx="5" fill="#ef4135"/>
+            <rect x="18" y="24" width="84" height="64" rx="22" fill="#fff" stroke="#e2e8f0" stroke-width="3"/>
+            <rect x="28" y="36" width="64" height="36" rx="14" fill="#0f172a"/>
+            <g class="vg-robo-eyes"><circle cx="46" cy="52" r="7" fill="#5eead4"/><circle cx="74" cy="52" r="7" fill="#5eead4"/></g>
+            <rect class="vg-robo-mouth" x="52" y="63" width="16" height="4" rx="2" fill="#5eead4"/>
+            <rect x="32" y="92" width="56" height="34" rx="14" fill="#ef4135"/>
+            <circle cx="60" cy="109" r="7" fill="#fff" opacity=".9"/>
+            <g class="vg-robo-arm" transform="rotate(0 104 56)">
+                <rect x="100" y="51" width="40" height="10" rx="5" fill="#ef4135"/>
+                <circle cx="144" cy="56" r="8" fill="#fff" stroke="#ef4135" stroke-width="3"/>
+                <rect x="148" y="53" width="12" height="6" rx="3" fill="#fff" stroke="#ef4135" stroke-width="2"/>
+            </g>
+        </svg>`;
+
+    // ONE simple sentence per robot turn (spoken out loud in French)
     const LINES = {
-        think: ["Hmm… voyons voir…", "Laisse-moi réfléchir…", "À mon tour !", "C'est à moi de jouer !", "Attention, j'arrive !", "Bon… qu'est-ce que je prends ?"],
-        word: ["Moi, je choisis le mot « {w} » !", "Je pars sur ce mot : « {w} ».", "Allez, je prends « {w} » !", "Cette fois, je choisis « {w} ».", "« {w} »… celui-là, je le connais !", "Je tente ma chance avec « {w} » !"],
-        fill: ["Cette fois, je choisis une phrase à compléter !", "Je prends une phrase à compléter… facile !", "Une phrase à trous ? J'adore ça !", "Allez, je complète cette phrase !"],
-        attack: ["Attention ! J'attaque ta case « {w} » !", "Ta case « {w} » me plaît… je l'attaque !", "Défends-toi ! Je veux « {w} » !", "Hop ! Je viens chercher « {w} » !"],
-        right: ["Facile ! « {fr} », c'est « {ka} ».", "Trop fort ! « {fr} » = « {ka} ».", "Gagné ! « {fr} » veut dire « {ka} ».", "Et voilà ! Je connais « {fr} »."],
-        wrong: ["Oups… je me suis trompé !", "Zut ! Je ne m'en souviens plus…", "Oh non, raté !", "Aïe… mauvaise réponse pour moi !"],
-        defended: ["Bien joué, tu m'as eu !", "Bravo, tu défends bien ta case !", "Grr… la prochaine fois !"],
-        stolen: ["Hé hé ! Cette case est à moi maintenant !", "Merci pour la case ! 😄", "Je l'ai eue !"],
-        timeout: ["Le temps est fini ! Alors je joue !", "Trop lent ! C'est mon tour !", "Tic-tac… à moi de jouer !"],
-        win: ["Bravo, tu as gagné ! Je m'entraîne et je reviens !"],
-        lose: ["J'ai gagné cette fois ! Tu prends ta revanche ?"]
+        word: ["Alors, cette fois-ci, je choisis cette case !", "Hmm… je prends cette case-là !", "À mon tour ! Je choisis celle-ci.",
+               "Allez, cette case est pour moi !", "Voyons voir… je choisis celle-là !", "Je vais essayer cette case !", "Cette fois, je prends ce mot !"],
+        fill: ["Cette fois-ci, je choisis une phrase à compléter !", "Je prends cette phrase à compléter !", "Allez, je complète cette phrase !"],
+        attack: ["Attention, j'attaque cette case !", "Cette case est à toi ? Plus pour longtemps !", "Défends bien cette case !"],
+        timeout: ["Trop lent ! Alors je choisis cette case !", "Le temps est fini ! Je prends celle-ci !"],
+        pass: ["Je passe mon tour !"]
     };
     function line(kind, vars) {
         const list = LINES[kind];
@@ -149,9 +165,10 @@
                     <button class="vg-close" aria-label="დახურვა"><i class="fa-solid fa-xmark"></i></button>
                 </div>
                 <div class="vg-body"></div>
+                <svg class="vg-pointer" id="vgPointer" aria-hidden="true"></svg>
                 <div class="vg-robo" id="vgRobo" aria-live="polite">
                     <div class="vg-robo-bubble"><div class="vg-robo-name">რობო</div><div class="vg-robo-text" id="vgRoboText"></div></div>
-                    ${ROBO_SVG}
+                    ${ROBO_BIG}
                 </div>
             </div>`;
         document.body.appendChild(root);
@@ -161,6 +178,8 @@
         };
         G = { items, words, phrases, opts, started: false, aiSentences: null };
         G.sentencesPromise = fetchSentences(words, opts.course).then(r => { if (G) G.aiSentences = r; return r; });
+        G.expertEarned = null;   // null = unknown, true/false after asking the server
+        loadExpertState();
         renderStart();
     }
 
@@ -252,6 +271,44 @@ Reply ONLY with: {"items":[{"i":0,"sentence":"…","answer":"…","ka":"…"}]}`
         return { item, text: tpl.replace("{X}", raw), start: tpl.indexOf("{X}"), form: raw, help: "სიტყვა: " + item.ka };
     }
 
+    // ---------- expert reward: +0.5 point in Scores.vocab2, once per week ----------
+    const EXPERT_POINTS = "0,5";
+    function canUseApi() { return typeof api === "function" && G && G.opts.week > 0; }
+    async function loadExpertState() {
+        if (!canUseApi()) return;
+        try {
+            const res = await api("/api/vocab-game/expert-wins");
+            if (!G) return;
+            G.expertEarned = (res && res.weeks || []).map(Number).includes(G.opts.week);
+            const badge = root && root.querySelector(".vg-expert-badge");
+            if (badge) badge.outerHTML = expertBadge();
+        } catch (e) { console.warn("Vocab game: expert state not loaded", e); }
+    }
+    function expertBadge() {
+        if (!canUseApi()) return "";
+        return G.expertEarned
+            ? '<span class="vg-expert-badge vg-expert-done"><i class="fa-solid fa-circle-check"></i> ' + EXPERT_POINTS + ' ქულა მიღებულია</span>'
+            : '<span class="vg-expert-badge"><i class="fa-solid fa-gift"></i> მოგება = +' + EXPERT_POINTS + ' ქულა</span>';
+    }
+    async function sendExpertWin() {
+        const box = root && root.querySelector("#vgReward");
+        if (!canUseApi() || !box) return;
+        box.hidden = false;
+        box.innerHTML = '<div class="vg-spinner vg-spinner-sm"></div> ქულის შენახვა…';
+        try {
+            const res = await api("/api/vocab-game/expert-win", { method: "POST", body: JSON.stringify({ week: G.opts.week }) });
+            if (!G) return;
+            G.expertEarned = true;
+            box.className = "vg-reward" + (res && res.added ? " vg-reward-new" : "");
+            box.innerHTML = res && res.added
+                ? '<i class="fa-solid fa-gift"></i> +' + EXPERT_POINTS + ' ქულა „ლექსიკა 2“-ში! ნახე შეფასებების გვერდზე.'
+                : '<i class="fa-solid fa-circle-check"></i> ამ კვირის ექსპერტის ' + EXPERT_POINTS + ' ქულა უკვე მიღებული გაქვს.';
+        } catch (e) {
+            box.className = "vg-reward vg-reward-err";
+            box.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> ქულა ვერ შეინახა. სცადე თავიდან მოგვიანებით.';
+        }
+    }
+
     // ---------- start screen ----------
     function renderStart() {
         const best = store("ouispeak-territory-best|" + G.opts.storageKey);
@@ -271,6 +328,7 @@ Reply ONLY with: {"items":[{"i":0,"sentence":"…","answer":"…","ka":"…"}]}`
                     <div class="vg-rule"><span class="vg-rule-ic vg-ic-green"><i class="fa-solid fa-layer-group"></i></span><span><b>FR</b> ბარათი — დაწერე ქართულად. <b>KA</b> ბარათი — დაწერე ფრანგულად. <b>„შეავსე წინადადება“</b> — ჩაწერე გამოტოვებული სიტყვა.</span></div>
                     <div class="vg-rule"><span class="vg-rule-ic vg-ic-amber"><i class="fa-solid fa-keyboard"></i></span><span>მხოლოდ ${MC_TILES} ბარათზეა სავარაუდო პასუხები <i class="fa-solid fa-list-ul"></i>, დანარჩენზე <b>ზუსტად წერ</b>. თუ მნიშვნელობები „/“-ითაა გამოყოფილი, ერთიც საკმარისია.</span></div>
                     <div class="vg-rule"><span class="vg-rule-ic vg-ic-red"><i class="fa-solid fa-stopwatch"></i></span><span>უჯრის ასარჩევად გაქვს <b>${PICK_SECONDS} წამი</b>, პასუხისთვის — <b>${ANSWER_SECONDS} წამი</b>.</span></div>
+                    <div class="vg-rule"><span class="vg-rule-ic vg-ic-amber"><i class="fa-solid fa-gift"></i></span><span>მოიგე <b>ექსპერტის</b> დონეზე და მიიღე <b>+${EXPERT_POINTS} ქულა</b> „ლექსიკა 2“-ში (ყოველ კვირაში ერთხელ).</span></div>
                     <div class="vg-rule"><span class="vg-rule-ic vg-ic-purple"><i class="fa-solid fa-khanda"></i></span><span>რობოს უჯრაზე დაჭერა = <b>დუელი</b>. დაცული უჯრა <i class="fa-solid fa-shield-halved"></i> ფარს იღებს. ფრაზა <i class="fa-solid fa-chess-rook"></i> = 2 ქულა.</span></div>
                 </div>
                 <div class="vg-levels-title">აირჩიე სირთულე</div>
@@ -281,6 +339,7 @@ Reply ONLY with: {"items":[{"i":0,"sentence":"…","answer":"…","ka":"…"}]}`
                             <span class="vg-level-name">${LEVELS[k].name}</span>
                             <span class="vg-level-fr">${LEVELS[k].fr}</span>
                             <span class="vg-level-acc">რობო სწორად პასუხობს ${Math.round(LEVELS[k].acc * 100)}%-ში</span>
+                            ${k === "hard" ? expertBadge() : ""}
                         </button>`).join("")}
                 </div>
                 ${best ? `<div class="vg-best"><i class="fa-solid fa-trophy"></i> შენი საუკეთესო შედეგი ამ კვირაში: ${best.score} ქულა (${esc(best.levelName)})</div>` : ""}
@@ -536,29 +595,77 @@ Reply ONLY with: {"items":[{"i":0,"sentence":"…","answer":"…","ka":"…"}]}`
         if (t) t.hidden = true;
     }
 
-    // ---------- robot host ----------
+    // ---------- robot host: comes to the middle, points at the tile and says one sentence ----------
     let roboToken = 0;
-    function roboSay(text, mood) {
+    async function roboPoint(tile, text, mood) {
         const r = document.getElementById("vgRobo");
-        if (!r) return;
+        const win = root && root.querySelector(".vg-window");
+        const cell = tile && document.querySelectorAll("#vgBoard .vg-tile")[tile.idx];
+        if (!r || !win) return;
         const tk = ++roboToken;
-        r.className = "vg-robo vg-robo-in" + (mood ? " vg-robo-" + mood : "");
+        if (cell) { try { cell.scrollIntoView({ block: "nearest", behavior: "smooth" }); } catch (e) {} await wait(300); }
+        if (tk !== roboToken) return;
+        const wr = win.getBoundingClientRect();
+        const bodyR = body().getBoundingClientRect();
+        // robot in the middle (horizontally); vertically in the half away from the tile so it never hides it
+        const visTop = Math.max(bodyR.top, wr.top) - wr.top, visBottom = Math.min(bodyR.bottom, wr.bottom) - wr.top;
+        let ty = (visTop + visBottom) / 2, below = false;
+        if (cell) {
+            const cr = cell.getBoundingClientRect();
+            const cy = cr.top + cr.height / 2 - wr.top;
+            below = cy < (visTop + visBottom) / 2;
+            // keep a clear gap between the robot and the tile (robot ≈ 150 px high, bubble ≈ 90 px)
+            const half = (r.querySelector(".vg-robo-big") || {}).clientHeight / 2 || 70;
+            if (below) ty = Math.min(Math.max(visTop + (visBottom - visTop) * 0.55, cr.bottom - wr.top + 50 + half), visBottom - half - 100);
+            else ty = Math.max(Math.min(visTop + (visBottom - visTop) * 0.45, cr.top - wr.top - 50 - half), visTop + half + 100);
+        }
+        r.style.left = (wr.width / 2) + "px";
+        r.style.top = ty + "px";
+        r.className = "vg-robo vg-robo-in vg-robo-talk" + (below ? " vg-robo-below" : "") + (mood ? " vg-robo-" + mood : "");
+        await wait(450);                       // pop-in animation
+        if (tk !== roboToken) return;
+        // aim the arm and draw the dotted arrow to the tile
+        const arm = r.querySelector(".vg-robo-arm"), svg = r.querySelector(".vg-robo-big");
+        const ptr = document.getElementById("vgPointer");
+        if (cell && arm && svg && ptr) {
+            const sr = svg.getBoundingClientRect(), cr = cell.getBoundingClientRect();
+            const k = sr.width / 220;                                   // svg units → pixels
+            const sx = sr.left + (104 + 50) * k, sy = sr.top + (56 + 10) * k;   // shoulder on screen
+            const tx = cr.left + cr.width / 2, tyy = cr.top + cr.height / 2;
+            const ang = Math.atan2(tyy - sy, tx - sx) * 180 / Math.PI;
+            arm.setAttribute("transform", `rotate(${ang.toFixed(1)} 104 56)`);
+            const hx = sx + Math.cos(ang * Math.PI / 180) * 60 * k, hy = sy + Math.sin(ang * Math.PI / 180) * 60 * k;
+            const dist = Math.hypot(tx - hx, tyy - hy), stop = Math.max(0, dist - Math.min(cr.width, cr.height) * 0.55);
+            const ex = hx + (tx - hx) * (stop / (dist || 1)), ey = hy + (tyy - hy) * (stop / (dist || 1));
+            ptr.innerHTML = `<defs><marker id="vgArrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#ef4135"/></marker></defs>
+                <line x1="${hx - wr.left}" y1="${hy - wr.top}" x2="${ex - wr.left}" y2="${ey - wr.top}" stroke="#ef4135" stroke-width="4" stroke-linecap="round" stroke-dasharray="2 9" marker-end="url(#vgArrow)" class="vg-pointer-line"/>`;
+            ptr.classList.add("vg-pointer-on");
+            cell.classList.add("vg-target");
+        }
+        speak(text);
         const box = document.getElementById("vgRoboText");
         box.textContent = "";
-        r.classList.add("vg-robo-talk");
-        let i = 0;
-        const type = () => {
+        for (let i = 1; i <= text.length; i++) {
             if (tk !== roboToken) return;
-            box.textContent = text.slice(0, ++i);
-            if (i < text.length) setTimeout(type, 22);
-            else r.classList.remove("vg-robo-talk");
-        };
-        type();
+            box.textContent = text.slice(0, i);
+            await wait(30);
+        }
+        r.classList.remove("vg-robo-talk");
+        await wait(1100);
+    }
+    function roboMood(mood) {
+        const r = document.getElementById("vgRobo");
+        if (!r || !r.classList.contains("vg-robo-in")) return;
+        r.classList.remove("vg-robo-happy", "vg-robo-sad", "vg-robo-angry", "vg-robo-talk");
+        r.classList.add("vg-robo-" + mood);
     }
     function roboHide() {
         roboToken++;
         const r = document.getElementById("vgRobo");
         if (r) r.className = "vg-robo";
+        const ptr = document.getElementById("vgPointer");
+        if (ptr) { ptr.classList.remove("vg-pointer-on"); ptr.innerHTML = ""; }
+        document.querySelectorAll(".vg-target").forEach(e => e.classList.remove("vg-target"));
     }
 
     // ---------- player turn ----------
@@ -574,9 +681,8 @@ Reply ONLY with: {"items":[{"i":0,"sentence":"…","answer":"…","ka":"…"}]}`
             setStatus('<i class="fa-solid fa-hourglass-end"></i> დრო ამოიწურა! სვლა რობოს გადაეცა.', "bad");
             G.turn = "ai";
             drawTiles();
-            roboSay(line("timeout"));
-            await wait(1500);
-            aiTurn(true);
+            await wait(700);
+            aiTurn("timeout");
         });
     }
 
@@ -606,13 +712,13 @@ Reply ONLY with: {"items":[{"i":0,"sentence":"…","answer":"…","ka":"…"}]}`
     }
 
     // ---------- AI turn ----------
-    async function aiTurn(alreadyTalking) {
+    async function aiTurn(reason) {
         if (!G || G.over) return;
         G.busy = true;
         G.turn = "ai";
         drawTiles();
         setStatus('<i class="fa-solid fa-robot"></i> რობოს სვლაა…', "ai");
-        if (!alreadyTalking) { roboSay(line("think")); await wait(1300); }
+        await wait(500);
         if (!G || G.over) return;
 
         const targets = G.tiles.filter(t => canTarget("ai", t));
@@ -627,46 +733,40 @@ Reply ONLY with: {"items":[{"i":0,"sentence":"…","answer":"…","ka":"…"}]}`
             target = free.sort((a, b) => score(b) - score(a) + (Math.random() - 0.5) * 2)[0];
         }
         G.lastAttack = attack ? target : null;
-        if (!target) { roboSay("Je passe mon tour…"); await wait(1300); roboHide(); playerTurn(); return; }
+        if (!target) { await roboPoint(null, line("pass")); roboHide(); playerTurn(); return; }
 
-        const shown = target.face === "fill" ? null : (target.face === "fr" ? target.item.fr : target.item.ka);
-        flash(target);
+        const kind = attack ? "attack" : reason === "timeout" ? "timeout" : target.face === "fill" ? "fill" : "word";
+        await roboPoint(target, line(kind), attack ? "angry" : "");
+        if (!G || G.over) return;
+
         if (attack) {
-            roboSay(line("attack", { w: target.item.fr }), "angry");
-            setStatus(`<i class="fa-solid fa-khanda"></i> რობო შენს უჯრას უტევს — დაიცავი!`, "ai");
-            await wait(2000);
-            if (!G || G.over) return;
             roboHide();
+            setStatus('<i class="fa-solid fa-khanda"></i> რობო შენს უჯრას უტევს — დაიცავი!', "ai");
             const defended = await ask(target, "defend");
             if (!G || G.over) return;
             if (defended) {
                 target.shield = true;
                 setStatus('<i class="fa-solid fa-shield-halved"></i> დაიცავი! ეს უჯრა ახლა ფარითაა დაცული.', "good");
-                roboSay(line("defended"), "sad");
             } else {
                 target.owner = "ai"; target.shield = false;
                 setStatus("რობომ შენი უჯრა წაიღო.", "bad");
-                roboSay(line("stolen"), "happy");
             }
             drawTiles();
-            await wait(1800);
+            await wait(1200);
         } else {
-            roboSay(shown ? line("word", { w: shown }) : line("fill"));
-            await wait(1900);
-            if (!G || G.over) return;
             const ok = Math.random() < G.level.acc;
             if (ok) {
                 target.owner = "ai";
-                const fr = target.face === "fill" ? target.gap.form : target.item.fr;
-                const ka = target.face === "fill" ? (target.item.phrase ? target.item.ka : target.item.ka) : target.item.ka;
-                roboSay(line("right", { fr, ka }), "happy");
-                setStatus('<i class="fa-solid fa-robot"></i> რობომ უჯრა დაიკავა.', "ai");
+                roboMood("happy");
+                setStatus(`<i class="fa-solid fa-robot"></i> რობომ უჯრა დაიკავა: <b>${esc(target.item.fr)}</b> = ${esc(target.item.ka)}`, "ai");
             } else {
-                roboSay(line("wrong"), "sad");
+                roboMood("sad");
                 setStatus('<i class="fa-solid fa-robot"></i> რობომ შეცდომა დაუშვა! უჯრა თავისუფალი რჩება.', "good");
             }
             drawTiles();
-            await wait(2000);
+            const cell = document.querySelectorAll("#vgBoard .vg-tile")[target.idx];
+            if (cell) cell.classList.add(ok ? "vg-pop" : "vg-shake");
+            await wait(1500);
         }
         if (!G || G.over) return;
         roboHide();
@@ -880,13 +980,13 @@ Reply ONLY with: {"items":[{"i":0,"sentence":"…","answer":"…","ka":"…"}]}`
         const mistakes = [...G.mistakes.values()];
         const result = y > a ? "win" : y < a ? "lose" : "draw";
         const head = { win: "გაიმარჯვე! 🎉", lose: "ამჯერად რობომ მოიგო", draw: "ფრე!" }[result];
-        roboSay(result === "lose" ? line("lose") : line("win"), result === "lose" ? "happy" : "sad");
-        setTimeout(roboHide, 3500);
+        roboHide();
         body().innerHTML = `
             <div class="vg-end vg-end-${result}">
                 <div class="vg-end-icon"><i class="fa-solid ${result === "win" ? "fa-trophy" : result === "lose" ? "fa-robot" : "fa-handshake"}"></i></div>
                 <h2>${head}</h2>
                 <div class="vg-end-score"><span class="vg-you-c">${y}</span> : <span class="vg-ai-c">${a}</span></div>
+                <div class="vg-reward" id="vgReward" hidden></div>
                 <div class="vg-end-stats">
                     <div><b>${G.correct}/${G.answered}</b><span>სწორი პასუხი</span></div>
                     <div><b>${acc}%</b><span>სიზუსტე</span></div>
@@ -905,6 +1005,7 @@ Reply ONLY with: {"items":[{"i":0,"sentence":"…","answer":"…","ka":"…"}]}`
                 </div>
             </div>
             <div class="vg-modal" id="vgModal" hidden></div>`;
+        if (result === "win" && G.levelKey === "hard") sendExpertWin();
         body().querySelectorAll(".vg-say").forEach(b => b.onclick = () => speak(b.dataset.say));
         body().querySelector("#vgAgain").onclick = () => { roboHide(); renderStart(); };
         body().querySelector("#vgExit").onclick = close;

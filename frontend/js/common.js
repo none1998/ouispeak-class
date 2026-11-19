@@ -29,11 +29,28 @@ async function loadHeaderScore(userEmail) {
 
         if (sc) {
             const total = ['homework', 'vocab1', 'vocab2', 'writing', 'speaking']
-                .reduce((sum, k) => sum + parseInt(sc[k] || 0, 10), 0);
-            document.getElementById('headerStudentScore').innerText = total;
+                .reduce((sum, k) => sum + (parseFloat(String(sc[k] ?? 0).replace(',', '.')) || 0), 0);
+            document.getElementById('headerStudentScore').innerText = String(Math.round(total * 10) / 10).replace('.', ',');
             document.getElementById('headerStudentScoreBox').style.display = 'inline-block';
         }
     } catch (err) {
         console.error(err);
     }
 }
+
+// ------------------------------------------------------------
+// Adds the "თამაშები" (games) link to the menu of every page,
+// so the HTML of each page doesn't need to change.
+// ------------------------------------------------------------
+(function addGamesLink() {
+    const add = () => {
+        const nav = document.querySelector(".nav-links");
+        if (!nav || nav.querySelector('a[href$="games.html"]')) return;
+        const li = document.createElement("li");
+        li.innerHTML = '<a href="games.html">თამაშები</a>';
+        const scores = nav.querySelector("#scoresNavLink");
+        nav.insertBefore(li, scores ? scores.closest("li") : null);
+    };
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", add);
+    else add();
+})();

@@ -80,12 +80,13 @@
                 }
 
                 if (finalData) {
-                    document.getElementById('score_homework').innerText = parseInt(finalData.homework || 0, 10);
-                    document.getElementById('score_vocab1').innerText = parseInt(finalData.vocab1 || 0, 10);
-                    document.getElementById('score_vocab2').innerText = parseInt(finalData.vocab2 || 0, 10);
-                    document.getElementById('score_writing').innerText = parseInt(finalData.writing || 0, 10);
-                    document.getElementById('score_speaking').innerText = parseInt(finalData.speaking || 0, 10);
-                    const total = (parseInt(finalData.homework || 0, 10) + parseInt(finalData.vocab1 || 0, 10) + parseInt(finalData.vocab2 || 0, 10) + parseInt(finalData.writing || 0, 10) + parseInt(finalData.speaking || 0, 10));
+                    // scores can have half points (e.g. 5,5 from the vocabulary game)
+                    const num = (v) => parseFloat(String(v ?? 0).replace(',', '.')) || 0;
+                    const fmt = (n) => String(Math.round(n * 10) / 10).replace('.', ',');
+                    ['homework', 'vocab1', 'vocab2', 'writing', 'speaking'].forEach((k) => {
+                        document.getElementById('score_' + k).innerText = fmt(num(finalData[k]));
+                    });
+                    const total = fmt(['homework', 'vocab1', 'vocab2', 'writing', 'speaking'].reduce((sum, k) => sum + num(finalData[k]), 0));
                     document.getElementById('totalScore').innerText = total;
                     document.getElementById('headerStudentScore').innerText = total;
                     document.getElementById('headerStudentScoreBox').style.display = 'inline-block';

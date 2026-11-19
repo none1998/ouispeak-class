@@ -155,7 +155,7 @@ body.vg-lock { overflow: hidden; }
 .vg-own-you { background: var(--course-gradient, linear-gradient(135deg, #004280, #0072ce)); color: #fff; box-shadow: 0 4px 0 var(--vg-blue-dark); }
 .vg-own-ai { background: linear-gradient(135deg, #ef4135, #ff7a5c); color: #fff; box-shadow: 0 4px 0 var(--vg-red-dark); }
 .vg-own-ai .vg-fill-ic, .vg-own-ai .vg-castle-ic { color: #fff; }
-.vg-own-ai.vg-fill { background-image: none !important; }
+.vg-own-ai.vg-fill { background-image: linear-gradient(135deg, #ef4135, #ff7a5c) !important; }
 .vg-shielded { outline: 3px solid #fbbf24; outline-offset: -3px; }
 
 /* your turn: playable tiles glow, the others fade */
@@ -180,30 +180,54 @@ body.vg-lock { overflow: hidden; }
 .vg-legend { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 10px; font-size: .74rem; color: #64748b; }
 .vg-legend i { color: #94a3b8; }
 
-/* ---------- robot host ---------- */
+/* ---------- robot host: comes to the middle and points ---------- */
 .vg-robo {
-    position: absolute; right: 14px; bottom: 14px; z-index: 8;
-    display: flex; align-items: flex-end; gap: 8px; pointer-events: none;
-    transform: translateX(130%); opacity: 0; transition: transform .45s cubic-bezier(.34, 1.56, .64, 1), opacity .3s;
+    position: absolute; left: 50%; top: 50%; z-index: 8; pointer-events: none;
+    display: flex; flex-direction: column; align-items: center;
+    transform: translate(-50%, -50%) scale(.2); opacity: 0;
+    transition: transform .45s cubic-bezier(.34, 1.56, .64, 1), opacity .25s;
 }
-.vg-robo-in { transform: none; opacity: 1; }
-.vg-robo .vg-robo-svg { width: 92px; height: 100px; flex: none; filter: drop-shadow(0 10px 12px rgba(15, 23, 42, .25)); animation: vgBob 1.6s ease-in-out infinite; }
+.vg-robo-in { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+/* tile above the robot → the bubble goes under the robot so it never hides the arrow */
+.vg-robo-below { flex-direction: column-reverse; }
+.vg-robo-below .vg-robo-bubble { margin: 4px 0 0; }
+.vg-robo-below .vg-robo-bubble::after { bottom: auto; top: -11px; border-top: 0; border-bottom: 9px solid #ef4135; }
+.vg-robo-big { width: 200px; height: 146px; filter: drop-shadow(0 14px 16px rgba(15, 23, 42, .3)); overflow: visible; }
+.vg-robo-in .vg-robo-big { animation: vgBob 1.6s ease-in-out infinite; }
+.vg-robo-arm { transition: transform .4s ease; }
 .vg-robo-bubble {
-    background: #fff; border-radius: 18px 18px 4px 18px; padding: 10px 14px; max-width: 260px; margin-bottom: 64px;
-    box-shadow: 0 12px 30px -10px rgba(15, 23, 42, .4); border: 2px solid #ffd6d1;
+    position: relative; background: #fff; border-radius: 18px; padding: 9px 16px; max-width: 280px; margin-bottom: 4px; text-align: center;
+    box-shadow: 0 14px 30px -10px rgba(15, 23, 42, .45); border: 3px solid #ef4135;
 }
-.vg-robo-name { font-size: .68rem; font-weight: 800; color: var(--vg-red); text-transform: uppercase; letter-spacing: .05em; }
-.vg-robo-text { font-family: 'Inter', sans-serif; font-weight: 700; color: #0f172a; font-size: .95rem; line-height: 1.35; min-height: 1.3em; }
-.vg-robo-talk .vg-robo-mouth { animation: vgTalk .18s ease-in-out infinite alternate; transform-origin: 60px 65px; }
+.vg-robo-bubble::after { content: ""; position: absolute; left: 50%; bottom: -11px; margin-left: -9px; border: 9px solid transparent; border-top-color: #ef4135; border-bottom: 0; }
+.vg-robo-name { font-size: .66rem; font-weight: 900; color: var(--vg-red); text-transform: uppercase; letter-spacing: .06em; }
+.vg-robo-text { font-family: 'Inter', sans-serif; font-weight: 800; color: #0f172a; font-size: 1rem; line-height: 1.35; min-height: 1.35em; }
+.vg-robo-talk .vg-robo-mouth { animation: vgTalk .16s ease-in-out infinite alternate; transform-origin: 60px 65px; transform-box: view-box; }
 @keyframes vgTalk { to { transform: scaleY(3); } }
 .vg-robo-bulb { animation: vgBlink 1s steps(2) infinite; }
 @keyframes vgBlink { 50% { fill: #fbbf24; } }
 .vg-robo-happy .vg-robo-eyes circle { fill: #86efac; }
 .vg-robo-sad .vg-robo-eyes circle { fill: #93c5fd; }
 .vg-robo-angry .vg-robo-eyes circle { fill: #fca5a5; }
-.vg-robo-angry .vg-robo-svg { animation: vgShake .25s ease infinite; }
-.vg-robo-svg .vg-robo-eyes { animation: vgEyes 4s infinite; transform-origin: 60px 52px; }
+.vg-robo-svg .vg-robo-eyes, .vg-robo-big .vg-robo-eyes { animation: vgEyes 4s infinite; transform-origin: 60px 52px; transform-box: view-box; }
 @keyframes vgEyes { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.1); } }
+.vg-pointer { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 7; pointer-events: none; opacity: 0; transition: opacity .25s; overflow: visible; }
+.vg-pointer-on { opacity: 1; }
+.vg-pointer-line { animation: vgDash .6s linear infinite; }
+@keyframes vgDash { to { stroke-dashoffset: -22; } }
+.vg-target { z-index: 3; animation: vgTarget .8s ease-in-out infinite !important; }
+@keyframes vgTarget { 50% { transform: scale(1.1); box-shadow: 0 0 0 6px rgba(239, 65, 53, .55); } }
+.vg-shake { animation: vgShake .3s ease 3; }
+
+/* expert reward */
+.vg-expert-badge { margin-top: 6px; font-size: .7rem; font-weight: 800; color: #92400e; background: #fef3c7; padding: 3px 8px; border-radius: 99px; }
+.vg-expert-done { color: #065f46; background: #d1fae5; }
+.vg-reward { display: flex; align-items: center; justify-content: center; gap: 8px; margin: -4px auto 14px; padding: 10px 14px; border-radius: 14px; background: #f1f5f9; color: #334155; font-weight: 800; max-width: 460px; }
+.vg-reward[hidden] { display: none; }
+.vg-reward-new { background: linear-gradient(135deg, #fef3c7, #fde68a); color: #92400e; animation: vgPop .5s cubic-bezier(.34, 1.56, .64, 1); }
+.vg-reward-new i { color: #f59e0b; font-size: 1.2rem; }
+.vg-reward-err { background: #fef2f2; color: #b91c1c; }
+.vg-spinner-sm { width: 18px; height: 18px; border-width: 3px; margin: 0; }
 
 /* ---------- question card ---------- */
 .vg-modal { position: absolute; inset: 0; background: rgba(15, 23, 42, .35); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
@@ -325,11 +349,10 @@ body.vg-lock { overflow: hidden; }
     .vg-q-sentence { font-size: 1.05rem; }
     .vg-opts { grid-template-columns: 1fr; }
     .vg-review-row { flex-wrap: wrap; }
-    .vg-robo { right: 8px; bottom: 10px; }
-    .vg-robo .vg-robo-svg { width: 70px; height: 76px; }
-    .vg-robo-bubble { max-width: 210px; margin-bottom: 50px; }
-    .vg-robo-text { font-size: .86rem; }
+    .vg-robo-big { width: 160px; height: 117px; }
+    .vg-robo-bubble { max-width: 230px; }
+    .vg-robo-text { font-size: .9rem; }
 }
 @media (prefers-reduced-motion: reduce) {
-    .vg-can, .vg-can-duel, .vg-flash, .vg-card, .vg-overlay, .vg-robo .vg-robo-svg, .vg-vs-you, .vg-vs-ai, .vg-end-icon { animation: none !important; }
+    .vg-can, .vg-can-duel, .vg-flash, .vg-card, .vg-overlay, .vg-robo-big, .vg-target, .vg-vs-you, .vg-vs-ai, .vg-end-icon { animation: none !important; }
 }

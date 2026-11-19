@@ -31,13 +31,13 @@
                 $('spScoreNote').textContent = 'თქვენი მიმდინარე შეფასება';
 
                 if (reduceMotion) {
-                    $('spScore').textContent = value;
+                    $('spScore').textContent = String(Math.round(value * 10) / 10).replace('.', ',');
                 } else {
                     const start = performance.now();
                     const step = (now) => {
                         const t = Math.min((now - start) / 1400, 1);
                         const eased = 1 - Math.pow(1 - t, 3);
-                        $('spScore').textContent = Math.round(value * eased);
+                        $('spScore').textContent = t < 1 ? Math.round(value * eased) : String(Math.round(value * 10) / 10).replace('.', ',');
                         if (t < 1) requestAnimationFrame(step);
                     };
                     requestAnimationFrame(step);
@@ -52,7 +52,7 @@
             function mirrorHeaderScore() {
                 const box = $('headerStudentScoreBox');
                 if (box.style.display === 'inline-block') {
-                    showScore(parseInt($('headerStudentScore').innerText, 10) || 0);
+                    showScore(parseFloat($('headerStudentScore').innerText.replace(',', '.')) || 0);
                 } else {
                     showScore(null);
                 }

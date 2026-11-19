@@ -2,7 +2,13 @@
 // Bataille de Territoire — vocabulary territory game (vs AI)
 // Opened from vocab.html with the "თამაში" button.
 // window.VocabGame.open({ words, phrases, weekLabel, storageKey })
-// Every tile = one word or one phrase of the week.
+//
+// Every tile = one word or one phrase of the week. Each tile has a FACE:
+//   "fr"   → shows the French word,  student answers in Georgian
+//   "ka"   → shows the Georgian word, student answers in French
+//   "fill" → blank card "შეავსე წინადადება": a sentence with a missing word
+// Only 8 tiles are multiple choice (icon ☰); all the others must be typed (icon ⌨).
+// Answers with several meanings separated by "/" accept any one of them.
 // ============================================================
 (function () {
     "use strict";
@@ -14,6 +20,7 @@
     };
     const MAX_WORDS = 24;
     const MAX_PHRASES = 10;
+    const MC_TILES = 8;
     const HINTS_PER_GAME = 3;
     const ACCENTS = ["é", "è", "ê", "ë", "à", "â", "ç", "î", "ï", "ô", "û", "ù", "œ"];
 
@@ -34,14 +41,25 @@
         for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
         return a;
     }
+    // compare answers: lower case, same apostrophes, no punctuation, single spaces
     function norm(s) {
-        return String(s).toLowerCase().replace(/[’‘`´]/g, "'").replace(/\s+/g, " ")
-            .replace(/\s*([?!.,;:])\s*$/g, "").replace(/^[\s¿¡]+|[\s.!?]+$/g, "").trim();
+        return String(s).toLowerCase().replace(/[’‘`´]/g, "'")
+            .replace(/[.,!?;:¿¡«»"()…]/g, " ").replace(/\s+/g, " ").trim();
     }
     function noAccents(s) { return s.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/œ/g, "oe"); }
     function withoutArticle(fr) {
         return fr.replace(/^(le|la|les|un|une|des|du|de la|de l')\s+/i, "").replace(/^l'/i, "").trim();
     }
+    // "maison / foyer" → ["maison / foyer", "maison", "foyer"]; also accepts the text without (…)
+    function variants(text) {
+        const out = new Set();
+        const add = v => { v = norm(v); if (v) out.add(v); };
+        add(text);
+        add(String(text).replace(/\([^)]*\)/g, ""));
+        String(text).split("/").forEach(p => { add(p); add(p.replace(/\([^)]*\)/g, "")); });
+        return [...out];
+    }
+    function isCorrect(given, answer) { return variants(answer).includes(norm(given)); }
     function speak(text) {
         try {
             if (!window.speechSynthesis) return;
@@ -72,7 +90,7 @@
             alert("ამ კვირაში თამაშისთვის საკმარისი სიტყვები არ არის.");
             return;
         }
-        items.forEach((it, i) => { it.id = i; it.seen = 0; it.right = 0; it.wrong = 0; });
+        items.forEach((it, i) => { it.id = i; });
 
         close();
         root = document.createElement("div");
@@ -113,14 +131,15 @@
             <div class="vg-start">
                 <div class="vg-start-icon"><i class="fa-solid fa-chess-rook"></i></div>
                 <h2>დაიპყარი დაფა სიტყვებით!</h2>
-                <p class="vg-lead">დაფაზე ${G.words.length} სიტყვა და ${G.phrases.length} ფრაზაა. თითოეული უჯრა ერთი სიტყვაა.</p>
+                <p class="vg-lead">დაფაზე ${G.words.length} სიტყვა და ${G.phrases.length} ფრაზაა.</p>
                 <ul class="vg-rules">
-                    <li><i class="fa-solid fa-hand-pointer"></i> <span>აირჩიე თავისუფალი უჯრა <b>შენი ტერიტორიის გვერდით</b> (დასაწყისში — ქვედა რიგიდან) და სწორად უპასუხე.</span></li>
-                    <li><i class="fa-solid fa-robot"></i> <span>რობოტი იწყებს ზემოდან და თავის სვლაზე უჯრებს იკავებს.</span></li>
-                    <li><i class="fa-solid fa-khanda"></i> <span>რობოტის უჯრაზე დაჭერით იწყება <b>დუელი</b> — უფრო რთული კითხვა. გაიმარჯვე და უჯრა შენია!</span></li>
-                    <li><i class="fa-solid fa-shield-halved"></i> <span>თუ რობოტი შენს უჯრას შეუტევს, დაიცავი ის სწორი პასუხით. 3 სწორი პასუხი ზედიზედ = <b>ფარი</b> შემდეგ უჯრაზე.</span></li>
+                    <li><i class="fa-solid fa-hand-pointer"></i> <span><b>შენი მხარე ლურჯია</b> (ქვემოთ), <b>რობოტის — წითელი</b> (ზემოთ). აირჩიე უჯრა შენი ტერიტორიის გვერდით და სწორად უპასუხე.</span></li>
+                    <li><i class="fa-solid fa-layer-group"></i> <span>ბარათებზე წერია <b>ფრანგული</b> სიტყვა (დაწერე ქართულად), <b>ქართული</b> სიტყვა (დაწერე ფრანგულად) ან <b>„შეავსე წინადადება“</b> — ჩაწერე გამოტოვებული სიტყვა.</span></li>
+                    <li><i class="fa-solid fa-list-ul"></i> <span>მხოლოდ ${MC_TILES} ბარათს აქვს სავარაუდო პასუხები <i class="fa-solid fa-list-ul"></i>. დანარჩენზე პასუხი <b>ზუსტად უნდა დაწერო</b> <i class="fa-solid fa-keyboard"></i>.</span></li>
+                    <li><i class="fa-solid fa-slash"></i> <span>თუ სიტყვას რამდენიმე მნიშვნელობა აქვს (გამოყოფილი „/“-ით), საკმარისია ერთის დაწერა.</span></li>
+                    <li><i class="fa-solid fa-khanda"></i> <span>რობოტის უჯრაზე დაჭერით იწყება <b>დუელი</b>. გაიმარჯვე და უჯრა შენია!</span></li>
+                    <li><i class="fa-solid fa-shield-halved"></i> <span>თუ რობოტი შენს უჯრას შეუტევს და დაიცავ, უჯრა <b>ფარით</b> დაცული ხდება. 3 სწორი ზედიზედ = ფარი შემდეგ უჯრაზე.</span></li>
                     <li><i class="fa-solid fa-chess-rook"></i> <span>ფრაზის უჯრა (ციხესიმაგრე) <b>2 ქულა</b> ღირს.</span></li>
-                    <li><i class="fa-solid fa-arrow-trend-up"></i> <span>რაც უკვე იცი, ის მეორედ უფრო რთულად მოგეკითხება — ჯერ არჩევა, მერე წერა.</span></li>
                 </ul>
                 <div class="vg-levels-title">აირჩიე სირთულე</div>
                 <div class="vg-levels">
@@ -136,26 +155,80 @@
         body().querySelectorAll(".vg-level").forEach(b => b.onclick = () => startGame(b.dataset.level));
     }
 
+    // ---------- sentence gaps ----------
+    // all French tokens of a phrase that can be blanked (letters only, apostrophes split: J'aime → aime)
+    function tokens(fr) {
+        const out = [];
+        const re = /[A-Za-zÀ-ÖØ-öø-ÿœŒ-]+/g;
+        let m;
+        while ((m = re.exec(fr))) if (m[0].replace(/-/g, "").length >= 3) out.push({ form: m[0], start: m.index });
+        return out;
+    }
+    function wordGap(item, usedPhrases) {
+        const forms = [item.fr, withoutArticle(item.fr)].concat(item.fr.split("/")).map(f => f.trim()).filter(f => f.length >= 2);
+        for (const p of shuffle(G.phrases)) {
+            if (usedPhrases.has(p)) continue;
+            const low = p.fr.toLowerCase();
+            for (const f of forms) {
+                const i = low.indexOf(f.toLowerCase());
+                if (i >= 0) return { phrase: p, form: p.fr.substr(i, f.length), start: i };
+            }
+        }
+        return null;
+    }
+    function phraseGap(p, avoidForms) {
+        const list = tokens(p.fr).filter(t => !avoidForms.has(norm(t.form)));
+        if (!list.length) return null;
+        // prefer a token that is one of the week words, otherwise one of the longest
+        const weekForms = new Set(G.words.flatMap(w => variants(withoutArticle(w.fr))));
+        const fromWeek = list.filter(t => weekForms.has(norm(t.form)));
+        const pool = fromWeek.length ? fromWeek : list.sort((a, b) => b.form.length - a.form.length).slice(0, 3);
+        const t = pool[Math.floor(Math.random() * pool.length)];
+        return { phrase: p, form: t.form, start: t.start };
+    }
+
     // ---------- game ----------
     function startGame(levelKey) {
         const n = G.items.length;
         const cols = n <= 6 ? 3 : n <= 16 ? 4 : 5;
         const rows = Math.ceil(n / cols);
-        // spread phrases ("castles") through the board instead of putting them all at the end
         const order = shuffle(G.items);
         const tiles = [];
         for (let i = 0; i < rows * cols; i++) {
             const it = order[i];
             tiles.push({ idx: i, r: Math.floor(i / cols), c: i % cols, item: it || null, owner: it ? null : "void", shield: false });
         }
+        G.tiles = tiles; G.cols = cols; G.rows = rows;
+
+        // faces: phrases → fill cards; ~1/4 of the words → fill cards (if a phrase contains them); others fr / ka
+        const real = tiles.filter(t => t.item);
+        const usedPhrases = new Set(), usedForms = new Map();
+        let wordFills = 0;
+        shuffle(real.filter(t => !t.item.phrase)).forEach(t => {
+            if (wordFills < Math.round(G.words.length / 4)) {
+                const g = wordGap(t.item, usedPhrases);
+                if (g) { t.face = "fill"; t.gap = g; usedPhrases.add(g.phrase); usedForms.set(g.phrase, norm(g.form)); wordFills++; return; }
+            }
+        });
+        let flip = Math.random() < 0.5;
+        shuffle(real.filter(t => !t.item.phrase && !t.face)).forEach(t => { t.face = flip ? "fr" : "ka"; flip = !flip; });
+        real.filter(t => t.item.phrase).forEach(t => {
+            const avoid = new Set(usedForms.has(t.item) ? [usedForms.get(t.item)] : []);
+            const g = phraseGap(t.item, avoid);
+            if (g) { t.face = "fill"; t.gap = g; } else t.face = "ka";
+        });
+        // only MC_TILES tiles are multiple choice
+        const mcSet = new Set(shuffle(real).slice(0, MC_TILES));
+        real.forEach(t => { t.mc = mcSet.has(t); t.item.tile = t; });
+
         Object.assign(G, {
-            level: LEVELS[levelKey], levelKey, cols, rows, tiles,
+            level: LEVELS[levelKey], levelKey,
             turn: "player", started: true, over: false, busy: false,
-            hints: HINTS_PER_GAME, streak: 0, shieldReady: false,
-            answered: 0, correct: 0, mistakes: new Map(), log: []
+            hints: HINTS_PER_GAME, streak: 0, shieldReady: false, lastAttack: null,
+            answered: 0, correct: 0, mistakes: new Map()
         });
         renderBoard();
-        setStatus("შენი სვლაა — აირჩიე ქვედა რიგის უჯრა.");
+        setStatus("შენი სვლაა — აირჩიე უჯრა ქვედა (ლურჯი) რიგიდან.");
     }
 
     function neighbors(t) {
@@ -165,29 +238,33 @@
     }
     function owned(who) { return G.tiles.filter(t => t.owner === who); }
     function freeTiles() { return G.tiles.filter(t => t.item && t.owner === null); }
+    function other(who) { return who === "player" ? "ai" : "player"; }
     function edgeRow(who) {
-        // first row (from the player's side) that still has playable tiles
         const rows = who === "player" ? [...Array(G.rows).keys()].reverse() : [...Array(G.rows).keys()];
         for (const r of rows) {
-            const list = G.tiles.filter(t => t.r === r && t.item);
+            const list = G.tiles.filter(t => t.r === r && t.item && t.owner === null);
             if (list.length) return list;
         }
         return [];
     }
+    function touches(t, who) { return neighbors(t).some(n => n.owner === who); }
     function canTarget(who, t) {
-        if (!t.item || t.owner === who || t.owner === "void") return false;
+        if (!t.item || t.owner === "void" || t.owner === who) return false;
         const mine = owned(who);
-        if (!mine.length) {
-            if (t.owner !== null) return false;
-            const edge = edgeRow(who).filter(x => x.owner === null);
-            return edge.length ? edge.includes(t) : true;
-        }
-        if (neighbors(t).some(n => n.owner === who)) return true;
-        // nowhere to go next to my land → any free tile ("parachute")
-        const reach = G.tiles.some(x => x.item && x.owner !== who && neighbors(x).some(n => n.owner === who));
-        return !reach && t.owner === null;
+        if (t.owner === other(who)) return mine.length > 0 && touches(t, who);
+        // free tile
+        if (!mine.length) return edgeRow(who).includes(t);
+        if (touches(t, who)) return true;
+        // no free tile next to my land → I may jump to any free tile ("parachute")
+        return !freeTiles().some(x => touches(x, who));
     }
     function points(who) { return owned(who).reduce((s, t) => s + (t.item.phrase ? 2 : 1), 0); }
+    function zone(t) {
+        const half = G.rows / 2;
+        if (t.r < Math.floor(half)) return "ai";
+        if (t.r >= Math.ceil(half)) return "you";
+        return "mid";
+    }
 
     function renderBoard() {
         body().innerHTML = `
@@ -203,16 +280,26 @@
                 </div>
                 <div class="vg-bar"><div class="vg-bar-you" id="vgBarYou"></div><div class="vg-bar-ai" id="vgBarAi"></div></div>
                 <div class="vg-status" id="vgStatus"></div>
+                <div class="vg-zone-label vg-zone-label-ai"><i class="fa-solid fa-robot"></i> რობოტის მხარე</div>
                 <div class="vg-board" id="vgBoard" style="grid-template-columns: repeat(${G.cols}, 1fr)"></div>
+                <div class="vg-zone-label vg-zone-label-you"><i class="fa-solid fa-user"></i> შენი მხარე</div>
                 <div class="vg-legend">
                     <span><i class="vg-dot vg-dot-you"></i> შენი</span>
                     <span><i class="vg-dot vg-dot-ai"></i> რობოტის</span>
+                    <span><i class="fa-solid fa-list-ul"></i> არჩევა</span>
+                    <span><i class="fa-solid fa-keyboard"></i> წერა</span>
                     <span><i class="fa-solid fa-chess-rook"></i> ფრაზა = 2 ქულა</span>
                     <span><i class="fa-solid fa-shield-halved"></i> ფარი</span>
                 </div>
             </div>
             <div class="vg-modal" id="vgModal" hidden></div>`;
         drawTiles();
+    }
+
+    function faceHtml(t) {
+        if (t.face === "fill") return `<i class="fa-solid fa-pen-to-square vg-fill-ic"></i><span class="vg-tile-main vg-fill-txt">შეავსე წინადადება</span>`;
+        if (t.face === "fr") return `<span class="vg-lang">FR</span><span class="vg-tile-main">${esc(t.item.fr)}</span>`;
+        return `<span class="vg-lang">KA</span><span class="vg-tile-main">${esc(t.item.ka)}</span>`;
     }
 
     function drawTiles() {
@@ -224,22 +311,24 @@
             el.type = "button";
             el.className = "vg-tile";
             if (!t.item) { el.className += " vg-void"; el.disabled = true; board.appendChild(el); return; }
+            if (t.owner === null) el.className += " vg-zone-" + zone(t);
+            if (t.face === "fill" && t.owner !== "player") el.className += " vg-fill";
             if (t.item.phrase) el.className += " vg-castle";
             if (t.owner === "player") el.className += " vg-own-you";
             if (t.owner === "ai") el.className += " vg-own-ai";
             if (t.shield) el.className += " vg-shielded";
             const playable = G.turn === "player" && !G.busy && !G.over && canTarget("player", t);
             if (playable) el.className += t.owner === "ai" ? " vg-can-duel" : " vg-can";
-            // free tiles show the Georgian meaning (you must find the French);
-            // conquered tiles show the French word (+ Georgian small)
-            const main = t.owner ? t.item.fr : t.item.ka;
-            const sub = t.owner ? t.item.ka : "";
+            // my tiles are "revealed" (French + Georgian); free and robot tiles show only their card face
+            const content = t.owner === "player"
+                ? `<span class="vg-tile-main">${esc(t.item.fr)}</span><span class="vg-tile-sub">${esc(t.item.ka)}</span>`
+                : faceHtml(t);
             el.innerHTML = `
                 ${t.item.phrase ? '<i class="fa-solid fa-chess-rook vg-castle-ic"></i>' : ""}
-                ${t.shield ? '<i class="fa-solid fa-shield-halved vg-shield-ic"></i>' : ""}
+                ${t.shield ? '<i class="fa-solid fa-shield-halved vg-shield-ic"></i>'
+                    : t.owner !== "player" ? `<i class="fa-solid ${t.mc ? "fa-list-ul" : "fa-keyboard"} vg-mode-ic"></i>` : ""}
                 ${t.owner === "ai" && playable ? '<i class="fa-solid fa-khanda vg-duel-ic"></i>' : ""}
-                <span class="vg-tile-main">${esc(main)}</span>
-                ${sub ? `<span class="vg-tile-sub">${esc(sub)}</span>` : ""}`;
+                ${content}`;
             el.disabled = !playable;
             el.onclick = () => playerPick(t);
             board.appendChild(el);
@@ -266,16 +355,13 @@
         if (G.busy || G.turn !== "player" || G.over) return;
         G.busy = true;
         const duel = t.owner === "ai";
-        if (duel && t.shield) {
-            setStatus("ეს უჯრა ფარითაა დაცული — სხვა აირჩიე.", "bad");
-            G.busy = false; drawTiles(); return;
-        }
-        const ok = await ask(t.item, duel ? "duel" : "capture");
+        drawTiles();
+        const ok = await ask(t, duel ? "duel" : "capture");
         if (!G || G.over) return;
         if (ok) {
             t.owner = "player";
+            t.shield = false;
             if (G.shieldReady) { t.shield = true; G.shieldReady = false; }
-            else t.shield = false;
             setStatus(duel ? "დუელი მოგებულია! უჯრა შენია." : "ბრავო! უჯრა დაიკავე.", "good");
         } else {
             setStatus(duel ? "დუელი წაგებულია — უჯრა რობოტთან რჩება." : "არასწორია — უჯრა თავისუფალი რჩება.", "bad");
@@ -299,30 +385,37 @@
 
         const targets = G.tiles.filter(t => canTarget("ai", t));
         const free = targets.filter(t => t.owner === null);
-        const attackable = targets.filter(t => t.owner === "player" && !t.shield);
+        // never attack shielded tiles, and never the same tile twice in a row
+        const attackable = targets.filter(t => t.owner === "player" && !t.shield && t !== G.lastAttack);
         let target = null, attack = false;
-        if (attackable.length && (Math.random() < G.level.attack || !free.length)) {
+        if (attackable.length && (!free.length || Math.random() < G.level.attack)) {
             attack = true;
-            target = attackable.sort((a, b) => score(b) - score(a))[0];
+            const sorted = attackable.sort((a, b) => score(b) - score(a));
+            target = sorted[Math.floor(Math.random() * Math.min(3, sorted.length))];
         } else if (free.length) {
             target = free.sort((a, b) => score(b) - score(a) + (Math.random() - 0.5) * 2)[0];
         }
-        if (!target) { endTurnAI(); return; }
+        G.lastAttack = attack ? target : null;
+        if (!target) { setStatus('<i class="fa-solid fa-robot"></i> რობოტმა სვლა გამოტოვა.', "ai"); await wait(600); endTurnAI(); return; }
 
         flash(target);
         if (attack) {
             setStatus(`<i class="fa-solid fa-khanda"></i> რობოტი შენს უჯრას უტევს: <b>${esc(target.item.fr)}</b>. დაიცავი!`, "ai");
             await wait(900);
-            const defended = await ask(target.item, "defend");
+            const defended = await ask(target, "defend");
             if (!G || G.over) return;
-            if (defended) setStatus("დაიცავი! უჯრა ისევ შენია.", "good");
-            else { target.owner = "ai"; target.shield = false; setStatus("რობოტმა შენი უჯრა წაიღო.", "bad"); }
+            if (defended) {
+                target.shield = true;
+                setStatus('<i class="fa-solid fa-shield-halved"></i> დაიცავი! ეს უჯრა ახლა ფარითაა დაცული.', "good");
+            } else {
+                target.owner = "ai"; target.shield = false;
+                setStatus("რობოტმა შენი უჯრა წაიღო.", "bad");
+            }
         } else {
             const ok = Math.random() < G.level.acc;
             if (ok) {
                 target.owner = "ai";
-                setStatus(`<i class="fa-solid fa-robot"></i> რობოტმა დაიკავა: <b>${esc(target.item.fr)}</b> — ${esc(target.item.ka)}`, "ai");
-                speak(target.item.fr);
+                setStatus('<i class="fa-solid fa-robot"></i> რობოტმა უჯრა დაიკავა.', "ai");
             } else {
                 setStatus('<i class="fa-solid fa-robot"></i> რობოტმა შეცდომა დაუშვა! უჯრა თავისუფალი რჩება.', "good");
             }
@@ -338,7 +431,7 @@
     }
     function flash(t) {
         const el = document.querySelectorAll("#vgBoard .vg-tile")[t.idx];
-        if (el) { el.classList.add("vg-flash"); }
+        if (el) el.classList.add("vg-flash");
     }
     function endTurnAI() {
         if (!G || G.over) return;
@@ -346,9 +439,7 @@
         if (checkEnd()) { drawTiles(); return; }
         G.turn = "player";
         drawTiles();
-        const s = document.getElementById("vgStatus");
-        if (s && !/vg-status-(good|bad)/.test(s.className)) setStatus("შენი სვლაა.");
-        else setTimeout(() => { if (G && G.turn === "player" && !G.busy) setStatus("შენი სვლაა."); }, 1600);
+        setTimeout(() => { if (G && G.turn === "player" && !G.busy && !G.over) setStatus("შენი სვლაა."); }, 1600);
     }
 
     function checkEnd() {
@@ -358,83 +449,66 @@
     }
 
     // ---------- questions ----------
-    // mode: capture (normal), duel (harder), defend (robot attacks your tile)
-    function pickType(item, mode) {
-        if (item.phrase) {
-            const tokens = item.fr.split(" ");
-            if (mode === "defend") return "fr2ka";
-            if ((mode === "duel" || item.right > 0) && tokens.length >= 2 && tokens.length <= 9) return "order";
-            return item.seen % 2 === 0 ? "ka2fr" : (tokens.length >= 2 && tokens.length <= 9 ? "order" : "fr2ka");
+    function pickOthers(item, getter, answer, count) {
+        const seen = new Set(variants(answer));
+        const out = [];
+        const pool = shuffle(G.items.filter(x => x !== item && x.phrase === item.phrase))
+            .concat(shuffle(G.items.filter(x => x !== item && x.phrase !== item.phrase)));
+        for (const x of pool) {
+            const v = getter(x);
+            if (!v || seen.has(norm(v))) continue;
+            seen.add(norm(v)); out.push(v);
+            if (out.length >= count) break;
         }
-        if (mode === "defend") return "fr2ka";
-        if (mode === "duel" || item.right > 0) return "type";
-        const gap = gapPhraseFor(item);
-        if (gap && Math.random() < 0.5) return "gap";
-        return "ka2fr";
+        return out;
+    }
+    function capitalLike(model, v) {
+        return /^[A-ZÀ-Ý]/.test(model) ? v.charAt(0).toUpperCase() + v.slice(1) : v;
     }
 
-    function gapPhraseFor(item) {
-        const forms = [item.fr, withoutArticle(item.fr)].filter(f => f.length >= 2);
-        for (const p of G.phrases) {
-            const low = p.fr.toLowerCase();
-            for (const f of forms) {
-                const i = low.indexOf(f.toLowerCase());
-                if (i >= 0) return { phrase: p, form: p.fr.substr(i, f.length), start: i };
-            }
-        }
-        return null;
-    }
-
-    function distractors(item, field, count) {
-        const pool = G.items.filter(x => x !== item && x.phrase === item.phrase && norm(x[field]) !== norm(item[field]));
-        const extra = G.items.filter(x => x !== item && x.phrase !== item.phrase && norm(x[field]) !== norm(item[field]));
-        return shuffle(pool).concat(shuffle(extra)).slice(0, count).map(x => x[field]);
-    }
-
-    function ask(item, mode) {
+    // tile: the tile asked about; mode: capture | duel | defend | review
+    function ask(tile, mode) {
         return new Promise(resolve => {
-            const type = pickType(item, mode);
-            item.seen++;
+            const item = tile.item;
             const modal = document.getElementById("vgModal");
             const title = mode === "duel" ? '<i class="fa-solid fa-khanda"></i> დუელი!'
                 : mode === "defend" ? '<i class="fa-solid fa-shield-halved"></i> დაიცავი უჯრა!'
                 : mode === "review" ? '<i class="fa-solid fa-rotate"></i> გამეორება'
                 : '<i class="fa-solid fa-flag"></i> დაიკავე უჯრა';
-            let answer, prompt, html = "";
+            let answer, prompt, options = null, frenchAnswer = true;
 
-            if (type === "ka2fr") {
-                answer = item.fr;
-                prompt = `როგორ იქნება ფრანგულად?<div class="vg-q-big">${esc(item.ka)}</div>`;
-                html = optionsHtml(shuffle([item.fr].concat(distractors(item, "fr", 3))));
-            } else if (type === "fr2ka") {
-                answer = item.ka;
-                prompt = `რას ნიშნავს?<div class="vg-q-big vg-fr">${esc(item.fr)} <button class="vg-say" data-say="${esc(item.fr)}" title="მოსმენა"><i class="fa-solid fa-volume-high"></i></button></div>`;
-                html = optionsHtml(shuffle([item.ka].concat(distractors(item, "ka", 3))));
-            } else if (type === "gap") {
-                const g = gapPhraseFor(item);
+            if (tile.face === "fr") {
+                answer = item.ka; frenchAnswer = false;
+                prompt = `რას ნიშნავს ქართულად?<div class="vg-q-big vg-fr">${esc(item.fr)} <button class="vg-say" data-say="${esc(item.fr)}" title="მოსმენა"><i class="fa-solid fa-volume-high"></i></button></div>`;
+                if (tile.mc) options = [item.ka].concat(pickOthers(item, x => x.ka, item.ka, 3));
+            } else if (tile.face === "fill") {
+                const g = tile.gap;
                 answer = g.form;
                 const sentence = esc(g.phrase.fr.substr(0, g.start)) + '<span class="vg-gap">_____</span>' + esc(g.phrase.fr.substr(g.start + g.form.length));
-                prompt = `ჩასვი სწორი სიტყვა წინადადებაში<div class="vg-q-big vg-fr">${sentence}</div><div class="vg-q-help">${esc(g.phrase.ka)}</div>`;
-                const others = shuffle(G.words.filter(w => w !== item)).slice(0, 3).map(w => {
-                    const f = g.form.toLowerCase() === item.fr.toLowerCase() ? w.fr : withoutArticle(w.fr);
-                    return /^[A-ZÀ-Ý]/.test(g.form) ? f.charAt(0).toUpperCase() + f.slice(1) : f;
-                });
-                html = optionsHtml(shuffle([g.form].concat(others.filter(o => norm(o) !== norm(g.form)))));
-            } else if (type === "type") {
+                prompt = `შეავსე წინადადება — ჩაწერე გამოტოვებული სიტყვა<div class="vg-q-big vg-fr">${sentence}</div><div class="vg-q-help">${esc(g.phrase.ka)}</div>`;
+                if (tile.mc) {
+                    const others = pickOthers(item, x => {
+                        if (x.phrase) { const tk = tokens(x.fr); return tk.length ? tk[Math.floor(Math.random() * tk.length)].form : ""; }
+                        const base = x.fr.split("/")[0].trim();
+                        return g.form.toLowerCase() === item.fr.toLowerCase() ? base : withoutArticle(base);
+                    }, g.form, 3).map(v => capitalLike(g.form, v));
+                    options = [g.form].concat(others);
+                }
+            } else {
                 answer = item.fr;
-                prompt = `დაწერე ფრანგულად (ზუსტი მართლწერით)<div class="vg-q-big">${esc(item.ka)}</div>`;
+                prompt = `როგორ იქნება ფრანგულად?<div class="vg-q-big">${esc(item.ka)}</div>`;
+                if (tile.mc) options = [item.fr].concat(pickOthers(item, x => x.fr, item.fr, 3));
+            }
+
+            let html;
+            if (options) {
+                html = `<div class="vg-opts">${shuffle(options).map(v => `<button type="button" class="vg-opt" data-v="${esc(v)}">${esc(v)}</button>`).join("")}</div>`;
+            } else {
                 html = `
-                    <input class="vg-input" id="vgInput" autocomplete="off" autocapitalize="off" spellcheck="false" lang="fr" placeholder="ჩაწერე აქ…">
-                    <div class="vg-accents">${ACCENTS.map(a => `<button type="button" class="vg-acc">${a}</button>`).join("")}</div>
+                    <input class="vg-input" id="vgInput" autocomplete="off" autocapitalize="off" spellcheck="false"
+                        lang="${frenchAnswer ? "fr" : "ka"}" placeholder="${frenchAnswer ? "დაწერე ფრანგულად…" : "დაწერე ქართულად…"}">
+                    ${frenchAnswer ? `<div class="vg-accents">${ACCENTS.map(a => `<button type="button" class="vg-acc">${a}</button>`).join("")}</div>` : '<div class="vg-accents-gap"></div>'}
                     <button class="vg-primary" id="vgCheck"><i class="fa-solid fa-check"></i> შემოწმება</button>`;
-            } else if (type === "order") {
-                answer = item.fr;
-                prompt = `ააწყე ფრაზა სწორი თანმიმდევრობით<div class="vg-q-big">${esc(item.ka)}</div>`;
-                html = `
-                    <div class="vg-built" id="vgBuilt"></div>
-                    <div class="vg-chips" id="vgChips">${shuffle(item.fr.split(" ").map((w, i) => ({ w, i })))
-                        .map(o => `<button type="button" class="vg-word" data-i="${o.i}">${esc(o.w)}</button>`).join("")}</div>
-                    <button class="vg-primary" id="vgCheck" disabled><i class="fa-solid fa-check"></i> შემოწმება</button>`;
             }
 
             modal.innerHTML = `
@@ -456,12 +530,10 @@
                 done = true;
                 G.answered++;
                 if (ok) {
-                    G.correct++; item.right++; G.streak++;
-                    if (G.streak > 0 && G.streak % 3 === 0 && mode !== "defend" && mode !== "review") {
-                        G.shieldReady = true;
-                    }
+                    G.correct++; G.streak++;
+                    if (G.streak % 3 === 0 && mode !== "defend" && mode !== "review") G.shieldReady = true;
                 } else {
-                    item.wrong++; G.streak = 0;
+                    G.streak = 0;
                     G.mistakes.set(item.id, item);
                 }
                 modal.querySelectorAll("button:not(.vg-say)").forEach(b => b.disabled = true);
@@ -470,15 +542,21 @@
                 fb.hidden = false;
                 fb.className = "vg-feedback " + (ok ? "vg-ok" : "vg-no");
                 let extra = "";
-                if (!ok && type === "type" && given && noAccents(norm(given)) === noAccents(norm(answer)))
+                if (!ok && frenchAnswer && given && variants(answer).some(v => noAccents(v) === noAccents(norm(given))))
                     extra = '<div class="vg-fb-note">თითქმის! შეამოწმე აქცენტები (é, è, à…).</div>';
+                if (!ok && frenchAnswer && given && answer.split("/").some(v => norm(withoutArticle(v.trim())) === norm(given) && norm(withoutArticle(v.trim())) !== norm(v)))
+                    extra += '<div class="vg-fb-note">თითქმის! არ დაგავიწყდეს არტიკლი (le, la, l\', les…).</div>';
+                if (!ok && tile.face === "fill") extra += `<div class="vg-fb-note">სწორი სიტყვა: <b>${esc(answer)}</b></div>`;
+                const pair = tile.face === "fill" && !item.phrase
+                    ? `<div class="vg-fb-sentence vg-fr">${esc(tile.gap.phrase.fr)}</div>` : "";
                 fb.innerHTML = `
                     <div class="vg-fb-title">${ok ? '<i class="fa-solid fa-circle-check"></i> სწორია!' : '<i class="fa-solid fa-circle-xmark"></i> არასწორია'}</div>
                     ${extra}
                     <div class="vg-fb-pair"><span class="vg-fr">${esc(item.fr)}</span>
                         <button class="vg-say" data-say="${esc(item.fr)}" title="მოსმენა"><i class="fa-solid fa-volume-high"></i></button>
                         <span class="vg-fb-eq">=</span> <span>${esc(item.ka)}</span></div>
-                    ${G.shieldReady && ok && G.streak % 3 === 0 ? '<div class="vg-fb-note"><i class="fa-solid fa-shield-halved"></i> 3 ზედიზედ! შემდეგი უჯრა ფარით იქნება დაცული.</div>' : ""}
+                    ${pair}
+                    ${ok && G.shieldReady && G.streak % 3 === 0 && mode !== "defend" && mode !== "review" ? '<div class="vg-fb-note"><i class="fa-solid fa-shield-halved"></i> 3 ზედიზედ! შემდეგი უჯრა ფარით იქნება დაცული.</div>' : ""}
                     <button class="vg-primary" id="vgNext">გაგრძელება <i class="fa-solid fa-arrow-right"></i></button>`;
                 fb.querySelectorAll(".vg-say").forEach(b => b.onclick = () => speak(b.dataset.say));
                 speak(item.fr);
@@ -490,7 +568,7 @@
             };
 
             modal.querySelectorAll(".vg-say").forEach(b => b.onclick = () => speak(b.dataset.say));
-            if (type === "fr2ka") speak(item.fr);
+            if (tile.face === "fr") speak(item.fr);
 
             // multiple choice
             modal.querySelectorAll(".vg-opt").forEach(b => b.onclick = () => {
@@ -509,27 +587,9 @@
                     input.value = input.value.slice(0, s) + a.textContent + input.value.slice(e);
                     input.focus(); input.setSelectionRange(s + 1, s + 1);
                 });
-                const check = () => { if (input.value.trim()) finishQ(norm(input.value) === norm(answer), input.value); };
+                const check = () => { if (input.value.trim()) finishQ(isCorrect(input.value, answer), input.value); };
                 modal.querySelector("#vgCheck").onclick = check;
                 input.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); check(); } });
-            }
-
-            // word order
-            const chips = modal.querySelector("#vgChips");
-            if (chips) {
-                const built = modal.querySelector("#vgBuilt");
-                const checkBtn = modal.querySelector("#vgCheck");
-                const refresh = () => { checkBtn.disabled = chips.children.length > 0; };
-                const moveChip = btn => {
-                    if (done) return;
-                    (btn.parentNode === chips ? built : chips).appendChild(btn);
-                    refresh();
-                };
-                modal.querySelectorAll(".vg-word").forEach(b => b.onclick = () => moveChip(b));
-                checkBtn.onclick = () => {
-                    const given = [...built.children].map(b => b.textContent).join(" ");
-                    finishQ(norm(given) === norm(answer), given);
-                };
             }
 
             // hint
@@ -539,15 +599,10 @@
                 G.hints--;
                 hintBtn.innerHTML = `<i class="fa-solid fa-lightbulb"></i> მინიშნება (${G.hints})`;
                 hintBtn.disabled = true;
-                if (type === "type") {
-                    const keep = Math.max(1, Math.ceil(answer.length / 3));
-                    input.value = answer.slice(0, keep);
+                if (input) {
+                    const first = answer.split("/")[0].trim();
+                    input.value = first.slice(0, Math.max(1, Math.ceil(first.length / 3)));
                     input.focus();
-                } else if (chips) {
-                    const built = modal.querySelector("#vgBuilt");
-                    [...built.children].forEach(b => chips.appendChild(b));
-                    const first = [...chips.children].find(b => b.dataset.i === "0");
-                    if (first) { built.appendChild(first); first.classList.add("vg-word-hint"); }
                 } else {
                     const wrong = shuffle([...modal.querySelectorAll(".vg-opt")].filter(o => norm(o.dataset.v) !== norm(answer)));
                     wrong.slice(0, 2).forEach(o => { o.disabled = true; o.classList.add("vg-opt-gone"); });
@@ -557,9 +612,6 @@
         });
     }
 
-    function optionsHtml(list) {
-        return `<div class="vg-opts">${list.map(v => `<button type="button" class="vg-opt" data-v="${esc(v)}">${esc(v)}</button>`).join("")}</div>`;
-    }
     function drawScoreOnly() {
         const h = document.getElementById("vgHints"); if (h) h.textContent = G.hints;
         const s = document.getElementById("vgStreak"); if (s) s.textContent = G.streak;
@@ -601,14 +653,13 @@
             </div>
             <div class="vg-modal" id="vgModal" hidden></div>`;
         body().querySelectorAll(".vg-say").forEach(b => b.onclick = () => speak(b.dataset.say));
-        const again = () => { G.items.forEach(it => { it.seen = 0; it.right = 0; it.wrong = 0; }); renderStart(); };
-        body().querySelector("#vgAgain").onclick = again;
+        body().querySelector("#vgAgain").onclick = renderStart;
         body().querySelector("#vgExit").onclick = close;
         const rv = body().querySelector("#vgReview");
         if (rv) rv.onclick = () => review(mistakes);
     }
 
-    // Review: ask each missed word until it is answered correctly (wrong ones come back at the end)
+    // Review: ask each missed word (same card) until it is answered correctly
     async function review(list) {
         G.over = false;
         const queue = shuffle(list);
@@ -616,7 +667,6 @@
             <div class="vg-review-screen">
                 <h2><i class="fa-solid fa-rotate"></i> შეცდომების გამეორება</h2>
                 <div class="vg-status" id="vgStatus"></div>
-                <div class="vg-score" style="display:none"><b id="vgHints"></b><b id="vgStreak"></b></div>
             </div>
             <div class="vg-modal vg-modal-static" id="vgModal" hidden></div>`;
         G.hints = Math.max(G.hints, 2);
@@ -625,8 +675,7 @@
             rounds++;
             setStatus(`დარჩა: <b>${queue.length}</b>`);
             const item = queue.shift();
-            item.right = 0; // review starts from multiple choice again
-            const ok = await ask(item, "review");
+            const ok = await ask(item.tile, "review");
             if (!G) return;
             if (!ok) queue.push(item);
         }
@@ -641,7 +690,7 @@
                     <button class="vg-secondary" id="vgExit">დახურვა</button>
                 </div>
             </div>`;
-        body().querySelector("#vgAgain").onclick = () => { G.items.forEach(it => { it.seen = 0; it.right = 0; }); renderStart(); };
+        body().querySelector("#vgAgain").onclick = renderStart;
         body().querySelector("#vgExit").onclick = close;
     }
 
@@ -649,5 +698,6 @@
         if (e.key === "Escape" && root && (!G || !G.started || G.over)) close();
     });
 
-    window.VocabGame = { open, close };
+    // exposed for testing
+    window.VocabGame = { open, close, _isCorrect: isCorrect };
 })();

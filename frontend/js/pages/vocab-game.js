@@ -103,24 +103,24 @@
             card.className = "vg-flashcard";
             card.innerHTML = `
                 <div class="vg-flashcard-inner">
+                    <button class="vg-flashcard-x" aria-label="დახურვა"><i class="fa-solid fa-xmark"></i></button>
                     <div class="vg-flashcard-ok"><i class="fa-solid fa-circle-check"></i> სწორია!</div>
                     <div class="vg-flashcard-word vg-fr">${highlightAccents(correctText)}</div>
                     ${sentence ? `<div class="vg-flashcard-sentence vg-fr">${highlightAccents(sentence)}</div>` : ""}
                     <div class="vg-flashcard-ka">${esc(item.ka)}</div>
                     <div class="vg-flashcard-note"><i class="fa-solid fa-triangle-exclamation"></i> მაგრამ ყურადღება მიაქციე აქცენტებს ფრანგულში!</div>
+                    <button class="vg-flashcard-say" type="button"><i class="fa-solid fa-volume-high"></i> მოსმენა</button>
                 </div>`;
             win.appendChild(card);
             speak(correctText);
             requestAnimationFrame(() => card.classList.add("vg-flashcard-in"));
-            let closed = false;
-            const close = () => {
-                if (closed) return; closed = true;
+            card.querySelector(".vg-flashcard-say").onclick = () => speak(correctText);
+            // stays on the screen until the student closes it with X
+            card.querySelector(".vg-flashcard-x").onclick = () => {
                 card.classList.remove("vg-flashcard-in");
                 card.classList.add("vg-flashcard-out");
                 setTimeout(() => { card.remove(); done(); }, 650);
             };
-            card.onclick = close;                 // tap to continue sooner
-            setTimeout(close, 3200);
         });
     }
     function speak(text) {
@@ -363,6 +363,27 @@ Reply ONLY with: {"items":[{"i":0,"sentence":"…","answer":"…","ka":"…"}]}`
         }
     }
 
+    // name of the student's colour (= the course colour), e.g. "ლურჯია", "მწვანეა"
+    function yourColorWord() {
+        let hex = "";
+        try { hex = getComputedStyle(root || document.documentElement).getPropertyValue("--vg-blue").trim() || getComputedStyle(document.documentElement).getPropertyValue("--course-color").trim(); } catch (e) {}
+        const m = hex.match(/^#?([0-9a-f]{6})$/i);
+        if (!m) return "ლურჯია";
+        const n = parseInt(m[1], 16), r = (n >> 16) / 255, g = (n >> 8 & 255) / 255, b = (n & 255) / 255;
+        const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
+        if (d < 0.08) return max < 0.35 ? "შავია" : "ნაცრისფერია";
+        let h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+        h = (h * 60 + 360) % 360;
+        if (h < 15 || h >= 345) return "წითელია";
+        if (h < 45) return "ნარინჯისფერია";
+        if (h < 70) return "ყვითელია";
+        if (h < 165) return "მწვანეა";
+        if (h < 195) return "ფირუზისფერია";
+        if (h < 250) return "ლურჯია";
+        if (h < 290) return "იისფერია";
+        return "ჟოლოსფერია";
+    }
+
     // ---------- start screen ----------
     function renderStart() {
         const best = store("ouispeak-territory-best|" + G.opts.storageKey);
@@ -373,16 +394,24 @@ Reply ONLY with: {"items":[{"i":0,"sentence":"…","answer":"…","ka":"…"}]}`
                     <h2>დაიპყარი დაფა სიტყვებით!</h2>
                     <p class="vg-lead">${G.words.length} სიტყვა · ${G.phrases.length} ფრაზა · შენ რობოს წინააღმდეგ</p>
                 </div>
-                <ul class="vg-rules">
-                    <li>შენი მხარე <b class="vg-c-you">ლურჯია</b> (ქვემოთ), რობოსი — <b class="vg-c-ai">წითელი</b> (ზემოთ). გახსნა შეგიძლია მხოლოდ შენი ტერიტორიის გვერდით მდებარე უჯრების.</li>
-                    <li><b>ფრანგული</b> სიტყვა — აირჩიე ქართული მნიშვნელობა. <b>ქართული</b> სიტყვა და <b>„შეავსე წინადადება“</b> — დაწერე ფრანგულად.</li>
-                    <li>უჯრის ასარჩევად და პასუხისთვის გაქვს <b>${courseTimes().answer} წამი</b>. ფრაზა = 2 ქულა. რობოს უჯრაზე დაჭერა = დუელი.</li>
-                    <li>მოიგე <b>ექსპერტის</b> დონეზე — <b>+${EXPERT_POINTS} ქულა</b> „ლექსიკა 2“-ში (კვირაში ერთხელ).</li>
-                </ul>
+                <div class="vg-rules-box">
+                    <div class="vg-rules-title"><i class="fa-solid fa-book-open"></i> თამაშის წესები</div>
+                    <ol class="vg-rules">
+                        <li>შენი მხარე <b class="vg-c-you"><i class="vg-swatch"></i>${yourColorWord()}</b> (ქვემოთ), რობოსი — <b class="vg-c-ai"><i class="vg-swatch vg-swatch-ai"></i>წითელი</b> (ზემოთ). გახსნა შეგიძლია მხოლოდ შენი ტერიტორიის გვერდით მდებარე უჯრების.</li>
+                        <li>ხსნი უჯრას, პასუხობ კითხვას და გეწერება ქულა.</li>
+                        <li>თუ ატყობ რომ რობო გიგებს, შეგიძლია აირჩიო უკვე მის მიერ გახსნილი სიტყვა და უპასუხო. ამით შენ მის წითელ უჯრას დაეპატრონები და გადააქცევ შენს უჯრად.</li>
+                        <li>თუ რობო გადაწყვეტს რომ შეუტიოს შენს უჯრას, შენ უნდა დაიცვა ის და უპასუხო ეკრანზე გამოტანილ შეკითხვას სწორად.</li>
+                        <li>გაითვალისწინე რომ დროში შეზღუდული ხარ.</li>
+                        <li>თამაშს იგებს ის, ვინც უფრო მეტ ქულას დააგროვებს.</li>
+                        <li>ექსპერტი დონის მოგების შემთხვევაში დაგემატებათ <b>${EXPERT_POINTS} ქულა</b> შეფასებების გვერდზე, ლექსიკა 2-ის განყოფილებაში.</li>
+                    </ol>
+                    <div class="vg-bonjeu">აბა, <span class="vg-fr">bon jeu !</span></div>
+                </div>
                 <div class="vg-levels-title">აირჩიე სირთულე</div>
                 <div class="vg-levels">
                     ${Object.keys(LEVELS).map((k, i) => `
                         <button class="vg-level vg-level-${k}" data-level="${k}">
+                            <span class="vg-level-ic"><i class="fa-solid ${["fa-seedling", "fa-bolt", "fa-crown"][i]}"></i></span>
                             <span class="vg-level-name">${LEVELS[k].name}</span>
                             <span class="vg-level-fr">${LEVELS[k].fr}</span>
                             <span class="vg-level-acc">რობო სწორად პასუხობს ${Math.round(LEVELS[k].acc * 100)}%-ში</span>
@@ -721,8 +750,8 @@ Reply ONLY with: {"items":[{"i":0,"sentence":"…","answer":"…","ka":"…"}]}`
         G.turn = "player";
         G.busy = false;
         drawTiles();
-        setStatus(first ? '<i class="fa-solid fa-hand-pointer"></i> შენი სვლაა — აირჩიე <b>ლურჯად მონიშნული</b> უჯრა ქვედა რიგიდან'
-            : '<i class="fa-solid fa-hand-pointer"></i> შენი სვლაა — აირჩიე <b>ლურჯად მონიშნული</b> უჯრა', "you");
+        setStatus(first ? '<i class="fa-solid fa-hand-pointer"></i> შენი სვლაა — აირჩიე უჯრა ნიშნით <b>„გახსენი“</b> ქვედა რიგიდან'
+            : '<i class="fa-solid fa-hand-pointer"></i> შენი სვლაა — აირჩიე უჯრა ნიშნით <b>„გახსენი“</b>', "you");
         startTimer(document.getElementById("vgPickTimer"), courseTimes().pick, async () => {
             if (!G || G.over || G.turn !== "player" || G.busy) return;
             setStatus('<i class="fa-solid fa-hourglass-end"></i> დრო ამოიწურა! სვლა რობოს გადაეცა.', "bad");

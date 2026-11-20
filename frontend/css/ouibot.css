@@ -978,13 +978,20 @@ html.ob-open, html.ob-open body { overflow: hidden; }
 /* =========================================================
    TALKING MODE: no text, the robot talks out loud
    ========================================================= */
-.ob-mode {
-    flex: none; width: 36px; height: 36px; border-radius: 50%; border: none; cursor: pointer;
-    background: #eaf2fb; color: var(--primary); font-size: 0.95rem; transition: background 0.2s, color 0.2s;
+.ob-mode-switch {
+    flex: none; display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem;
+    height: 46px; padding: 0 1rem; border-radius: 999px; cursor: pointer; font-family: inherit; font-weight: 700; font-size: 0.9rem;
+    border: 2px solid var(--primary); background: #eaf2fb; color: var(--primary); transition: background 0.2s, color 0.2s;
 }
-.ob-mode:hover { background: #dbeafe; }
-.ob-mode[aria-pressed="true"] { background: var(--primary); color: #ffffff; }
-.ob-mode[hidden] { display: none; }
+.ob-mode-switch i { font-size: 1.05rem; }
+.ob-mode-switch:hover { background: var(--primary); color: #ffffff; }
+.ob-mode-switch[hidden] { display: none; }
+.ob-mode-back { width: 56px; height: 56px; padding: 0; }
+@media (max-width: 760px) {
+    .ob-mode-switch span { display: none; }
+    .ob-mode-switch { width: 46px; padding: 0; }
+    .ob-mode-back { width: 50px; height: 50px; }
+}
 
 .ob-chat.ob-voice .ob-log,
 .ob-chat.ob-voice .ob-compose,

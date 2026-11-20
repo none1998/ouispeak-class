@@ -1105,11 +1105,11 @@
             }
 
             /* ---------- French voice: ONLY during the creation steps and the introduction ----------
-               1) Gemini's natural French voice (Supabase function "gemini-tts", same Gemini key as exercice.html).
+               1) Google's natural French voice (Supabase function "google-tts": WaveNet, free up to 4 million characters a month).
                2) If Gemini is not available: a French voice of the browser.
                3) Otherwise the text is simply shown without sound.
                The chat itself stays silent. */
-            const OB_KA_TTS_ENDPOINT = `${SUPABASE_URL}/functions/v1/gemini-tts`;
+            const OB_KA_TTS_ENDPOINT = `${SUPABASE_URL}/functions/v1/google-tts`;
             const OB_VOICE_LANG = 'fr';
             let kaMuted = false;
             try { kaMuted = localStorage.getItem('ouibot_ka_muted') === '1'; } catch (e) {}
@@ -1159,7 +1159,7 @@
                     if (!r.ok) {
                         let detail = '';
                         try { detail = (await r.text()).slice(0, 400); } catch (e) {}
-                        const err = new Error(`gemini-tts ${r.status} ${detail}`);
+                        const err = new Error(`google-tts ${r.status} ${detail}`);
                         err.status = r.status;
                         throw err;
                     }
@@ -1213,7 +1213,7 @@
                     if (pr && pr.catch) pr.catch(err => { showDebug('Audio blocked by the browser: ' + (err && err.message ? err.message : err)); browserVoice(); });
                 }).catch(err => {
                     if (err && err.status === 429) {
-                        kaPausedUntil = Date.now() + 2 * 60 * 1000; // Gemini's free quota is used up for now
+                        kaPausedUntil = Date.now() + 2 * 60 * 1000; // monthly voice limit reached (or Google busy)
                         showDebug('Voice: free quota reached for now (the robot uses another voice or text for 2 minutes)');
                     } else {
                         showDebug('Voice: ' + (err && err.message ? err.message : err));
@@ -1337,19 +1337,23 @@
                 if (!win) return;
                 win.classList.toggle('ob-voice', voiceMode);
                 $('obVoiceBar').hidden = !voiceMode;
-                const btn = $('obModeBtn');
-                btn.setAttribute('aria-pressed', String(voiceMode));
-                btn.title = voiceMode ? 'წერის რეჟიმი' : 'სალაპარაკო რეჟიმი';
-                btn.setAttribute('aria-label', btn.title);
-                btn.innerHTML = voiceMode ? '<i class="fa-solid fa-keyboard"></i>' : '<i class="fa-solid fa-microphone-lines"></i>';
                 if (!voiceMode) { vStopRecording(false); vStopSpeaking(); }
                 vRefreshState();
             }
 
-            // ---------- the robot's voice (browser, free) ----------
+            // ---------- the robot's voice: Google WaveNet (google-tts), browser voice as backup ----------
+            let vQueue = [], vPlaying = false, vGen = 0;
+            function vTalkStart() {
+                clearInterval(vTalkTimer);
+                const bot = $('obChatRobot') && $('obChatRobot')._bot;
+                if (bot) { bot.talkFor(700); vTalkTimer = setInterval(() => bot.talkFor(700), 450); }
+            }
+            function vTalkStop() { clearInterval(vTalkTimer); vTalkTimer = null; }
             function vStopSpeaking() {
-                vSpeaking = 0;
-                clearInterval(vTalkTimer); vTalkTimer = null;
+                vGen++;
+                vQueue = []; vPlaying = false; vSpeaking = 0;
+                vTalkStop();
+                try { kaPlayer.pause(); } catch (e) {}
                 try { window.speechSynthesis.cancel(); } catch (e) {}
                 vRefreshState();
             }
@@ -1357,29 +1361,63 @@
                 if (!voiceMode || !canVoice) return;
                 const clean = kaClean(text);
                 if (!/[\p{L}]/u.test(clean)) return;
-                const voice = pickKaVoice(state.profile && state.profile.gender);
-                // short pieces: some browsers stop long sentences in the middle
-                const parts = clean.match(/[^.!?…]+[.!?…]*\s*/g) || [clean];
-                parts.forEach(part => {
-                    const t = part.trim();
-                    if (!t) return;
+                const gender = state.profile && state.profile.gender === 'm' ? 'm' : 'f';
+                // start downloading the audio right away (while an earlier message may still be playing)
+                const audio = kaCloudReady() ? fetchKa(clean, gender).catch(err => { vNoteCloudError(err); return null; }) : Promise.resolve(null);
+                vQueue.push({ text: clean, gender, audio });
+                vSpeaking++;
+                vRefreshState();
+                vPump();
+            }
+            function vNoteCloudError(err) {
+                if (err && err.status === 429) kaPausedUntil = Date.now() + 2 * 60 * 1000;
+                else if (++kaFailures >= 3) kaCloudOk = false;
+                showDebug('Voice: ' + (err && err.message ? err.message : err));
+            }
+            async function vPump() {
+                if (vPlaying) return;
+                const item = vQueue.shift();
+                if (!item) return;
+                vPlaying = true;
+                const gen = vGen;
+                const next = () => {
+                    if (gen !== vGen) return;
+                    vPlaying = false;
+                    vSpeaking = Math.max(0, vSpeaking - 1);
+                    vTalkStop();
+                    vRefreshState();
+                    vPump();
+                };
+                const url = await item.audio;
+                if (gen !== vGen) return;
+                if (url) {
+                    kaFailures = 0;
+                    kaPlayer.src = url;
+                    kaPlayer.onended = next;
+                    kaPlayer.onerror = () => vBrowserSay(item, gen, next);
+                    vTalkStart();
+                    const pr = kaPlayer.play();
+                    if (pr && pr.catch) pr.catch(() => vBrowserSay(item, gen, next));
+                } else {
+                    vBrowserSay(item, gen, next);
+                }
+            }
+            // free backup: the browser's French voice (short pieces: some browsers stop long sentences)
+            function vBrowserSay(item, gen, done) {
+                if (gen !== vGen) return;
+                if (!window.speechSynthesis) return done();
+                const voice = pickKaVoice(item.gender);
+                const parts = (item.text.match(/[^.!?…]+[.!?…]*\s*/g) || [item.text]).map(t => t.trim()).filter(Boolean);
+                let left = parts.length;
+                if (!left) return done();
+                vTalkStart();
+                parts.forEach(t => {
                     const u = new SpeechSynthesisUtterance(t);
                     if (voice) { u.voice = voice; u.lang = voice.lang; } else u.lang = 'fr-FR';
                     u.rate = 0.95;
-                    u.onstart = () => {
-                        clearInterval(vTalkTimer);
-                        const bot = $('obChatRobot') && $('obChatRobot')._bot;
-                        if (bot) { bot.talkFor(700); vTalkTimer = setInterval(() => bot.talkFor(700), 450); }
-                    };
-                    u.onend = u.onerror = () => {
-                        vSpeaking = Math.max(0, vSpeaking - 1);
-                        if (!vSpeaking) { clearInterval(vTalkTimer); vTalkTimer = null; }
-                        vRefreshState();
-                    };
-                    vSpeaking++;
+                    u.onend = u.onerror = () => { if (--left === 0) done(); };
                     window.speechSynthesis.speak(u);
                 });
-                vRefreshState();
             }
 
             // ---------- recording the student (browser speech recognition, free) ----------
@@ -1458,8 +1496,14 @@
 
             if (canVoice) {
                 $('obModeBtn').hidden = false;
+                $('obModeBackBtn').addEventListener('click', () => {
+                    voiceMode = false;
+                    try { localStorage.setItem(VOICE_KEY, '0'); } catch (e) {}
+                    applyVoiceMode();
+                    setTimeout(() => { if (!$('obAnswer').disabled) $('obAnswer').focus(); }, 50);
+                });
                 $('obModeBtn').addEventListener('click', () => {
-                    voiceMode = !voiceMode;
+                    voiceMode = true;
                     try { localStorage.setItem(VOICE_KEY, voiceMode ? '1' : '0'); } catch (e) {}
                     applyVoiceMode();
                     // entering talking mode: the robot says its last sentence out loud

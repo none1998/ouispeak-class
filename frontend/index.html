@@ -306,7 +306,6 @@
                     <h2 class="ob-title" id="obChatName"></h2>
                     <p class="ob-subtitle ob-status">ონლაინ · უპასუხე ფრანგულად</p>
                 </div>
-                <button type="button" class="ob-mode" id="obModeBtn" aria-pressed="false" aria-label="სალაპარაკო რეჟიმი" title="სალაპარაკო რეჟიმი" hidden><i class="fa-solid fa-microphone-lines"></i></button>
                 <button type="button" class="ob-close" data-ob-close aria-label="დახურვა"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></button>
             </div>
             <div class="ob-body">
@@ -320,12 +319,14 @@
                 <div class="ob-main">
                     <div class="ob-log" id="obLog" aria-live="polite"></div>
                     <form class="ob-compose" id="obCompose" autocomplete="off">
+                        <button type="button" class="ob-mode-switch" id="obModeBtn" aria-label="სალაპარაკო რეჟიმზე გადასვლა" title="სალაპარაკო რეჟიმი" hidden><i class="fa-solid fa-headset"></i><span>ლაპარაკი</span></button>
                         <button type="button" class="ob-round ob-mic" id="obMicBtn" aria-label="ხმით პასუხი" hidden><i class="fa-solid fa-microphone"></i></button>
                         <input class="ob-input" id="obAnswer" type="text" maxlength="300" placeholder="დაწერე პასუხი ფრანგულად…" aria-label="შენი პასუხი">
                         <button type="submit" class="ob-round ob-send" id="obSendBtn" aria-label="გაგზავნა"><i class="fa-solid fa-paper-plane"></i></button>
                     </form>
                     <!-- Talking mode: no text, only voice -->
                     <div class="ob-voicebar" id="obVoiceBar" data-state="idle" hidden>
+                        <button type="button" class="ob-mode-switch ob-mode-back" id="obModeBackBtn" aria-label="წერის რეჟიმზე დაბრუნება" title="წერის რეჟიმი"><i class="fa-solid fa-keyboard"></i></button>
                         <button type="button" class="ob-vrec" id="obVoiceRec" aria-label="ჩაწერა"><i class="fa-solid fa-microphone"></i></button>
                         <div class="ob-vtrack" aria-hidden="true">
                             <span class="ob-vicon ob-vicon-idle"><i class="fa-solid fa-microphone"></i></span>

@@ -25,8 +25,18 @@
     const MAX_PHRASES = 10;
     const MC_TILES = 8;
     const MIN_FILL = 8;
-    const PICK_SECONDS = 20;
-    const ANSWER_SECONDS = 20;
+    // ===== TIMERS (seconds) =====
+    // Normal time for every course:
+    const PICK_SECONDS = 20;     // time to choose a box
+    const ANSWER_SECONDS = 20;   // time to answer the question
+    // Courses that get more time (write the course name exactly as in the database):
+    const SLOW_COURSES = {
+        "A1 - სასაუბრო კურსი": { pick: 60, answer: 60 }
+    };
+    function courseTimes() {
+        const course = String((G && G.opts && G.opts.course) || "").trim();
+        return SLOW_COURSES[course] || { pick: PICK_SECONDS, answer: ANSWER_SECONDS };
+    }
     const HINTS_PER_GAME = 3;
     const ACCENTS = ["é", "è", "ê", "ë", "à", "â", "ç", "î", "ï", "ô", "û", "ù", "œ"];
     const AI_ENDPOINT = (typeof SUPABASE_URL !== "undefined" ? SUPABASE_URL : "") + "/functions/v1/openai-chat";
@@ -366,7 +376,7 @@ Reply ONLY with: {"items":[{"i":0,"sentence":"…","answer":"…","ka":"…"}]}`
                 <ul class="vg-rules">
                     <li>შენი მხარე <b class="vg-c-you">ლურჯია</b> (ქვემოთ), რობოსი — <b class="vg-c-ai">წითელი</b> (ზემოთ). გახსნა შეგიძლია მხოლოდ შენი ტერიტორიის გვერდით მდებარე უჯრების.</li>
                     <li><b>ფრანგული</b> სიტყვა — აირჩიე ქართული მნიშვნელობა. <b>ქართული</b> სიტყვა და <b>„შეავსე წინადადება“</b> — დაწერე ფრანგულად.</li>
-                    <li>უჯრის ასარჩევად და პასუხისთვის გაქვს <b>${ANSWER_SECONDS} წამი</b>. ფრაზა = 2 ქულა. რობოს უჯრაზე დაჭერა = დუელი.</li>
+                    <li>უჯრის ასარჩევად და პასუხისთვის გაქვს <b>${courseTimes().answer} წამი</b>. ფრაზა = 2 ქულა. რობოს უჯრაზე დაჭერა = დუელი.</li>
                     <li>მოიგე <b>ექსპერტის</b> დონეზე — <b>+${EXPERT_POINTS} ქულა</b> „ლექსიკა 2“-ში (კვირაში ერთხელ).</li>
                 </ul>
                 <div class="vg-levels-title">აირჩიე სირთულე</div>
@@ -713,7 +723,7 @@ Reply ONLY with: {"items":[{"i":0,"sentence":"…","answer":"…","ka":"…"}]}`
         drawTiles();
         setStatus(first ? '<i class="fa-solid fa-hand-pointer"></i> შენი სვლაა — აირჩიე <b>ლურჯად მონიშნული</b> უჯრა ქვედა რიგიდან'
             : '<i class="fa-solid fa-hand-pointer"></i> შენი სვლაა — აირჩიე <b>ლურჯად მონიშნული</b> უჯრა', "you");
-        startTimer(document.getElementById("vgPickTimer"), PICK_SECONDS, async () => {
+        startTimer(document.getElementById("vgPickTimer"), courseTimes().pick, async () => {
             if (!G || G.over || G.turn !== "player" || G.busy) return;
             setStatus('<i class="fa-solid fa-hourglass-end"></i> დრო ამოიწურა! სვლა რობოს გადაეცა.', "bad");
             G.turn = "ai";
@@ -960,7 +970,7 @@ Reply ONLY with: {"items":[{"i":0,"sentence":"…","answer":"…","ka":"…"}]}`
 
             modal.querySelectorAll(".vg-say").forEach(b => b.onclick = () => speak(b.dataset.say));
             if (tile.face === "fr") speak(item.fr);
-            if (timed) startTimer(modal.querySelector("#vgAnsTimer"), ANSWER_SECONDS, () => {
+            if (timed) startTimer(modal.querySelector("#vgAnsTimer"), courseTimes().answer, () => {
                 const inp = modal.querySelector("#vgInput");
                 finishQ(inp && inp.value.trim() !== "" ? isCorrect(inp.value, answer) : false, inp ? inp.value : "", true);
             });

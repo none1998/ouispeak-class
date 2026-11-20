@@ -1857,3 +1857,13 @@
 .video-help.alert { justify-content: flex-start; padding: 0.7rem 0.9rem; border-radius: 12px; background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; font-size: 0.92rem; }
 .video-help.alert > i { display: inline; }
 .video-help-btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.45rem 0.8rem; border-radius: 10px; background: var(--primary); color: #fff; text-decoration: none; font-weight: 600; }
+
+/* ===== Writing feedback: type label, encouragement box ===== */
+.fb-type { display: inline-block; margin-top: 0.35rem; font-size: 0.8rem; font-weight: 700; color: var(--primary); background: #eaf2fb; padding: 0.15rem 0.6rem; border-radius: 99px; }
+.fb-box-cheer { background: #ecfdf5; color: #065f46; }
+
+/* ===== "Checking failed, try again" dialog ===== */
+.ai-retry-icon { width: 64px; height: 64px; margin: 0 auto 1rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; background: rgba(255, 255, 255, 0.12); color: #fff; }
+.ai-retry-btn { display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; margin-top: 1.3rem; padding: 0.85rem 1rem; border: none; border-radius: 30px; background: #ffffff; color: #082c55; font-family: inherit; font-weight: 800; font-size: 1rem; cursor: pointer; }
+.ai-retry-btn:hover { background: #eaf2fb; }
+.ai-skip-btn { margin-top: 0.8rem; background: none; border: none; color: rgba(255, 255, 255, 0.6); font-family: inherit; font-size: 0.82rem; text-decoration: underline; cursor: pointer; }

@@ -270,6 +270,7 @@
         function loadExerciseBlock(blockNumber) {
             saveCurrentBlockAnswersToCache();
             currentActiveBlock = blockNumber;
+            if (typeof aiScheduleBackgroundCheck === "function") aiScheduleBackgroundCheck();
             const items = document.querySelectorAll('.sidebar-item');
             items.forEach((item, index) => {
                 if ((index + 1) === blockNumber) item.classList.add('active');
@@ -735,9 +736,12 @@
             const started = Date.now();
             const models = [AI_CORRECTION_MODELS[0], AI_CORRECTION_MODELS[1], AI_CORRECTION_MODELS[0], AI_CORRECTION_MODELS[1]];
             let lastError = new Error("AI request failed");
+            // text-only tasks keep ~40% of the time for the ChatGPT backup (audio can only be checked by Gemini)
+            const hasAudio = Array.isArray(audio) && audio.length > 0;
+            const geminiBudget = hasAudio ? maxTotalMs : Math.min(Math.round(maxTotalMs * 0.5), 70000);
 
             for (let attempt = 0; attempt < models.length; attempt++) {
-                const timeLeft = maxTotalMs - (Date.now() - started);
+                const timeLeft = geminiBudget - (Date.now() - started);
                 if (timeLeft < 5000) break;
                 const limit = Math.min(timeoutMs, timeLeft);
                 const controller = new AbortController();
@@ -774,6 +778,48 @@
                         continue;
                     }
                     throw err;
+                } finally {
+                    clearTimeout(timer);
+                }
+            }
+            // Gemini busy / too slow → ask ChatGPT (same "openai-chat" function as OuiBot) instead of giving up
+            if (!hasAudio) {
+                const timeLeft = Math.max(30000, maxTotalMs - (Date.now() - started));
+                try {
+                    return await aiFallbackRequest(promptText, token, timeLeft);
+                } catch (err) {
+                    console.warn("ChatGPT backup failed too:", err);
+                }
+            }
+            throw lastError;
+        }
+
+        // ---------- Backup: ChatGPT through the Supabase function "openai-chat" ----------
+        const AI_FALLBACK_ENDPOINT = `${SUPABASE_URL}/functions/v1/openai-chat`;
+        const AI_FALLBACK_MODELS = ["gpt-6-luna", "gpt-4.1-mini"];
+        async function aiFallbackRequest(promptText, token, totalMs) {
+            const started = Date.now();
+            let lastError = new Error("ChatGPT backup failed");
+            for (const model of AI_FALLBACK_MODELS) {
+                const timeLeft = totalMs - (Date.now() - started);
+                if (timeLeft < 8000) break;
+                const controller = new AbortController();
+                const timer = setTimeout(() => controller.abort(), timeLeft);
+                try {
+                    const system = "You are a precise French teacher. Reply ONLY with valid JSON, no other text.";
+                    const response = await fetch(AI_FALLBACK_ENDPOINT, {
+                        method: "POST",
+                        signal: controller.signal,
+                        headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${token}` },
+                        body: JSON.stringify({ model, thinkingOff: true, system, messages: [{ role: "user", content: promptText }], prompt: system + "\n\n" + promptText })
+                    });
+                    if (!response.ok) { lastError = new Error(`ChatGPT ${response.status} (${model})`); continue; }
+                    const data = await response.json();
+                    const raw = String(data.text || data.output_text || data?.choices?.[0]?.message?.content || "").replace(/```json|```/g, "").trim();
+                    const start = raw.indexOf("{"), end = raw.lastIndexOf("}");
+                    return JSON.parse(raw.slice(start, end + 1));
+                } catch (err) {
+                    lastError = err;
                 } finally {
                     clearTimeout(timer);
                 }
@@ -887,28 +933,63 @@ Reply ONLY with JSON in this exact shape:
             document.body.style.overflow = "";
         }
 
-        // Runs async tasks with a small limit of parallel requests
+        // Runs async tasks with a small limit of parallel requests; returns how many failed
         async function aiRunTasks(tasks, limit, onTaskDone) {
-            let next = 0;
+            let next = 0, failed = 0;
             async function worker() {
                 while (next < tasks.length) {
                     const task = tasks[next++];
-                    try { await task(); } catch (e) { console.error("AI task failed:", e); }
+                    try { await task(); } catch (e) { failed++; console.error("AI task failed:", e); }
                     onTaskDone();
                 }
             }
             await Promise.all(Array.from({ length: Math.min(limit, tasks.length) }, worker));
+            return failed;
+        }
+
+        // Answers that are being checked right now (key -> promise), so nothing is checked twice
+        const aiInflight = new Map();
+        function aiTrack(keys, task) {
+            let finish;
+            const promise = new Promise(r => { finish = r; });
+            keys.forEach(k => aiInflight.set(k, promise));
+            return async () => {
+                try { await task(); }
+                finally {
+                    keys.forEach(k => { if (aiInflight.get(k) === promise) aiInflight.delete(k); });
+                    finish();
+                }
+            };
+        }
+
+        // Background check: when the student goes to another exercise, the exercises they left
+        // are already corrected quietly, so pressing "send" at the end is much faster.
+        let aiBackgroundTimer = null;
+        function aiScheduleBackgroundCheck() {
+            clearTimeout(aiBackgroundTimer);
+            aiBackgroundTimer = setTimeout(() => {
+                if (aiCheckInProgress) return;
+                aiCheckAllAnswers({ silent: true, skipBlock: currentActiveBlock })
+                    .catch(e => console.warn("Background AI check failed:", e));
+            }, 1500);
         }
 
         // Checks ALL translation + essay answers of the 6 exercise blocks of the selected week
-        async function aiCheckAllAnswers() {
+        async function aiCheckAllAnswers({ silent = false, skipBlock = 0 } = {}) {
             const subject = document.getElementById('subjectSelect').value;
-            if (!studentCourse || !subject) return;
+            if (!studentCourse || !subject) return { failed: 0 };
+
+            // answers already being checked in the background: wait for them first
+            if (!silent && aiInflight.size) {
+                aiShowOverlay(1);
+                await Promise.all([...new Set(aiInflight.values())]);
+            }
 
             const tasks = [];
             const translationItems = [];   // all translation sentences of the week, checked together
 
             for (let b = 1; b <= getBlockCount(); b++) {
+                if (b === skipBlock) continue;      // the exercise the student is still working on
                 const blockData = dataset[studentCourse]?.[subject]?.[b];
                 if (!blockData) continue;
                 const prefix = `${subject}_block_${b}`;
@@ -920,19 +1001,21 @@ Reply ONLY with JSON in this exact shape:
                     if (!text) continue;
                     const cached = aiCorrectionCache[key];
                     if (cached && cached.answer.trim() === text) continue;
-                    tasks.push(async () => {
-                        // Other courses: no grid, only strengths, weaknesses and advice in Georgian
-                        if (!isDelfCourse(studentCourse)) {
-                            const result = await delfCallGemini(feedbackBuildWritingPrompt(courseLevelFor(studentCourse), blockData.instruction, text), []);
+                    if (aiInflight.has(key)) continue;
+                    tasks.push(aiTrack([key], async () => {
+                        const delfCourse = isDelfCourse(studentCourse);
+                        const level = delfCourse ? delfLevelFor(studentCourse) : courseLevelFor(studentCourse);
+                        const result = await delfCallGemini(writingBuildPrompt(level, blockData.instruction, text, delfCourse), []);
+                        if (!result || (!result.overall && !result.strengths && !result.correct && !result.criteria)) throw new Error("Empty AI answer");
+                        // conjugation / separate sentences (and every non-DELF course): feedback only, no score
+                        if (!delfCourse || writingType(result) !== "essay" || !result.criteria) {
                             aiCorrectionCache[key] = {
                                 answer: raw,
                                 res: { is_correct: true, errors: result.errors || "", correct: result.correct || "", simple: feedbackFromResult("writing", result) }
                             };
                             return;
                         }
-                        // DELF courses: graded like a real DELF examiner, with the official grid of the course level
-                        const level = delfLevelFor(studentCourse);
-                        const result = await delfCallGemini(delfBuildWritingPrompt(level, blockData.instruction, text), []);
+                        // DELF courses, essay-style text: graded like a real DELF examiner, with the official grid of the course level
                         const delf = delfScoreWriting(level, result, text);
                         aiCorrectionCache[key] = {
                             answer: raw,
@@ -943,7 +1026,7 @@ Reply ONLY with JSON in this exact shape:
                                 delf
                             }
                         };
-                    });
+                    }));
                 } else if (blockData.type === "speaking") {
                     // Voice recordings of this block, graded with the DELF oral grid
                     const recs = (blockData.questions || []).map((q, index) => ({ q, index, rec: speakingRecordings[`${prefix}_q_${index}`] }))
@@ -953,7 +1036,8 @@ Reply ONLY with JSON in this exact shape:
                     const signature = recs.map(x => x.rec.url).join("|");
                     const cached = aiCorrectionCache[key];
                     if (cached && cached.answer === signature) continue;
-                    tasks.push(async () => {
+                    if (aiInflight.has(key)) continue;
+                    tasks.push(aiTrack([key], async () => {
                         const audio = await delfRecordingsToAudio(recs.map(x => x.rec));
                         const prompts = recs.map(x => x.q.text.replace(/<br>/g, " "));
                         if (!isDelfCourse(studentCourse)) {
@@ -970,7 +1054,7 @@ Reply ONLY with JSON in this exact shape:
                             answer: signature,
                             res: { is_correct: true, errors: "", correct: "", delf: delfScoreSpeaking(level, result, recs.map(x => x.index)) }
                         };
-                    });
+                    }));
                 } else {
                     const items = [];
                     (blockData.questions || []).forEach((q, index) => {
@@ -981,6 +1065,7 @@ Reply ONLY with JSON in this exact shape:
                         if (!answer) return;
                         const cached = aiCorrectionCache[key];
                         if (cached && cached.answer.trim() === answer) return;
+                        if (aiInflight.has(key)) return;
                         const source = q.text.split("_________________")[0].replace(/<br>/g, " ").trim();
                         items.push({ index, source, student_answer: answer, raw, key });
                     });
@@ -992,9 +1077,10 @@ Reply ONLY with JSON in this exact shape:
             const TRANSLATIONS_PER_REQUEST = 40;
             for (let i = 0; i < translationItems.length; i += TRANSLATIONS_PER_REQUEST) {
                 const chunk = translationItems.slice(i, i + TRANSLATIONS_PER_REQUEST).map((it, n) => ({ ...it, id: n }));
-                tasks.push(async () => {
+                tasks.push(aiTrack(chunk.map(it => it.key), async () => {
                     const result = await aiCallGemini(aiBuildMultiTranslationPrompt(chunk));
                     const list = Array.isArray(result.results) ? result.results : [];
+                    if (!list.length) throw new Error("Empty AI answer (translations)");
                     chunk.forEach(it => {
                         const r = list.find(x => Number(x.id) === it.id);
                         if (!r) return;
@@ -1003,19 +1089,64 @@ Reply ONLY with JSON in this exact shape:
                             res: { is_correct: r.is_correct === true, errors: r.errors || "", correct: r.correct || "" }
                         };
                     });
-                });
+                }));
             }
 
-            if (tasks.length === 0) return;
+            if (tasks.length === 0) return { failed: 0 };
+
+            if (silent) return { failed: await aiRunTasks(tasks, 2, () => {}) };
 
             aiShowOverlay(tasks.length);
             let done = 0;
-            await aiRunTasks(tasks, 3, () => {
+            const failed = await aiRunTasks(tasks, 3, () => {
                 done++;
                 aiUpdateOverlay(done, tasks.length);
             });
             // let the progress bar visibly reach 100% before the overlay disappears
             await aiSleep(600);
+            return { failed };
+        }
+
+        // When some answers could not be checked: ask the student to try again (instead of sending uncorrected work)
+        function aiAskRetry(failed) {
+            return new Promise(resolve => {
+                aiHideOverlay();
+                const overlay = document.createElement('div');
+                overlay.id = "aiOverlay";
+                overlay.className = "ai-overlay";
+                overlay.setAttribute('role', 'alertdialog');
+                overlay.innerHTML = `
+                    <div class="ai-overlay-card">
+                        <div class="ai-retry-icon"><i class="fa-solid fa-rotate"></i></div>
+                        <h2 class="ai-overlay-title">შემოწმება ვერ დასრულდა</h2>
+                        <p class="ai-overlay-text">ხელოვნური ინტელექტი ახლა გადატვირთულია და ${failed} დავალება ვერ შემოწმდა. დაელოდე რამდენიმე წამს და სცადე თავიდან — შენი პასუხები არ დაიკარგება.</p>
+                        <button type="button" class="ai-retry-btn" id="aiRetryBtn"><i class="fa-solid fa-rotate-right"></i> ხელახლა შემოწმება</button>
+                        <button type="button" class="ai-skip-btn" id="aiSkipBtn">გაგზავნა შემოწმების გარეშე</button>
+                    </div>`;
+                document.body.appendChild(overlay);
+                const page = document.querySelector('.premium-container-box');
+                if (page) page.inert = true;
+                document.body.style.overflow = "hidden";
+                overlay.querySelector('#aiRetryBtn').onclick = () => { aiHideOverlay(); resolve("retry"); };
+                overlay.querySelector('#aiSkipBtn').onclick = () => {
+                    if (!confirm("დარწმუნებული ხარ? ეს დავალებები მასწავლებელს შეუმოწმებლად გაეგზავნება.")) return;
+                    aiHideOverlay(); resolve("send");
+                };
+            });
+        }
+
+        // Check everything; if something failed, try again automatically once, then let the student choose
+        async function aiCheckWithRetries() {
+            let res = await aiCheckAllAnswers();
+            if (res.failed > 0) {
+                await aiSleep(3000);
+                res = await aiCheckAllAnswers();
+            }
+            while (res.failed > 0) {
+                const choice = await aiAskRetry(res.failed);
+                if (choice === "send") break;
+                res = await aiCheckAllAnswers();
+            }
         }
 
         // Adds the AI verdicts to the text that is sent by email (original function stays untouched)
@@ -1161,7 +1292,7 @@ Reply ONLY with JSON in this exact shape:
             aiCheckInProgress = true;
             try {
                 saveCurrentBlockAnswersToCache();
-                await aiCheckAllAnswers();
+                await aiCheckWithRetries();
             } catch (e) {
                 console.error("AI correction failed:", e);
             } finally {
@@ -1280,7 +1411,7 @@ Reply ONLY with JSON in this exact shape:
                 // 1. Same AI check as before sending (already checked answers are not sent again)
                 saveCurrentBlockAnswersToCache();
                 try {
-                    await aiCheckAllAnswers();
+                    await aiCheckWithRetries();
                 } catch (e) {
                     console.error("AI correction failed:", e);
                 } finally {
@@ -1335,6 +1466,8 @@ Reply ONLY with JSON in this exact shape:
         aiCheckAllAnswers = function () {
             const self = this;
             const args = arguments;
+            // quiet background checks are not cancelled by the X button (they don't block anything)
+            if (args[0] && args[0].silent) return _aiCheckAllAnswersBeforeCancel.apply(self, args);
             return new Promise((resolve, reject) => {
                 let cancelled = false;
                 aiCancelCurrentCheck = () => { cancelled = true; };
@@ -1792,9 +1925,11 @@ Reply ONLY with JSON in this exact shape:
 
         const DELF_BANDS = (level) => ["არ არის / არასაკმარისი", "დონეზე დაბლა", level, `${level}+`];
 
+        // Points per criterion go in steps of 0,5 (not only 4 fixed values), so a very good text can really reach 20–25/25.
+        // bands = highest points of each band: [nothing, below the level, at the level, level+]
         const DELF_WRITING = {
-            A2: { values: [0, 0.5, 1.5, 2.5], max: 12.5, examFactor: 2, defaultWords: 60 },
-            B1: { values: [0, 1, 3, 5], max: 25, examFactor: 1, defaultWords: 160 }
+            A2: { critMax: 2.5, bands: [0, 0.5, 2, 2.5], max: 12.5, examFactor: 2, defaultWords: 60 },
+            B1: { critMax: 5, bands: [0, 2, 4, 5], max: 25, examFactor: 1, defaultWords: 160 }
         };
 
         const DELF_WRITING_CRITERIA = [
@@ -1852,34 +1987,86 @@ Reply ONLY with JSON in this exact shape:
         }
 
         // ---------- Prompts ----------
-        function delfBuildWritingPrompt(level, instruction, text) {
-            const g = DELF_WRITING[level];
-            const v = g.values;
-            return `You are an official, experienced DELF ${level} examiner (France Éducation international).
-Grade the student's text exactly like in the real exam, with the official "Grille d'évaluation de la production écrite – DELF ${level}".
-Be objective and realistic, like a real examiner: not lenient, not harsh. A few small mistakes do NOT make a text fail; judge the overall level reached.
-
-Task given to the student: "${instruction}"
-Student's text (${delfWordCount(text)} words):
+        // ONE prompt for every writing exercise (all courses):
+        // 1) the AI decides the type: conjugation / separate sentences / essay-style text
+        // 2) corrects it the way that type needs
+        // 3) writes warm, detailed feedback in Georgian
+        // 4) DELF courses only, and only for essay-style texts: official DELF grid score
+        function writingBuildPrompt(level, instruction, text, withDelf) {
+            const words = delfWordCount(text);
+            let delfPart = "";
+            if (withDelf) {
+                const g = DELF_WRITING[level];
+                const [, b1, b2, b3] = g.bands;
+                const totalNote = g.examFactor === 1 ? "the sum of the 5 criteria" : `the sum of the 5 criteria × ${g.examFactor} (the A2 writing task is worth 12,5 in the exam, we show it on 25)`;
+                delfPart = `
+STEP 4 — ONLY if task_type is "essay": grade it like an official, experienced DELF ${level} examiner (France Éducation international), with the 5 criteria of the "grille d'évaluation de la production écrite". If task_type is NOT "essay", set "criteria" to null and "anomalies" to [].
+Each criterion gets 0 to ${g.critMax} points, in steps of 0.5:
+  0 = nothing to evaluate / insufficient
+  0.5 to ${b1} = below the ${level} level
+  ${b1 + 0.5} to ${b2} = at the ${level} level (higher = better controlled)
+  ${b2 + 0.5} to ${b3} = fully at / above ${level}: the criterion is completely satisfied, only rare minor slips
+Criteria:
+- tache: Réalisation de la tâche (topic, type of text, ALL requested points, length)
+- coherence: Cohérence et cohésion (logical organisation, paragraphs, connectors)
+- socio: Adéquation sociolinguistique (tu/vous, greeting and closing when the text type needs them, register)
+- lexique: Lexique (range and accuracy of vocabulary, spelling)
+- morpho: Morphosyntaxe (conjugation, tenses, agreement, articles, word order)
+CALIBRATION — be objective and fair, like a real examiner. Judge against the ${level} level, NOT against a native speaker. The total on 25 = ${totalNote}:
+- excellent for ${level} (task fully done, well organised, varied vocabulary, only rare small slips): 23–25 / 25
+- very good (task done, some errors that never block understanding): 20–22
+- good, clearly at the level, with several errors: 16–19
+- average, partly at the level: 12–15
+- weak: 6–11; very weak: 0–5
+A few small spelling or accent slips must NOT prevent top marks. But never give high marks a text does not deserve: missing requested points, too short, many errors or a level below ${level} must lower the score.
+Anomalies (only if they really apply): "hors_sujet_thematique", "hors_sujet_discursif", "hors_sujet_complet", "copie_blanche", "manque_matiere" (fewer than 50% of the expected number of words).
+expected_words = the number of words requested in the task; if the task does not say, use ${g.defaultWords}.
+For each criterion write a short comment IN GEORGIAN quoting the student's French.`;
+            }
+            const delfShape = withDelf
+                ? `,"expected_words":${DELF_WRITING[level].defaultWords},"criteria":{"tache":{"points":0,"comment":""},"coherence":{"points":0,"comment":""},"socio":{"points":0,"comment":""},"lexique":{"points":0,"comment":""},"morpho":{"points":0,"comment":""}},"anomalies":[]`
+                : "";
+            return `You are an experienced French teacher for Georgian-speaking students (course level ${level}): warm and encouraging, but honest and precise.
+Writing task given to the student (instruction in Georgian): "${instruction}"
+Student's answer (${words} words):
 """
 ${text}
 """
 
-For EACH criterion choose exactly ONE level and give its points:
-${v[0]} = non répondu ou production insuffisante; ${v[1]} = en dessous du niveau ciblé; ${v[2]} = au niveau ${level}; ${v[3]} = au niveau ${level}+ (clearly above ${level}).
-Criteria:
-- tache: Réalisation de la tâche (respects the task: topic, type of text, all requested points, length)
-- coherence: Cohérence et cohésion (logical organisation, connectors)
-- socio: Adéquation sociolinguistique (register tu/vous, greetings/closing, form adapted to the text type)
-- lexique: Lexique (range and accuracy of vocabulary, spelling)
-- morpho: Morphosyntaxe (conjugation, tenses, agreement, articles, word order)
+STEP 1 — Decide what kind of writing task this is ("task_type"), first from the instruction, then from the answer:
+- "conjugation": conjugate verbs, fill in or transform verb forms; the answer is a list of forms or very short items
+- "sentences": write several SEPARATE sentences (e.g. "write 5 sentences with…", make sentences with given words); the sentences are independent
+- "essay": write ONE connected text, short or long: letter, e-mail, message, description, story, opinion, essay…
 
-Anomalies (only if they really apply): "hors_sujet_thematique", "hors_sujet_discursif", "hors_sujet_complet", "copie_blanche", "manque_matiere" (fewer than 50% of the expected number of words).
-expected_words = the number of words requested in the task; if the task does not say, use ${g.defaultWords}.
+STEP 2 — Correct it the way this type needs:
+- conjugation: check EVERY form one by one (person, tense, ending, auxiliary, agreement, spelling, accents). Do not comment on style. "correct" = the complete corrected list.
+- sentences: check EACH sentence on its own (grammar, conjugation, agreement, articles, prepositions, word order, vocabulary, spelling). Do NOT judge them as one text (no remarks about organisation or connectors). "correct" = all sentences corrected, one per line.
+- essay: judge the whole text: are all requested points done, length, organisation and connectors, register (tu/vous, greeting/closing if needed), vocabulary range and accuracy, grammar. "correct" = the full corrected text.
 
-Write ALL comments IN GEORGIAN, addressed to the student, short and concrete, quoting their French words as examples.
+STEP 3 — Feedback, written IN GEORGIAN, speaking to the student with "შენ". Warm, human and motivating — never dry:
+- "overall": an objective overall opinion of the work (2-4 sentences): what level it really shows for a ${level} learner and how well the task was done.
+- "strengths": the strong points, concretely, quoting the student's French as examples. 2-4 points, one per line, each starting with "• ".
+- "weaknesses": the weak points IN DETAIL, but ONLY the more serious or repeated problems, not every tiny slip. For each one: what the problem is, an example quoted from the text → the correct form, and a short clear explanation of the rule. One point per line, each starting with "• ".
+- "improvement_plan": start EXACTLY with "თუ ნამდვილად გინდა გაუმჯობესება, უნდა:" then 3-5 concrete tasks adapted to THIS student's problems (e.g. "1. დაწერე 10 წინადადება passé composé-ში être-თი და შეამოწმე შეთანხმება…"), one per line, numbered "1.", "2.", …
+- "encouragement": 1-2 sincere sentences that encourage the student to keep going.
+- "errors": ALL real mistakes (small ones too), one per line: wrong → correct (very short explanation in Georgian). Empty if there are none.
+- "correct": the corrected version in French, as described in step 2.
+${delfPart}
 Reply ONLY with JSON in this exact shape:
-{"expected_words":${g.defaultWords},"criteria":{"tache":{"points":0,"comment":""},"coherence":{"points":0,"comment":""},"socio":{"points":0,"comment":""},"lexique":{"points":0,"comment":""},"morpho":{"points":0,"comment":""}},"anomalies":[],"summary":"2-3 sentences: overall level and what the examiner would think","strengths":"what is good","improvements":"the 2-3 most important things to work on","errors":"one mistake per line: wrong → correct (short explanation)","correct":"the full corrected text in French"}`;
+{"task_type":"essay","overall":"","strengths":"","weaknesses":"","improvement_plan":"","encouragement":"","errors":"","correct":""${delfShape}}`;
+        }
+
+        // the type the AI decided → our name (and a Georgian label)
+        const WRITING_TYPES = {
+            conjugation: "ზმნების უღლება",
+            sentences: "ცალკეული წინადადებები",
+            essay: "ტექსტი / ესე"
+        };
+        function writingType(r) {
+            const t = String(r?.task_type || "").toLowerCase();
+            if (t.startsWith("conj")) return "conjugation";
+            if (t.startsWith("sent")) return "sentences";
+            return "essay";
         }
 
         function delfBuildSpeakingPrompt(level, instruction, prompts) {
@@ -1962,10 +2149,12 @@ Reply ONLY with JSON in this exact shape:
         // ---------- Turning the AI answer into official points ----------
         function delfScoreWriting(level, r, text) {
             const g = DELF_WRITING[level];
-            const v = g.values;
+            const steps = [];
+            for (let x = 0; x <= g.critMax + 1e-9; x += 0.5) steps.push(Math.round(x * 10) / 10);
+            const bandOf = (pts) => pts <= g.bands[0] ? 0 : pts <= g.bands[1] ? 1 : pts <= g.bands[2] ? 2 : 3;
             const crit = {};
             DELF_WRITING_CRITERIA.forEach(c => {
-                crit[c.id] = { ...c, values: v, points: delfSnap(r?.criteria?.[c.id]?.points, v), comment: r?.criteria?.[c.id]?.comment || "" };
+                crit[c.id] = { ...c, max: g.critMax, points: delfSnap(r?.criteria?.[c.id]?.points, steps), comment: r?.criteria?.[c.id]?.comment || "" };
             });
 
             const words = delfWordCount(text);
@@ -1974,18 +2163,22 @@ Reply ONLY with JSON in this exact shape:
             if (words === 0) anomalies.add("copie_blanche");
             else if (words < expected / 2) anomalies.add("manque_matiere");
 
-            const cap = (id, index) => { crit[id].points = Math.min(crit[id].points, v[index]); };
+            // caps: highest points allowed = top of a band
+            const cap = (id, band) => { crit[id].points = Math.min(crit[id].points, g.bands[band]); };
             if (anomalies.has("hors_sujet_thematique")) { cap("tache", 2); cap("lexique", 2); }
             if (anomalies.has("hors_sujet_discursif")) { cap("tache", 1); cap("coherence", 1); }
             if (anomalies.has("hors_sujet_complet")) { cap("tache", 0); cap("coherence", 0); cap("socio", 0); cap("lexique", 1); cap("morpho", 1); }
             if (anomalies.has("copie_blanche") || anomalies.has("manque_matiere")) Object.keys(crit).forEach(id => cap(id, 0));
+            Object.values(crit).forEach(c => { c.band = bandOf(c.points); });
 
             const criteria = DELF_WRITING_CRITERIA.map(c => crit[c.id]);
             const total = criteria.reduce((s, c) => s + c.points, 0);
             return {
                 kind: "writing", level, criteria, anomalies: [...anomalies], words, expected,
                 total, max: g.max, exam25: total * g.examFactor,
-                summary: r?.summary || "", strengths: r?.strengths || "", improvements: r?.improvements || ""
+                summary: r?.overall || r?.summary || "", strengths: r?.strengths || "",
+                weaknesses: r?.weaknesses || "", improvements: r?.improvement_plan || r?.improvements || "",
+                encouragement: r?.encouragement || ""
             };
         }
 
@@ -2023,6 +2216,7 @@ Reply ONLY with JSON in this exact shape:
         }
 
         function delfBandIndex(c) {
+            if (typeof c.band === "number") return c.band;
             return c.values ? c.values.indexOf(c.points) : -1;
         }
 
@@ -2088,8 +2282,10 @@ Reply ONLY with JSON in this exact shape:
                 <div class="delf-section-title">შეფასება კრიტერიუმების მიხედვით</div>
                 <div class="delf-rows">${rows}</div>
                 ${answersHtml}
-                ${d.strengths ? `<div class="delf-box delf-box-good"><b><i class="fa-solid fa-thumbs-up"></i> რა გამოგივიდათ კარგად</b><div>${delfText(d.strengths)}</div></div>` : ""}
-                ${d.improvements ? `<div class="delf-box delf-box-work"><b><i class="fa-solid fa-bullseye"></i> რაზე იმუშაოთ</b><div>${delfText(d.improvements)}</div></div>` : ""}
+                ${d.strengths ? `<div class="delf-box delf-box-good"><b><i class="fa-solid fa-thumbs-up"></i> ძლიერი მხარეები</b><div>${delfText(d.strengths)}</div></div>` : ""}
+                ${d.weaknesses ? `<div class="delf-box fb-box-weak"><b><i class="fa-solid fa-triangle-exclamation"></i> სუსტი მხარეები</b><div>${delfText(d.weaknesses)}</div></div>` : ""}
+                ${d.improvements ? `<div class="delf-box delf-box-work"><b><i class="fa-solid fa-bullseye"></i> როგორ გავაუმჯობესოთ</b><div>${delfText(d.improvements)}</div></div>` : ""}
+                ${d.encouragement ? `<div class="delf-box fb-box-cheer"><b><i class="fa-solid fa-heart"></i> გააგრძელე!</b><div>${delfText(d.encouragement)}</div></div>` : ""}
                 ${errors ? `<details class="delf-details"><summary>შეცდომები და შესწორებები</summary><div>${delfText(errors)}</div></details>` : ""}
                 ${isWriting && res.correct ? `<details class="delf-details"><summary>შესწორებული ტექსტი</summary><div lang="fr">${delfText(res.correct)}</div></details>` : ""}
                 <details class="delf-details">
@@ -2100,7 +2296,7 @@ Reply ONLY with JSON in this exact shape:
                             <li><b>${bands[0]}</b> (non répondu / production insuffisante) — პასუხი არ არის ან ძალიან ცოტაა შესაფასებლად.</li>
                             <li><b>${bands[1]}</b> (en dessous du niveau ciblé) — ჯერ ვერ აღწევს ${d.level} დონეს.</li>
                             <li><b>${bands[2]}</b> (au niveau ciblé) — ${d.level} დონის შესაბამისია.</li>
-                            <li><b>${bands[3]}</b> — ${d.level} დონეზე უკეთესია.</li>
+                            <li><b>${bands[3]}</b> — კრიტერიუმი სრულად შესრულებულია, მხოლოდ იშვიათი წვრილმანი შეცდომებით.</li>
                         </ul>
                         <p>ერთი-ორი პატარა შეცდომა ტექსტს „არასწორს“ არ ხდის: გამომცდელი აფასებს, რამდენად კარგად ახერხებთ ენის გამოყენებას მთლიანობაში.</p>
                         <p>${examNote} გამოცდის ჩასაბარებლად საჭიროა სულ მინიმუმ 50/100 ქულა და თითო ნაწილში მინიმუმ 5/25.</p>
@@ -2121,7 +2317,11 @@ Reply ONLY with JSON in this exact shape:
                 lines.push(`• ${c.fr} (${c.ka}): ${delfFmt(c.points)}/${delfFmt(max)}${b >= 0 ? ` [${bands[b]}]` : ""}${c.comment ? ` — ${c.comment.replace(/\s*\n+\s*/g, " ")}` : ""}`);
             });
             (d.answers || []).forEach(a => lines.push(`  კითხვა ${a.question}: ${delfFmt(a.points)}/4 — „${a.transcript}“ ${a.comment ? `— ${a.comment.replace(/\s*\n+\s*/g, " ")}` : ""}`));
-            if (d.summary) lines.push(`შეჯამება: ${d.summary.replace(/\s*\n+\s*/g, " ")}`);
+            if (d.summary) lines.push(`საერთო შეფასება: ${d.summary.replace(/\s*\n+\s*/g, " ")}`);
+            if (d.strengths) lines.push(`ძლიერი მხარეები:\n${d.strengths}`);
+            if (d.weaknesses) lines.push(`სუსტი მხარეები:\n${d.weaknesses}`);
+            if (d.kind === "writing" && d.improvements) lines.push(`${d.improvements}`);
+            if (d.encouragement) lines.push(`${d.encouragement}`);
             const errors = d.kind === "writing" ? res.errors : d.errors;
             if (errors) lines.push(`შეცდომები:\n${errors}`);
             if (d.kind === "writing" && res.correct) lines.push(`შესწორებული ტექსტი:\n${res.correct}`);
@@ -2141,25 +2341,6 @@ Reply ONLY with JSON in this exact shape:
         function courseLevelFor(course) {
             const m = (course || "").match(/\b(A1|A2|B1|B2)\b/i);
             return m ? m[1].toUpperCase() : "A2";
-        }
-
-        function feedbackBuildWritingPrompt(level, instruction, text) {
-            return `You are a kind, encouraging but honest French teacher for Georgian-speaking students at level ${level}.
-Writing task given to the student: "${instruction}"
-Student's text:
-"""
-${text}
-"""
-
-Do NOT give a score or a grade. Judge the text for a ${level} learner (do not expect more than this level).
-Write everything IN GEORGIAN, addressed to the student ("თქვენ"), short and concrete, quoting their French words as examples:
-- strengths: what they did well (2-3 points)
-- weaknesses: the main weak points (2-3 points)
-- advice: a little practical advice to do better next time (2-3 short tips)
-- errors: one mistake per line: wrong → correct (very short explanation)
-- correct: the full corrected text in French
-Reply ONLY with JSON in this exact shape:
-{"strengths":"","weaknesses":"","advice":"","errors":"","correct":""}`;
         }
 
         function feedbackBuildSpeakingPrompt(level, instruction, prompts) {
@@ -2183,9 +2364,12 @@ Reply ONLY with JSON in this exact shape:
             const list = Array.isArray(r?.answers) ? r.answers : [];
             return {
                 kind,
+                type: kind === "writing" ? writingType(r) : "",
+                overall: r?.overall || "",
                 strengths: r?.strengths || "",
                 weaknesses: r?.weaknesses || "",
-                advice: r?.advice || "",
+                advice: r?.improvement_plan || r?.advice || "",
+                encouragement: r?.encouragement || "",
                 answers: questionIndexes.map((qIndex, i) => {
                     const a = list.find(x => Number(x.index) === i + 1) || list[i] || {};
                     return { question: qIndex + 1, transcript: a.transcript || "" };
@@ -2201,12 +2385,15 @@ Reply ONLY with JSON in this exact shape:
                 <div class="delf-head fb-head">
                     <div>
                         <div class="delf-kicker">მასწავლებლის კომენტარი (AI)</div>
-                        <div class="fb-title">${isWriting ? "თქვენი ტექსტის შეფასება" : "თქვენი ჩანაწერების შეფასება"}</div>
+                        <div class="fb-title">${isWriting ? "შენი ნამუშევრის შეფასება" : "შენი ჩანაწერების შეფასება"}</div>
+                        ${isWriting && f.type ? `<div class="fb-type">დავალების ტიპი: ${WRITING_TYPES[f.type]}</div>` : ""}
                     </div>
                 </div>
+                ${f.overall ? `<p class="delf-summary">${delfText(f.overall)}</p>` : ""}
                 ${f.strengths ? `<div class="delf-box delf-box-good"><b><i class="fa-solid fa-thumbs-up"></i> ძლიერი მხარეები</b><div>${delfText(f.strengths)}</div></div>` : ""}
                 ${f.weaknesses ? `<div class="delf-box fb-box-weak"><b><i class="fa-solid fa-triangle-exclamation"></i> სუსტი მხარეები</b><div>${delfText(f.weaknesses)}</div></div>` : ""}
-                ${f.advice ? `<div class="delf-box delf-box-work"><b><i class="fa-solid fa-lightbulb"></i> რჩევა შემდეგი ჯერისთვის</b><div>${delfText(f.advice)}</div></div>` : ""}
+                ${f.advice ? `<div class="delf-box delf-box-work"><b><i class="fa-solid fa-bullseye"></i> როგორ გავაუმჯობესოთ</b><div>${delfText(f.advice)}</div></div>` : ""}
+                ${f.encouragement ? `<div class="delf-box fb-box-cheer"><b><i class="fa-solid fa-heart"></i> გააგრძელე!</b><div>${delfText(f.encouragement)}</div></div>` : ""}
                 ${transcripts.length ? `<details class="delf-details"><summary>რა თქვით (ტრანსკრიფცია)</summary><div>${transcripts.map(a => `<p><b>კითხვა ${a.question}:</b> <span lang="fr">„${aiEscapeHtml(a.transcript)}“</span></p>`).join("")}</div></details>` : ""}
                 ${isWriting && res.errors ? `<details class="delf-details"><summary>შეცდომები და შესწორებები</summary><div>${delfText(res.errors)}</div></details>` : ""}
                 ${isWriting && res.correct ? `<details class="delf-details"><summary>შესწორებული ტექსტი</summary><div lang="fr">${delfText(res.correct)}</div></details>` : ""}
@@ -2216,10 +2403,12 @@ Reply ONLY with JSON in this exact shape:
 
         function feedbackBuildEmailText(f, res) {
             const one = (s) => String(s || "").replace(/\s*\n+\s*/g, " ").trim();
-            const lines = [`AI კომენტარი (${f.kind === "writing" ? "წერა" : "ლაპარაკი"}):`];
-            if (f.strengths) lines.push(`ძლიერი მხარეები: ${one(f.strengths)}`);
-            if (f.weaknesses) lines.push(`სუსტი მხარეები: ${one(f.weaknesses)}`);
-            if (f.advice) lines.push(`რჩევა: ${one(f.advice)}`);
+            const lines = [`AI კომენტარი (${f.kind === "writing" ? `წერა${f.type ? " · " + WRITING_TYPES[f.type] : ""}` : "ლაპარაკი"}):`];
+            if (f.overall) lines.push(`საერთო შეფასება: ${one(f.overall)}`);
+            if (f.strengths) lines.push(`ძლიერი მხარეები:\n${f.strengths}`);
+            if (f.weaknesses) lines.push(`სუსტი მხარეები:\n${f.weaknesses}`);
+            if (f.advice) lines.push(f.kind === "writing" ? f.advice : `რჩევა: ${one(f.advice)}`);
+            if (f.encouragement) lines.push(one(f.encouragement));
             f.answers.filter(a => a.transcript).forEach(a => lines.push(`  კითხვა ${a.question}: „${a.transcript}“`));
             if (f.kind === "writing" && res.errors) lines.push(`შეცდომები:\n${res.errors}`);
             if (f.kind === "writing" && res.correct) lines.push(`შესწორებული ტექსტი:\n${res.correct}`);

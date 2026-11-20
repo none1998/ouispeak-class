@@ -1311,6 +1311,191 @@
             }
 
             /* =====================================================
+               TALKING MODE (free: the browser's own speech recognition + French voice)
+               - the chat text is hidden; the robot answers out loud
+               - mic button: 1st click = start recording, 2nd click = send (or press the send button)
+               ===================================================== */
+            const VOICE_KEY = 'ouibot_voice_mode';
+            const canVoice = !!(SR && window.speechSynthesis && window.SpeechSynthesisUtterance);
+            let voiceMode = false;
+            try { voiceMode = canVoice && localStorage.getItem(VOICE_KEY) === '1'; } catch (e) {}
+            let vRec = null, vRecording = false, vFinal = '', vInterim = '', vSendWhenDone = false;
+            let vSpeaking = 0, vTalkTimer = null;
+
+            function vSetState(st) {
+                const bar = $('obVoiceBar');
+                if (bar) bar.dataset.state = st;
+            }
+            function vRefreshState() {
+                if (vRecording) return vSetState('rec');
+                if (vSpeaking > 0) return vSetState('talk');
+                if (chat && chat.busy) return vSetState('think');
+                vSetState('idle');
+            }
+            function applyVoiceMode() {
+                const win = $('obChat');
+                if (!win) return;
+                win.classList.toggle('ob-voice', voiceMode);
+                $('obVoiceBar').hidden = !voiceMode;
+                const btn = $('obModeBtn');
+                btn.setAttribute('aria-pressed', String(voiceMode));
+                btn.title = voiceMode ? 'წერის რეჟიმი' : 'სალაპარაკო რეჟიმი';
+                btn.setAttribute('aria-label', btn.title);
+                btn.innerHTML = voiceMode ? '<i class="fa-solid fa-keyboard"></i>' : '<i class="fa-solid fa-microphone-lines"></i>';
+                if (!voiceMode) { vStopRecording(false); vStopSpeaking(); }
+                vRefreshState();
+            }
+
+            // ---------- the robot's voice (browser, free) ----------
+            function vStopSpeaking() {
+                vSpeaking = 0;
+                clearInterval(vTalkTimer); vTalkTimer = null;
+                try { window.speechSynthesis.cancel(); } catch (e) {}
+                vRefreshState();
+            }
+            function vSpeak(text) {
+                if (!voiceMode || !canVoice) return;
+                const clean = kaClean(text);
+                if (!/[\p{L}]/u.test(clean)) return;
+                const voice = pickKaVoice(state.profile && state.profile.gender);
+                // short pieces: some browsers stop long sentences in the middle
+                const parts = clean.match(/[^.!?…]+[.!?…]*\s*/g) || [clean];
+                parts.forEach(part => {
+                    const t = part.trim();
+                    if (!t) return;
+                    const u = new SpeechSynthesisUtterance(t);
+                    if (voice) { u.voice = voice; u.lang = voice.lang; } else u.lang = 'fr-FR';
+                    u.rate = 0.95;
+                    u.onstart = () => {
+                        clearInterval(vTalkTimer);
+                        const bot = $('obChatRobot') && $('obChatRobot')._bot;
+                        if (bot) { bot.talkFor(700); vTalkTimer = setInterval(() => bot.talkFor(700), 450); }
+                    };
+                    u.onend = u.onerror = () => {
+                        vSpeaking = Math.max(0, vSpeaking - 1);
+                        if (!vSpeaking) { clearInterval(vTalkTimer); vTalkTimer = null; }
+                        vRefreshState();
+                    };
+                    vSpeaking++;
+                    window.speechSynthesis.speak(u);
+                });
+                vRefreshState();
+            }
+
+            // ---------- recording the student (browser speech recognition, free) ----------
+            function vStartRecording() {
+                if (!canVoice || vRecording || (chat && chat.busy)) return;
+                vStopSpeaking();
+                stopMic();
+                vFinal = ''; vInterim = ''; vSendWhenDone = false;
+                vRecording = true;
+                vRefreshState();
+                vListen();
+            }
+            function vListen() {
+                try {
+                    const r = new SR();
+                    vRec = r;
+                    r.lang = 'fr-FR';
+                    r.interimResults = true;
+                    r.continuous = true;
+                    r.onresult = (e) => {
+                        let interim = '';
+                        for (let i = e.resultIndex; i < e.results.length; i++) {
+                            const txt = e.results[i][0].transcript;
+                            if (e.results[i].isFinal) vFinal += (vFinal ? ' ' : '') + txt.trim();
+                            else interim += txt;
+                        }
+                        vInterim = interim.trim();
+                    };
+                    r.onerror = (e) => {
+                        if (e && (e.error === 'not-allowed' || e.error === 'service-not-allowed')) {
+                            vRecording = false; vSendWhenDone = false;
+                            showDebug('Microphone blocked');
+                            vShake();
+                        }
+                    };
+                    r.onend = () => {
+                        if (vRec !== r) return;
+                        vRec = null;
+                        // some phones stop listening after a pause: keep listening until the student clicks
+                        if (vRecording && !vSendWhenDone) { vListen(); return; }
+                        if (vSendWhenDone) vFinish();
+                        else vRefreshState();
+                    };
+                    r.start();
+                } catch (e) {
+                    vRecording = false;
+                    vRefreshState();
+                }
+            }
+            function vStopRecording(send) {
+                if (!vRecording) return;
+                vRecording = false;
+                vSendWhenDone = !!send;
+                if (vRec) { try { vRec.stop(); } catch (e) { vRec = null; if (send) vFinish(); } }
+                else if (send) vFinish();
+                vRefreshState();
+            }
+            function vFinish() {
+                vSendWhenDone = false;
+                const text = (vFinal + ' ' + vInterim).replace(/\s+/g, ' ').trim();
+                vFinal = ''; vInterim = '';
+                if (!text) {
+                    vShake();
+                    vSpeak(pick(["Pardon, je n'ai pas bien entendu. Tu peux répéter ?", "Hmm, je n'ai rien entendu. Encore une fois ?", "Désolé, tu peux parler un peu plus fort ?"]));
+                    return;
+                }
+                handleAnswer(text.slice(0, 300));
+                vRefreshState();
+            }
+            function vShake() {
+                const bar = $('obVoiceBar');
+                if (!bar) return;
+                bar.classList.remove('ob-vshake'); void bar.offsetWidth; bar.classList.add('ob-vshake');
+                vRefreshState();
+            }
+
+            if (canVoice) {
+                $('obModeBtn').hidden = false;
+                $('obModeBtn').addEventListener('click', () => {
+                    voiceMode = !voiceMode;
+                    try { localStorage.setItem(VOICE_KEY, voiceMode ? '1' : '0'); } catch (e) {}
+                    applyVoiceMode();
+                    // entering talking mode: the robot says its last sentence out loud
+                    if (voiceMode && chat && !chat.busy) {
+                        const last = [...chat.log].reverse().find(x => x.k === 'bot');
+                        if (last) vSpeak(last.fr);
+                    }
+                });
+                $('obVoiceRec').addEventListener('click', () => {
+                    if (vRecording) vStopRecording(true);
+                    else vStartRecording();
+                });
+                $('obVoiceSend').addEventListener('click', () => {
+                    if (vRecording) vStopRecording(true);
+                    else vShake();
+                });
+                document.querySelectorAll('#obChat [data-ob-close]').forEach(b => b.addEventListener('click', () => { vStopRecording(false); vStopSpeaking(); }));
+                applyVoiceMode();
+            }
+
+            // every robot message is spoken in talking mode
+            const _addBotBeforeVoice = addBot;
+            addBot = function (msg) {
+                const wrap = _addBotBeforeVoice.apply(this, arguments);
+                if (voiceMode && msg && !msg.sys && msg.fr) vSpeak(msg.fr);
+                return wrap;
+            };
+            // "thinking…" while the robot prepares its answer
+            const _setInputEnabledBeforeVoice = setInputEnabled;
+            setInputEnabled = function (on) {
+                _setInputEnabledBeforeVoice.apply(this, arguments);
+                $('obVoiceRec').disabled = !on && !vRecording;
+                setTimeout(vRefreshState, 0);
+            };
+
+            /* =====================================================
                THE BRAIN – ChatGPT through the Supabase function "openai-chat"
                ===================================================== */
             const OB_DEBUG = /^(test|reset)$/.test(new URLSearchParams(window.location.search).get('robot') || '');
